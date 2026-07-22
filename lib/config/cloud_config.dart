@@ -5,6 +5,7 @@ abstract final class CloudConfig {
   );
   static const supabasePublishableKey = String.fromEnvironment(
     'SUPABASE_PUBLISHABLE_KEY',
+    defaultValue: 'sb_publishable_NGm5Y-8u5SwycozyfhyYjw_keRVTpka',
   );
 
   static bool get isConfigured =>

@@ -15,6 +15,7 @@ import 'views/snap_grade_view.dart';
 import 'views/writing_canvas_view.dart';
 import 'views/account_view.dart';
 import 'views/welcome_journey_view.dart';
+import 'widgets/leo_sprite.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,11 +29,26 @@ Future<void> main() async {
   runApp(const ProviderScope(child: LinguaTomoApp()));
 }
 
-class LinguaTomoApp extends ConsumerWidget {
+class LinguaTomoApp extends ConsumerStatefulWidget {
   const LinguaTomoApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LinguaTomoApp> createState() => _LinguaTomoAppState();
+}
+
+class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
+  var _showLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(const Duration(milliseconds: 2200), () {
+      if (mounted) setState(() => _showLoading = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mode = ref.watch(experienceProvider);
     final scale = switch (mode) {
       ExperienceMode.visualExplorer => 1.10,
@@ -49,7 +65,9 @@ class LinguaTomoApp extends ConsumerWidget {
         ).copyWith(textScaler: TextScaler.linear(scale)),
         child: child!,
       ),
-      home: ref.watch(learnerProfileProvider).onboardingComplete
+      home: _showLoading
+          ? LeoLoadingScreen(reduceMotion: mode == ExperienceMode.comfort)
+          : ref.watch(learnerProfileProvider).onboardingComplete
           ? const AppShell()
           : const WelcomeJourneyView(),
     );

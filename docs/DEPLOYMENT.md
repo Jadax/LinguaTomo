@@ -1,36 +1,48 @@
 # Web deployment and domain
 
-## Public address
+## Public testing address
 
-Use a memorable custom domain for every public launch. `linguatomo.app` is the
-preferred product address, followed by `linguatomo.ai`. Availability and renewal
-price must be confirmed with an accredited registrar immediately before
-purchase. The temporary `pages.dev` address is an origin and preview address,
-not the address used in marketing.
+Every push to `main` is built and deployed by
+`.github/workflows/pages.yml` to:
 
-## Hosting
+<https://jadax.github.io/LinguaTomo/>
 
-Cloudflare Pages remains the static Web host. Connect the purchased domain in
-the Pages project, enable automatic HTTPS and redirect the `www` hostname to the
-canonical apex hostname. Supabase remains the optional account and sync backend.
+GitHub Pages is a good free, stable choice for this Flutter static client. It
+also keeps preview hosting beside the source repository. Supabase remains the
+optional account and progress-sync backend.
 
-Build the client with public values only:
+The repository's Settings > Pages source must be set to **GitHub Actions** once.
+The workflow then handles later releases automatically.
 
-```powershell
-flutter build web --release --no-wasm-dry-run `
-  --dart-define=SUPABASE_URL=https://lfoczkivkesxxmuowebm.supabase.co `
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_KEY
-```
+## Memorable production address
 
-Never compile a Supabase service-role key into the website. The publishable key
-is expected to be visible, so Row Level Security is the actual data boundary.
+Use `linguatomo.app` as the preferred production address, followed by
+`linguatomo.ai`. Domain availability and renewal prices change, so confirm both
+immediately before purchasing. GitHub Pages supports a custom domain and HTTPS.
+
+After purchase:
+
+1. Add the domain in GitHub repository Settings > Pages.
+2. Add GitHub's requested DNS records at the registrar.
+3. Enable **Enforce HTTPS** after DNS verification.
+4. Add the final Web URL to Supabase Auth's allowed redirect URLs.
+5. Keep the `jadax.github.io` address as a testing and fallback origin.
+
+## Public configuration
+
+The workflow compiles only the Supabase URL and publishable client key. A
+publishable key is expected to be visible in a browser. Row Level Security in
+`supabase/linguatomo.sql` is the data boundary.
+
+Never compile, commit or expose a Supabase `service_role` key. Rotate any
+service-role key that has ever been shared outside a protected server secret.
 
 ## Release checks
 
-- confirm the custom domain and HTTPS redirect;
+- verify the GitHub Pages deployment is green;
 - verify installability as a progressive Web app;
 - test phone, tablet and desktop widths;
 - test first load and repeat load on a slow connection;
 - confirm local progress survives reload and browser restart;
 - confirm account sync fails safely when Supabase is unavailable;
-- run accessibility checks with reduced motion and keyboard navigation.
+- test reduced motion, keyboard navigation and screen-reader labels.

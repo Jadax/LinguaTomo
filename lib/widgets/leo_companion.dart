@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+
+import 'leo_sprite.dart';
 
 enum LeoMood { welcome, cheer, proud, thinking, gentle }
 
@@ -25,6 +28,8 @@ class LeoCompanion extends StatefulWidget {
 class _LeoCompanionState extends State<LeoCompanion>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  Timer? _meowTimer;
+  var _isMeowing = false;
 
   @override
   void initState() {
@@ -49,8 +54,17 @@ class _LeoCompanionState extends State<LeoCompanion>
 
   @override
   void dispose() {
+    _meowTimer?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _meow() {
+    if (_isMeowing) return;
+    setState(() => _isMeowing = true);
+    _meowTimer = Timer(const Duration(milliseconds: 520), () {
+      if (mounted) setState(() => _isMeowing = false);
+    });
   }
 
   String get _defaultMessage => switch (widget.mood) {
@@ -62,13 +76,15 @@ class _LeoCompanionState extends State<LeoCompanion>
     LeoMood.gentle => 'Mistakes are safe here. Let us have another calm try.',
   };
 
-  String get _moodGlyph => switch (widget.mood) {
-    LeoMood.welcome => '♡',
-    LeoMood.cheer => '✨',
-    LeoMood.proud => '🌟',
-    LeoMood.thinking => '…',
-    LeoMood.gentle => '🌱',
-  };
+  LeoPose get _pose => _isMeowing
+      ? LeoPose.meow
+      : switch (widget.mood) {
+          LeoMood.welcome => LeoPose.smile,
+          LeoMood.cheer => LeoPose.celebrate,
+          LeoMood.proud => LeoPose.sit,
+          LeoMood.thinking => LeoPose.butterfly,
+          LeoMood.gentle => LeoPose.smile,
+        };
 
   @override
   Widget build(BuildContext context) => Row(
@@ -85,45 +101,18 @@ class _LeoCompanionState extends State<LeoCompanion>
         child: SizedBox(
           width: widget.size * 1.25,
           height: widget.size,
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(widget.size * .22),
-                  child: Image.asset(
-                    'assets/branding/leo-nest-fireplace.png',
-                    fit: BoxFit.cover,
-                    alignment: Alignment.centerRight,
-                    semanticLabel:
-                        'Leo, the Norwegian Forest Cat, resting in his fireside chair',
-                  ),
-                ),
-              ),
-              Positioned(
-                right: -4,
-                top: -8,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .94),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: .08),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(7),
-                    child: Text(
-                      _moodGlyph,
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          child: InkWell(
+            borderRadius: BorderRadius.circular(widget.size * .22),
+            onTap: _meow,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                LeoSprite(pose: _pose, size: widget.size),
+                if (_isMeowing)
+                  const Positioned(right: -4, top: 0, child: _MeowBubble()),
+              ],
+            ),
           ),
         ),
       ),
@@ -151,5 +140,24 @@ class _LeoCompanionState extends State<LeoCompanion>
         ),
       ),
     ],
+  );
+}
+
+class _MeowBubble extends StatelessWidget {
+  const _MeowBubble();
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(color: Colors.black.withValues(alpha: .08), blurRadius: 8),
+      ],
+    ),
+    child: const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      child: Text('Mrrp!', style: TextStyle(fontWeight: FontWeight.w900)),
+    ),
   );
 }

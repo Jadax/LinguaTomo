@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +9,7 @@ import '../providers/app_state.dart';
 import '../providers/review_state.dart';
 import '../providers/grammar_state.dart';
 import '../theme/app_theme.dart';
+import '../widgets/leo_sprite.dart';
 import 'mission_view.dart';
 import 'collection_view.dart';
 import 'postcards_view.dart';
@@ -270,7 +273,7 @@ abstract final class AppNavigation {
   static ValueChanged<int>? goTo;
 }
 
-class _NestRoom extends StatelessWidget {
+class _NestRoom extends StatefulWidget {
   const _NestRoom({
     required this.progress,
     required this.reduceMotion,
@@ -281,22 +284,62 @@ class _NestRoom extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_NestRoom> createState() => _NestRoomState();
+}
+
+class _NestRoomState extends State<_NestRoom> {
+  Timer? _timer;
+  var _atChair = false;
+  var _walking = false;
+  var _step = false;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _moveLeo() {
+    _timer?.cancel();
+    if (widget.reduceMotion) {
+      setState(() => _atChair = !_atChair);
+      return;
+    }
+    setState(() {
+      _walking = true;
+      _step = !_step;
+      _atChair = !_atChair;
+    });
+    _timer = Timer.periodic(const Duration(milliseconds: 180), (timer) {
+      if (!mounted || timer.tick >= 5) {
+        timer.cancel();
+        if (mounted) setState(() => _walking = false);
+        return;
+      }
+      setState(() => _step = !_step);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final rewards = missions
-        .where((mission) => progress.unlockedRewards.contains(mission.reward))
+        .where(
+          (mission) => widget.progress.unlockedRewards.contains(mission.reward),
+        )
         .toList();
     return Semantics(
-      label: 'Your Nest with ${progress.unlockedRewards.length} unlocked items',
+      label:
+          'Your Nest with ${widget.progress.unlockedRewards.length} unlocked items',
       button: true,
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
+        onTap: widget.onTap,
         child: Container(
           height: 260,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             image: const DecorationImage(
-              image: AssetImage('assets/branding/leo-nest-fireplace.png'),
+              image: AssetImage('assets/branding/leo-nest-room.png'),
               fit: BoxFit.cover,
             ),
             borderRadius: BorderRadius.circular(24),
@@ -346,6 +389,26 @@ class _NestRoom extends StatelessWidget {
                     ),
                   ),
                 ),
+              AnimatedAlign(
+                duration: widget.reduceMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 900),
+                curve: Curves.easeInOut,
+                alignment: _atChair
+                    ? const Alignment(.67, .20)
+                    : const Alignment(-.52, .78),
+                child: GestureDetector(
+                  onTap: _moveLeo,
+                  child: LeoSprite(
+                    pose: _walking
+                        ? (_step ? LeoPose.walkA : LeoPose.walkB)
+                        : (_atChair ? LeoPose.sit : LeoPose.idle),
+                    size: _atChair ? 104 : 92,
+                    semanticLabel:
+                        'Leo. Tap him to walk between the fireside and his chair.',
+                  ),
+                ),
+              ),
               Positioned(
                 top: 12,
                 left: 14,

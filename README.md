@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.4.0, build 6**
+**Version 1.5.0, build 7**
 
 | Area | Available now |
 |---|---|
@@ -34,7 +34,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 | Characters | Hiragana, katakana and an introductory kanji studio with KanjiVG diagrams |
 | Writing | Touch canvas plus paper-photo OCR grading on Android and iOS |
 | Culture | 30 Living Postcards and 24 seasonal story side quests |
-| Motivation | Leo’s Nest, 28 achievements, streaks and stress-free streak freezes |
+| Motivation | Interactive Leo avatar, animated Nest, 28 achievements, streaks and stress-free streak freezes |
 | Accessibility | Visual Explorer, Standard and Comfort experiences |
 | Cloud | Optional Supabase PKCE account and progress synchronisation |
 
@@ -71,14 +71,14 @@ quality gates.
 | Speech | Device Japanese text-to-speech, with a warm voice preference |
 | Optional backend | Supabase Auth, PostgreSQL, Storage and Realtime |
 
-All direct production dependencies were current when build 6 was verified on
+All direct production dependencies were current when build 7 was verified on
 22 July 2026.
 
 ## Repository map
 
 ```text
 assets/
-  branding/                 Astraiva and Leo application artwork
+  branding/                 Leo application artwork
   content/grammar/          Attributed N5 to N1 grammar corpus
 docs/                       Small, task-focused project documentation
 lib/
@@ -111,6 +111,9 @@ Prerequisites:
 flutter pub get
 flutter run -d chrome
 ```
+
+The public test build deploys from `main` to
+<https://jadax.github.io/LinguaTomo/> through GitHub Actions.
 
 Android:
 

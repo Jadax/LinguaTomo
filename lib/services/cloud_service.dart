@@ -1,8 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/cloud_config.dart';
 
 abstract final class CloudBootstrap {
+  static bool _isInitialised = false;
+
+  static bool get isInitialised => _isInitialised;
+
   static Future<void> initialize() async {
     if (!CloudConfig.isConfigured) {
       return;
@@ -14,6 +19,7 @@ abstract final class CloudBootstrap {
         authFlowType: AuthFlowType.pkce,
       ),
     );
+    _isInitialised = true;
   }
 }
 
@@ -22,7 +28,9 @@ class CloudService {
 
   bool get isConfigured => CloudConfig.isConfigured;
 
-  SupabaseClient? get _client => isConfigured ? Supabase.instance.client : null;
+  SupabaseClient? get _client => isConfigured && CloudBootstrap.isInitialised
+      ? Supabase.instance.client
+      : null;
 
   User? get currentUser => _client?.auth.currentUser;
 
@@ -36,7 +44,9 @@ class CloudService {
     }
     await client.auth.signInWithOtp(
       email: email.trim(),
-      emailRedirectTo: 'com.astraiva.linguatomo://login-callback/',
+      emailRedirectTo: kIsWeb
+          ? Uri.base.resolve('.').toString()
+          : 'com.astraiva.linguatomo://login-callback/',
     );
   }
 

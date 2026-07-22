@@ -7,7 +7,8 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const ProviderScope(child: LinguaTomoApp()));
-    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('LinguaTomo'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 2300));
 
     expect(find.text('Welcome to LinguaTomo'), findsOneWidget);
     expect(find.text('Starter'), findsOneWidget);
