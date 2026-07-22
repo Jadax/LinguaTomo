@@ -5,7 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../config/storage_keys.dart';
+import '../data/character_data.dart';
+import '../models/character_entry.dart';
+import '../models/app_models.dart';
+import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
+import '../widgets/leo_sprite.dart';
 
 @immutable
 class WritingProgress {
@@ -57,7 +62,7 @@ class _PracticeCharacter {
   final List<List<Offset>> strokes;
 }
 
-const _practiceCharacters = <_PracticeCharacter>[
+const _guidedCharacters = <_PracticeCharacter>[
   _PracticeCharacter('一', 'ichi · one', [
     [Offset(.18, .51), Offset(.82, .49)],
   ]),
@@ -92,6 +97,28 @@ const _practiceCharacters = <_PracticeCharacter>[
   ]),
 ];
 
+final _practiceCharacters = CharacterSet.values
+    .expand(
+      (set) => characterLibrary[set]!.map((entry) {
+        final guided = _guidedCharacters
+            .where((item) => item.symbol == entry.symbol)
+            .firstOrNull;
+        return guided ??
+            _PracticeCharacter(
+              entry.symbol,
+              '${entry.reading} · ${switch (set) {
+                CharacterSet.hiragana => 'hiragana',
+                CharacterSet.katakana => 'katakana',
+                CharacterSet.kanjiN5 => 'N5 kanji',
+              }}',
+              const [],
+            );
+      }),
+    )
+    .toList(growable: false);
+
+enum _LibraryScope { today, myLevel, all }
+
 class WritingCanvasView extends ConsumerStatefulWidget {
   const WritingCanvasView({super.key});
 
@@ -101,6 +128,7 @@ class WritingCanvasView extends ConsumerStatefulWidget {
 
 class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
   _PracticeCharacter _character = _practiceCharacters.first;
+  _LibraryScope _scope = _LibraryScope.today;
   final List<List<Offset>> _strokes = [];
   int? _score;
 
@@ -135,7 +163,9 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
   });
 
   void _checkWriting() {
-    final score = _calculateScore(_strokes, _character.strokes);
+    final score = _character.strokes.isEmpty
+        ? _calculateLayoutScore(_strokes)
+        : _calculateScore(_strokes, _character.strokes);
     setState(() => _score = score);
     ref.read(writingProgressProvider.notifier).record(_character.symbol, score);
   }
@@ -143,6 +173,12 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
   @override
   Widget build(BuildContext context) {
     final progress = ref.watch(writingProgressProvider);
+    final learner = ref.watch(progressProvider);
+    final available = _targetsFor(_scope, learner.stage);
+    final selected = available.contains(_character)
+        ? _character
+        : available.first;
+    if (selected != _character) _character = selected;
     final best = progress.bestScores[_character.symbol] ?? 0;
 
     return ResponsiveContent(
@@ -155,7 +191,25 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Trace the soft guide with your finger, stylus, or mouse.',
+            'Choose today’s set, your current route, or the complete character library.',
+          ),
+          const SizedBox(height: 10),
+          SegmentedButton<_LibraryScope>(
+            segments: const [
+              ButtonSegment(value: _LibraryScope.today, label: Text('Today')),
+              ButtonSegment(
+                value: _LibraryScope.myLevel,
+                label: Text('My level'),
+              ),
+              ButtonSegment(value: _LibraryScope.all, label: Text('All')),
+            ],
+            selected: {_scope},
+            onSelectionChanged: (value) => setState(() {
+              _scope = value.first;
+              _character = _targetsFor(_scope, learner.stage).first;
+              _strokes.clear();
+              _score = null;
+            }),
           ),
           const SizedBox(height: 14),
           Card(
@@ -186,7 +240,7 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
                         isExpanded: true,
                         value: _character,
                         borderRadius: BorderRadius.circular(16),
-                        items: _practiceCharacters
+                        items: available
                             .map(
                               (item) => DropdownMenuItem(
                                 value: item,
@@ -251,6 +305,7 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
                           _continueStroke(details.localPosition, size),
                       child: CustomPaint(
                         painter: _WritingPainter(
+                          targetSymbol: _character.symbol,
                           guideStrokes: _character.strokes,
                           userStrokes: _strokes,
                         ),
@@ -267,6 +322,9 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  ),
                   onPressed: _strokes.isEmpty ? null : _undo,
                   icon: const Icon(Icons.undo_rounded),
                   label: const Text('Undo'),
@@ -275,6 +333,9 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  ),
                   onPressed: _strokes.isEmpty ? null : _clear,
                   icon: const Icon(Icons.delete_outline_rounded),
                   label: const Text('Clear'),
@@ -293,7 +354,7 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
           ),
           if (_score case final score?) ...[
             const SizedBox(height: 12),
-            _LeoFeedback(score: score),
+            _LeoFeedback(score: score, guided: _character.strokes.isNotEmpty),
           ],
           const SizedBox(height: 16),
           const _WritingTips(),
@@ -305,10 +366,12 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
 
 class _WritingPainter extends CustomPainter {
   const _WritingPainter({
+    required this.targetSymbol,
     required this.guideStrokes,
     required this.userStrokes,
   });
 
+  final String targetSymbol;
   final List<List<Offset>> guideStrokes;
   final List<List<Offset>> userStrokes;
 
@@ -349,8 +412,29 @@ class _WritingPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
-    for (final stroke in guideStrokes) {
-      _drawStroke(canvas, stroke, size, guidePaint);
+    if (guideStrokes.isEmpty) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: targetSymbol,
+          style: TextStyle(
+            color: AppColors.charcoal.withValues(alpha: .13),
+            fontSize: size.width * .68,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(
+        canvas,
+        Offset(
+          (size.width - painter.width) / 2,
+          (size.height - painter.height) / 2,
+        ),
+      );
+    } else {
+      for (final stroke in guideStrokes) {
+        _drawStroke(canvas, stroke, size, guidePaint);
+      }
     }
 
     final userPaint = Paint()
@@ -444,6 +528,47 @@ int _calculateScore(List<List<Offset>> drawn, List<List<Offset>> guide) {
       .clamp(0, 100);
 }
 
+int _calculateLayoutScore(List<List<Offset>> drawn) {
+  final points = drawn.expand((stroke) => stroke).toList();
+  if (points.length < 3) return 10;
+  final minX = points.map((p) => p.dx).reduce(math.min);
+  final maxX = points.map((p) => p.dx).reduce(math.max);
+  final minY = points.map((p) => p.dy).reduce(math.min);
+  final maxY = points.map((p) => p.dy).reduce(math.max);
+  final centre = Offset((minX + maxX) / 2, (minY + maxY) / 2);
+  final centred = (1 - (centre - const Offset(.5, .5)).distance / .7).clamp(
+    0.0,
+    1.0,
+  );
+  final coverage = (((maxX - minX) * (maxY - minY)) / .42).clamp(0.0, 1.0);
+  final effort = (points.length / 35).clamp(0.0, 1.0);
+  return (100 * (centred * .45 + coverage * .35 + effort * .20)).round();
+}
+
+List<_PracticeCharacter> _targetsFor(
+  _LibraryScope scope,
+  ProficiencyStage stage,
+) {
+  final unlockedCount = switch (stage) {
+    ProficiencyStage.kittenSteps => 46,
+    ProficiencyStage.firstEncounters => 92,
+    _ => _practiceCharacters.length,
+  };
+  final unlocked = _practiceCharacters.take(unlockedCount).toList();
+  if (scope == _LibraryScope.all) return _practiceCharacters;
+  if (scope == _LibraryScope.myLevel) return unlocked;
+  final start = japanDayIndex() % unlocked.length;
+  return List.generate(
+    8,
+    (index) => unlocked[(start + index) % unlocked.length],
+  );
+}
+
+int japanDayIndex() {
+  final now = DateTime.now().toUtc().add(const Duration(hours: 9));
+  return now.difference(DateTime(now.year)).inDays;
+}
+
 List<Offset> _resample(List<Offset> points, int samplesPerSegment) {
   if (points.length < 2) return points;
   final result = <Offset>[];
@@ -458,9 +583,10 @@ List<Offset> _resample(List<Offset> points, int samplesPerSegment) {
 }
 
 class _LeoFeedback extends StatelessWidget {
-  const _LeoFeedback({required this.score});
+  const _LeoFeedback({required this.score, required this.guided});
 
   final int score;
+  final bool guided;
 
   @override
   Widget build(BuildContext context) {
@@ -478,7 +604,10 @@ class _LeoFeedback extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            const Text('🐱', style: TextStyle(fontSize: 38)),
+            LeoSprite(
+              pose: score >= 75 ? LeoPose.celebrate : LeoPose.smile,
+              size: 58,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -488,7 +617,11 @@ class _LeoFeedback extends StatelessWidget {
                     'Leo says: $score%',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  Text(message),
+                  Text(
+                    guided
+                        ? message
+                        : '$message This is a layout score; choose a guided character for stroke-order scoring.',
+                  ),
                 ],
               ),
             ),

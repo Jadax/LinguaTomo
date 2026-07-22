@@ -6,11 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../data/character_data.dart';
+import '../models/character_entry.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../services/ocr_result.dart';
 import '../services/ocr_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/leo_sprite.dart';
+
+final _photoTargets = CharacterSet.values
+    .expand((set) => characterLibrary[set]!)
+    .toList(growable: false);
+
+enum _PhotoScope { today, myLevel, all }
 
 class SnapGradeView extends ConsumerStatefulWidget {
   const SnapGradeView({super.key});
@@ -20,10 +29,10 @@ class SnapGradeView extends ConsumerStatefulWidget {
 }
 
 class _SnapGradeViewState extends ConsumerState<SnapGradeView> {
-  static const _targets = ['あ', 'い', 'う', '日', '月', '山', '川', '木', '人', '語'];
   final ImagePicker _picker = ImagePicker();
   final JapaneseOcrService _ocr = JapaneseOcrService();
-  String _target = _targets.first;
+  String _target = _photoTargets.first.symbol;
+  _PhotoScope _scope = _PhotoScope.today;
   Uint8List? _bytes;
   OcrAnalysis? _analysis;
   bool _busy = false;
@@ -54,7 +63,7 @@ class _SnapGradeViewState extends ConsumerState<SnapGradeView> {
       setState(() {
         _busy = false;
         _error =
-            'Photo OCR is available in the Android app. On web, use Live Writing for technique grading.';
+            'Character OCR is available in the Android and iOS apps. This browser keeps your photo private, but cannot yet recognise it. Use Live Writing for browser-based grading.';
       });
       return;
     }
@@ -91,6 +100,11 @@ class _SnapGradeViewState extends ConsumerState<SnapGradeView> {
 
   @override
   Widget build(BuildContext context) {
+    final learner = ref.watch(progressProvider);
+    final targets = _photoTargetsFor(_scope, learner.stage);
+    if (!targets.any((item) => item.symbol == _target)) {
+      _target = targets.first.symbol;
+    }
     final grade = _analysis == null ? null : _grade(_analysis!, _target);
     final history = ref.watch(handwritingHistoryProvider);
     return ResponsiveContent(
@@ -103,7 +117,24 @@ class _SnapGradeViewState extends ConsumerState<SnapGradeView> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Write on paper, take a clear photo, and check legibility and balance.',
+            'Write on paper, take a clear photo, and check recognition and page balance. Pick today’s set, your route, or all available characters.',
+          ),
+          const SizedBox(height: 10),
+          SegmentedButton<_PhotoScope>(
+            segments: const [
+              ButtonSegment(value: _PhotoScope.today, label: Text('Today')),
+              ButtonSegment(
+                value: _PhotoScope.myLevel,
+                label: Text('My level'),
+              ),
+              ButtonSegment(value: _PhotoScope.all, label: Text('All')),
+            ],
+            selected: {_scope},
+            onSelectionChanged: (value) => setState(() {
+              _scope = value.first;
+              _target = _photoTargetsFor(_scope, learner.stage).first.symbol;
+              _analysis = null;
+            }),
           ),
           const SizedBox(height: 14),
           Card(
@@ -121,12 +152,12 @@ class _SnapGradeViewState extends ConsumerState<SnapGradeView> {
                       child: DropdownButton<String>(
                         value: _target,
                         isExpanded: true,
-                        items: _targets
+                        items: targets
                             .map(
-                              (value) => DropdownMenuItem(
-                                value: value,
+                              (entry) => DropdownMenuItem(
+                                value: entry.symbol,
                                 child: Text(
-                                  value,
+                                  '${entry.symbol}  ${entry.reading} · ${entry.meaning}',
                                   style: const TextStyle(fontSize: 26),
                                 ),
                               ),
@@ -285,6 +316,27 @@ class _PhotoGrade {
   final int balance;
 }
 
+List<CharacterEntry> _photoTargetsFor(
+  _PhotoScope scope,
+  ProficiencyStage stage,
+) {
+  final unlockedCount = switch (stage) {
+    ProficiencyStage.kittenSteps => 46,
+    ProficiencyStage.firstEncounters => 92,
+    _ => _photoTargets.length,
+  };
+  final unlocked = _photoTargets.take(unlockedCount).toList();
+  if (scope == _PhotoScope.all) return _photoTargets;
+  if (scope == _PhotoScope.myLevel) return unlocked;
+  final japanNow = DateTime.now().toUtc().add(const Duration(hours: 9));
+  final start =
+      japanNow.difference(DateTime(japanNow.year)).inDays % unlocked.length;
+  return List.generate(
+    8,
+    (index) => unlocked[(start + index) % unlocked.length],
+  );
+}
+
 _PhotoGrade _grade(OcrAnalysis analysis, String target) {
   final normalized = analysis.text.replaceAll(RegExp(r'\s'), '');
   final accuracy = normalized.contains(target)
@@ -357,7 +409,10 @@ class _GradeResult extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text('🐱', style: TextStyle(fontSize: 40)),
+              LeoSprite(
+                pose: grade.accuracy == 100 ? LeoPose.celebrate : LeoPose.smile,
+                size: 62,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(

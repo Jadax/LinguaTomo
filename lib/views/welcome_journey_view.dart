@@ -61,6 +61,16 @@ class _WelcomeJourneyViewState extends ConsumerState<WelcomeJourneyView> {
               const Text(
                 'Choose what feels closest. You can take the untimed placement check later and change your route at any time.',
               ),
+              const SizedBox(height: 10),
+              const Card(
+                color: AppColors.bambooMist,
+                child: Padding(
+                  padding: EdgeInsets.all(14),
+                  child: Text(
+                    'New to Japanese? Starter begins with pronunciation and hiragana, while Leo teaches a few useful spoken phrases from day one. Katakana follows, then kanji is introduced through real words. You do not have to perfect the alphabet before communicating.',
+                  ),
+                ),
+              ),
               const SizedBox(height: 14),
               for (final start in JourneyStart.values)
                 Padding(

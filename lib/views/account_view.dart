@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,19 +20,25 @@ class _AccountViewState extends ConsumerState<AccountView> {
   final CloudService _cloud = const CloudService();
   bool _sending = false;
   String? _message;
+  StreamSubscription<dynamic>? _authSubscription;
 
   @override
   void initState() {
     super.initState();
     if (_cloud.isConfigured) {
-      _cloud.authChanges.listen((_) {
-        if (mounted) ref.read(syncProvider.notifier).refreshAuth();
+      _authSubscription = _cloud.authChanges.listen((event) async {
+        if (!mounted) return;
+        ref.read(syncProvider.notifier).refreshAuth();
+        if (event.session != null) {
+          await ref.read(syncProvider.notifier).syncNow();
+        }
       });
     }
   }
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _emailController.dispose();
     super.dispose();
   }
@@ -144,6 +152,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
               ),
               TextButton(
                 onPressed: () async {
+                  await ref.read(syncProvider.notifier).syncNow();
                   await _cloud.signOut();
                   ref.read(syncProvider.notifier).refreshAuth();
                 },
@@ -170,11 +179,11 @@ class _AccountViewState extends ConsumerState<AccountView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LinguaTomo 1.4.0',
+                      'LinguaTomo 1.6.0',
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     SizedBox(height: 4),
-                    Text('Created by Tushant Sharma for Astraiva'),
+                    Text('Created with ♥ by Tushant Sharma'),
                   ],
                 ),
               ),

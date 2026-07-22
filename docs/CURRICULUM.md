@@ -28,12 +28,23 @@ learners who choose to work with an external teacher.
 | Connected Japan | N2, B2, ILR 2 | News, formal requests and negotiation |
 | Professional Japan | N1+, C1, ILR 2+/3 | Complex texts, briefings and mediation |
 
+For an absolute beginner, the route starts with Japanese sound distinctions and
+hiragana. Useful greetings and interaction chunks begin in parallel, so the
+learner can communicate before mastering every symbol. Katakana follows early;
+kanji then grows through components, high-frequency words and contextual
+reading. This dual strand matches the practical Can-Do emphasis of the Japan
+Foundation’s Irodori materials while preserving the character foundation that
+independent reading requires. Advanced learners can place out rather than being
+forced through kana drills.
+
 Current bundled scale:
 
 - 18 assessed situational Can-Do missions
 - 828 grammar reference lessons
 - 30 postcards
 - 24 seasonal story side quests
+- 104 handwriting and photo-practice targets across both basic syllabaries and
+  the currently bundled introductory kanji set
 
 The bundled route is a tested foundation, not yet a complete expert curriculum.
 Vocabulary, systematic kanji, graded reading, verified listening and original
@@ -76,3 +87,16 @@ Use progressive disclosure:
 Grammar is best reinforced in context. Isolated kanji practice should connect
 components to real vocabulary rather than requiring readings to be memorised as
 detached lists.
+
+## Primary framework references
+
+- Japan Foundation, Irodori Japanese for Life in Japan, Can-Do based A1 to B1
+  learning: <https://www.irodori.jpf.go.jp/en/about.html>
+- JLPT, official CEFR reference indication from the December 2025 test:
+  <https://www.jlpt.jp/e/about/cefr_reference.html>
+- US Department of State, Foreign Service Institute language resources:
+  <https://www.state.gov/foreign-language-training/>
+
+Framework structures and public-domain or permissively licensed source ideas
+may inform original lessons. LinguaTomo does not copy proprietary textbook,
+exam, app or audio content.

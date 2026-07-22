@@ -28,7 +28,7 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 
 ## Last verified release
 
-Version 1.4.0, build 6 was verified on 22 July 2026 with Flutter 3.44.7
+Version 1.6.0, build 9 was verified on 22 July 2026 with Flutter 3.44.7
 and Dart 3.12.2:
 
 - static analysis: no issues;
@@ -48,7 +48,7 @@ placement boundaries, cloud-disabled account screens and OCR service fallbacks.
 - Some mobile plugins still apply the Kotlin Gradle Plugin and emit Flutter’s
   future Built-in Kotlin migration warning.
 - A production Android store artefact requires Astraiva’s private signing key.
-- iOS release compilation cannot be verified on Windows.
+- iOS release compilation is verified by the macOS GitHub Actions runner; signing and device distribution still require Apple credentials.
 - Device text-to-speech quality depends on installed voices and is not a
   substitute for licensed native-speaker recordings.
 - Web handwriting photo OCR is not provided by the mobile ML Kit adapter.

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 
+typedef SeasonalFeature = ({String emoji, String title, String description});
+
+DateTime japanToday() => DateTime.now().toUtc().add(const Duration(hours: 9));
+
 class SeasonalStoriesView extends StatelessWidget {
   const SeasonalStoriesView({super.key});
 
@@ -176,58 +180,101 @@ class SeasonalStoriesView extends StatelessWidget {
     ),
   ];
 
+  static int _featuredMonth(String title) => switch (title) {
+    'New Year visit' || 'Snow country journey' => 1,
+    'Setsubun beans' => 2,
+    'Hinamatsuri display' || 'Graduation morning' => 3,
+    'Hanami invitation' => 4,
+    'Children’s Day' || 'First tea harvest' => 5,
+    'A borrowed umbrella' || 'A cool bamboo path' => 6,
+    'Tanabata wish' || 'Wind-chime afternoon' => 7,
+    'Obon homecoming' || 'Fireworks meeting point' || 'Kakigoori choice' => 8,
+    'Moon viewing' || 'Dumplings for the moon' => 9,
+    'Maple walk' || 'Sports day relay' => 10,
+    'Roasted sweet potato' || 'A long reading evening' => 11,
+    'Hot-pot gathering' ||
+    'Temple bell at year end' ||
+    'A forgotten scarf' => 12,
+    _ => 1,
+  };
+
+  static SeasonalFeature featured() {
+    final month = japanToday().month;
+    final story = _stories.firstWhere(
+      (item) => _featuredMonth(item.$3) == month,
+      orElse: () => _stories.first,
+    );
+    return (emoji: story.$1, title: story.$3, description: story.$5);
+  }
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Seasonal Stories')),
-    body: ResponsiveContent(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            '24 stories through the year',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Each story is a practical side quest with useful language, a cultural note and a keepsake stamp. Stories remain in the archive after their featured season, so nobody loses learning because they took a break.',
-          ),
-          const SizedBox(height: 16),
-          for (final story in _stories)
-            Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: ExpansionTile(
-                leading: Text(story.$1, style: const TextStyle(fontSize: 30)),
-                title: Text(
-                  story.$3,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: Text(story.$2),
-                childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      story.$4,
-                      style: const TextStyle(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w800,
+  Widget build(BuildContext context) {
+    final month = japanToday().month;
+    final ordered = [..._stories]
+      ..sort((a, b) {
+        final aCurrent = _featuredMonth(a.$3) == month ? 0 : 1;
+        final bCurrent = _featuredMonth(b.$3) == month ? 0 : 1;
+        return aCurrent.compareTo(bCurrent);
+      });
+    return Scaffold(
+      appBar: AppBar(title: const Text('Seasonal Stories')),
+      body: ResponsiveContent(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              '24 stories through the year',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'The first stories match today’s season in Japan. Every story remains in the archive, so nobody loses learning because they took a break. Dates that follow a lunar calendar or local bloom times are presented as cultural windows, not fixed national dates.',
+            ),
+            const SizedBox(height: 16),
+            for (final story in ordered)
+              Card(
+                margin: const EdgeInsets.only(bottom: 10),
+                child: ExpansionTile(
+                  leading: Text(story.$1, style: const TextStyle(fontSize: 30)),
+                  title: Text(
+                    story.$3,
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  subtitle: Text(
+                    _featuredMonth(story.$3) == month
+                        ? 'Now in Japan · ${story.$2}'
+                        : story.$2,
+                  ),
+                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        story.$4,
+                        style: const TextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 5),
-                  Align(alignment: Alignment.centerLeft, child: Text(story.$5)),
-                  const SizedBox(height: 10),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Story lessons unlock in route order. The preview is always free.',
+                    const SizedBox(height: 5),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(story.$5),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Story lessons unlock in route order. The preview is always free.',
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

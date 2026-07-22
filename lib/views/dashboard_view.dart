@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -327,6 +328,23 @@ class _NestRoomState extends State<_NestRoom> {
           (mission) => widget.progress.unlockedRewards.contains(mission.reward),
         )
         .toList();
+    final (background, title, destination) = switch (widget.progress.stage) {
+      ProficiencyStage.kittenSteps || ProficiencyStage.firstEncounters => (
+        'assets/branding/nest-home-pixel.png',
+        'Leo’s Fireside Nest',
+        'Next stop: Leo’s travelling study nook',
+      ),
+      ProficiencyStage.dailyLife || ProficiencyStage.independent => (
+        'assets/branding/nest-journey-pixel.png',
+        'Leo’s Travelling Nest',
+        'Next stop: Leo’s home in Japan',
+      ),
+      ProficiencyStage.connected || ProficiencyStage.professional => (
+        'assets/branding/nest-japan-pixel.png',
+        'Leo’s Home in Japan',
+        'Keep collecting memories for the room',
+      ),
+    };
     return Semantics(
       label:
           'Your Nest with ${widget.progress.unlockedRewards.length} unlocked items',
@@ -335,11 +353,11 @@ class _NestRoomState extends State<_NestRoom> {
         borderRadius: BorderRadius.circular(24),
         onTap: widget.onTap,
         child: Container(
-          height: 260,
+          height: 320,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            image: const DecorationImage(
-              image: AssetImage('assets/branding/leo-nest-room.png'),
+            image: DecorationImage(
+              image: AssetImage(background),
               fit: BoxFit.cover,
             ),
             borderRadius: BorderRadius.circular(24),
@@ -368,9 +386,9 @@ class _NestRoomState extends State<_NestRoom> {
                   ),
                 ),
               ),
-              for (var index = 0; index < rewards.length; index++)
+              for (var index = 0; index < math.min(rewards.length, 8); index++)
                 Positioned(
-                  left: 24 + (index % 5) * 48,
+                  right: 18 + (index % 4) * 46,
                   top: 62 + (index ~/ 5) * 48,
                   child: Tooltip(
                     message: rewards[index].reward,
@@ -395,15 +413,15 @@ class _NestRoomState extends State<_NestRoom> {
                     : const Duration(milliseconds: 900),
                 curve: Curves.easeInOut,
                 alignment: _atChair
-                    ? const Alignment(.67, .20)
-                    : const Alignment(-.52, .78),
+                    ? const Alignment(.70, .44)
+                    : const Alignment(-.50, .72),
                 child: GestureDetector(
                   onTap: _moveLeo,
                   child: LeoSprite(
                     pose: _walking
                         ? (_step ? LeoPose.walkA : LeoPose.walkB)
                         : (_atChair ? LeoPose.sit : LeoPose.idle),
-                    size: _atChair ? 104 : 92,
+                    size: _atChair ? 158 : 142,
                     semanticLabel:
                         'Leo. Tap him to walk between the fireside and his chair.',
                   ),
@@ -417,28 +435,34 @@ class _NestRoomState extends State<_NestRoom> {
                     color: const Color(0xFFFFF7E8).withValues(alpha: .92),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 6,
+                    ),
                     child: Text(
-                      'Leo’s fireside Nest',
-                      style: TextStyle(fontWeight: FontWeight.w900),
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.w900),
                     ),
                   ),
                 ),
               ),
               Positioned(
-                left: 14,
-                bottom: 12,
+                right: 14,
+                top: 56,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.charcoal.withValues(alpha: .70),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 7,
+                    ),
                     child: Text(
-                      'Tap to arrange your memories',
-                      style: TextStyle(
+                      destination,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
                       ),
@@ -458,36 +482,39 @@ class _SeasonalEventCard extends StatelessWidget {
   const _SeasonalEventCard();
 
   @override
-  Widget build(BuildContext context) => Card(
-    color: const Color(0xFFFFEAF0),
-    child: Padding(
-      padding: const EdgeInsets.all(15),
-      child: Row(
-        children: [
-          const Text('🌸', style: TextStyle(fontSize: 38)),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Seasonal story: Hanami',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                Text('Learn a picnic invitation and collect a sakura stamp.'),
-              ],
+  Widget build(BuildContext context) {
+    final story = SeasonalStoriesView.featured();
+    return Card(
+      color: const Color(0xFFFFEAF0),
+      child: Padding(
+        padding: const EdgeInsets.all(15),
+        child: Row(
+          children: [
+            Text(story.emoji, style: const TextStyle(fontSize: 38)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Now in Japan: ${story.title}',
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  Text(story.description),
+                ],
+              ),
             ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SeasonalStoriesView()),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SeasonalStoriesView()),
+              ),
+              child: const Text('Explore'),
             ),
-            child: const Text('Explore'),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _NextMissionCard extends StatelessWidget {

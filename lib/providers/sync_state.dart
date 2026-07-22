@@ -51,7 +51,8 @@ class SyncNotifier extends Notifier<SyncState> {
 
   Future<void> syncNow() async {
     if (!CloudConfig.isConfigured || _cloud.currentUser == null) return;
-    final snapshot = _buildSnapshot();
+    if (state.status == SyncStatus.syncing) return;
+    var snapshot = _buildSnapshot();
     final connectivity = await Connectivity().checkConnectivity();
     if (connectivity.every((result) => result == ConnectivityResult.none)) {
       await _queue(snapshot);
@@ -64,6 +65,14 @@ class SyncNotifier extends Notifier<SyncState> {
     }
     state = SyncState(status: SyncStatus.syncing, lastSync: state.lastSync);
     try {
+      final remote = await _cloud.downloadProgress();
+      if (remote != null) {
+        await ref.read(progressProvider.notifier).mergeCloudSnapshot(remote);
+        await ref
+            .read(handwritingHistoryProvider.notifier)
+            .mergeCloudSnapshot(remote);
+        snapshot = _buildSnapshot();
+      }
       final queued = _readOutbox();
       for (final item in queued) {
         await _cloud.uploadProgress(item);

@@ -14,6 +14,8 @@ void main() {
     expect(find.text('Starter'), findsOneWidget);
     expect(find.text('Expert'), findsOneWidget);
 
+    await tester.ensureVisible(find.text('Starter'));
+    await tester.pump();
     await tester.tap(find.text('Starter'));
     await tester.pump();
     await tester.ensureVisible(find.text('Show my route'));

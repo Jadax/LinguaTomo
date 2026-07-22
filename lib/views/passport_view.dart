@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
+import '../widgets/leo_sprite.dart';
 
 class PassportView extends ConsumerWidget {
   const PassportView({super.key});
@@ -39,7 +40,7 @@ class PassportView extends ConsumerWidget {
                 const CircleAvatar(
                   radius: 34,
                   backgroundColor: Colors.white,
-                  child: Text('🐱', style: TextStyle(fontSize: 34)),
+                  child: LeoSprite(pose: LeoPose.smile, size: 62),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -126,7 +127,7 @@ class PassportView extends ConsumerWidget {
               ShareParams(
                 title: 'My LinguaTomo Passport',
                 text:
-                    'I have verified ${progress.verifiedCanDos} real-world Japanese Can-Dos and reached ${stage.label} (${stage.cefr}) in LinguaTomo. 🐱🇯🇵',
+                    'I have verified ${progress.verifiedCanDos} real-world Japanese Can-Dos and reached ${stage.label} (${stage.cefr}) in LinguaTomo. 🐾🇯🇵',
               ),
             ),
             icon: const Icon(Icons.ios_share_rounded),

@@ -1,4 +1,4 @@
-name: Quality
+name: Native Quality
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  web-and-android:
+  analysis-tests-android:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -32,9 +32,6 @@ jobs:
 
       - name: Test
         run: flutter test
-
-      - name: Build Web release
-        run: flutter build web --release --no-wasm-dry-run
 
       - name: Build Android release
         run: flutter build apk --release

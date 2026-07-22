@@ -164,7 +164,51 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
     );
     await _persist();
   }
+
+  Future<void> mergeCloudSnapshot(Map<String, dynamic> remote) async {
+    final remoteSkills = remote['skill_evidence'];
+    final mergedSkills = {...state.skillEvidence};
+    if (remoteSkills is Map) {
+      for (final entry in remoteSkills.entries) {
+        final skill = SkillArea.values
+            .where((item) => item.name == '${entry.key}')
+            .firstOrNull;
+        if (skill != null && entry.value is num) {
+          mergedSkills[skill] = _maxInt(mergedSkills[skill] ?? 0, entry.value);
+        }
+      }
+    }
+    state = LearnerProgress(
+      completedMissions: {
+        ...state.completedMissions,
+        ..._stringSet(remote['completed_missions']),
+      },
+      placedOutMissions: {
+        ...state.placedOutMissions,
+        ..._stringSet(remote['placed_out_missions']),
+      },
+      completedPostcards: {
+        ...state.completedPostcards,
+        ..._stringSet(remote['completed_postcards']),
+      },
+      unlockedRewards: {
+        ...state.unlockedRewards,
+        ..._stringSet(remote['unlocked_rewards']),
+      },
+      skillEvidence: mergedSkills,
+      activityDates: {
+        ...state.activityDates,
+        ..._stringSet(remote['activity_dates']),
+      },
+      xp: _maxInt(state.xp, remote['xp']),
+      streakFreezes: _maxInt(state.streakFreezes, remote['streak_freezes']),
+    );
+    await _persist();
+  }
 }
+
+int _maxInt(int local, dynamic remote) =>
+    remote is num && remote.toInt() > local ? remote.toInt() : local;
 
 Set<String> _stringSet(dynamic value) =>
     value is Iterable ? value.map((item) => '$item').toSet() : <String>{};
@@ -194,6 +238,45 @@ class HandwritingHistoryNotifier extends Notifier<List<HandwritingRecord>> {
 
   Future<void> add(HandwritingRecord record) async {
     state = [record, ...state].take(100).toList();
+    await _box?.put(
+      _key,
+      state
+          .map(
+            (item) => {
+              'character': item.character,
+              'score': item.score,
+              'accuracy': item.accuracy,
+              'balance': item.balance,
+              'createdAt': item.createdAt.toIso8601String(),
+              'evidenceMode': item.evidenceMode,
+            },
+          )
+          .toList(),
+    );
+  }
+
+  Future<void> mergeCloudSnapshot(Map<String, dynamic> remote) async {
+    final raw = remote['handwriting'];
+    if (raw is! Iterable) return;
+    final merged = <String, HandwritingRecord>{
+      for (final item in state)
+        '${item.character}|${item.createdAt.toUtc().toIso8601String()}': item,
+    };
+    for (final item in raw.whereType<Map>()) {
+      final record = HandwritingRecord(
+        character: '${item['character'] ?? ''}',
+        score: (item['score'] as num?)?.toInt() ?? 0,
+        accuracy: (item['accuracy'] as num?)?.toInt() ?? 0,
+        balance: (item['balance'] as num?)?.toInt() ?? 0,
+        createdAt: DateTime.tryParse('${item['created_at']}') ?? DateTime.now(),
+        evidenceMode: '${item['evidence_mode'] ?? 'photo'}',
+      );
+      merged['${record.character}|${record.createdAt.toUtc().toIso8601String()}'] =
+          record;
+    }
+    state = merged.values.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    state = state.take(100).toList();
     await _box?.put(
       _key,
       state

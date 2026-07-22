@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -83,20 +85,31 @@ class AppShell extends ConsumerStatefulWidget {
 
 class _AppShellState extends ConsumerState<AppShell> {
   int _selectedIndex = 0;
+  Timer? _syncDebounce;
 
   @override
   void initState() {
     super.initState();
     AppNavigation.goTo = _selectPage;
+    ref.listenManual(progressProvider, (_, _) => _scheduleSync());
+    ref.listenManual(handwritingHistoryProvider, (_, _) => _scheduleSync());
   }
 
   @override
   void dispose() {
+    _syncDebounce?.cancel();
     if (AppNavigation.goTo == _selectPage) AppNavigation.goTo = null;
     super.dispose();
   }
 
   void _selectPage(int value) => setState(() => _selectedIndex = value);
+
+  void _scheduleSync() {
+    _syncDebounce?.cancel();
+    _syncDebounce = Timer(const Duration(seconds: 3), () {
+      ref.read(syncProvider.notifier).syncNow();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

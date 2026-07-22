@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.5.1, build 8**
+**Version 1.6.0, build 9**
 
 | Area | Available now |
 |---|---|
@@ -32,9 +32,9 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 | Grammar | 828 searchable lessons across N5 to N1 study references |
 | Memory | FSRS scheduling for phrases and grammar patterns |
 | Characters | Hiragana, katakana and an introductory kanji studio with KanjiVG diagrams |
-| Writing | Touch canvas plus paper-photo OCR grading on Android and iOS |
+| Writing | 104 kana and introductory kanji targets, daily and level sets, touch canvas, plus paper-photo OCR grading on Android and iOS |
 | Culture | 30 Living Postcards and 24 seasonal story side quests |
-| Motivation | Interactive Leo avatar, animated Nest, 28 achievements, streaks and stress-free streak freezes |
+| Motivation | Interactive tabby Leo, three evolving pixel-art Nests, 28 achievements, streaks and stress-free streak freezes |
 | Accessibility | Visual Explorer, Standard and Comfort experiences |
 | Cloud | Optional Supabase PKCE account and progress synchronisation |
 
@@ -71,7 +71,7 @@ quality gates.
 | Speech | Device Japanese text-to-speech, with a warm voice preference |
 | Optional backend | Supabase Auth, PostgreSQL, Storage and Realtime |
 
-All direct production dependencies were current when build 7 was verified on
+All direct production dependencies were current when build 9 was verified on
 22 July 2026.
 
 ## Repository map
@@ -115,6 +115,9 @@ flutter run -d chrome
 The private source builds a deployment-only website published at
 <https://jadax.github.io/LinguaTomo-Web/>. The public repository contains
 compiled Web output only, never the Dart source or development history.
+Every successful private `main` build now deploys the compiled site to that
+repository using a restricted write key. A future custom `.app` domain can
+point at the same site without exposing or mentioning its GitHub origin.
 
 Android:
 
