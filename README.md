@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.6.0, build 9**
+**Version 1.7.0, build 10**
 
 | Area | Available now |
 |---|---|
@@ -33,10 +33,10 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 | Memory | FSRS scheduling for phrases and grammar patterns |
 | Characters | Hiragana, katakana and an introductory kanji studio with KanjiVG diagrams |
 | Writing | 104 kana and introductory kanji targets, daily and level sets, touch canvas, plus paper-photo OCR grading on Android and iOS |
-| Culture | 30 Living Postcards and 24 seasonal story side quests |
-| Motivation | Interactive tabby Leo, three evolving pixel-art Nests, 28 achievements, streaks and stress-free streak freezes |
+| Culture | 30 Living Postcards, 24 seasonal story side quests and a 30-event Japanese festival calendar |
+| Motivation | Interactive tabby Leo, five selectable pixel-art Nests, 46 achievements with useful rewards, streaks and stress-free streak freezes |
 | Accessibility | Visual Explorer, Standard and Comfort experiences |
-| Cloud | Optional Supabase PKCE account and progress synchronisation |
+| Cloud | Optional Supabase PKCE account, progress synchronisation, nickname and opt-in achievement board |
 
 The application does not yet contain native-speaker recordings, complete
 systematic kanji coverage, graded readers, speech recognition or full mock
@@ -144,9 +144,10 @@ flutter run \
   --dart-define=SUPABASE_PUBLISHABLE_KEY=PUBLIC_PUBLISHABLE_KEY
 ```
 
-Apply [supabase/linguatomo.sql](supabase/linguatomo.sql) to a fresh project.
-Do not create additional SQL migration files. Update the canonical file and its
-schema-version comment with every release.
+Apply or reapply [supabase/linguatomo.sql](supabase/linguatomo.sql) in the
+Supabase SQL editor. The canonical file is repeatable for fresh and existing
+LinguaTomo projects. Do not create additional SQL migration files. Update this
+one file and its schema-version comment with every release.
 
 Never compile, commit or expose a Supabase `service_role` key. If one is
 disclosed, rotate it immediately.

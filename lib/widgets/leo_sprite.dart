@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -101,12 +102,12 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1450),
+      duration: const Duration(milliseconds: 3600),
     );
     if (widget.reduceMotion) {
       _controller.value = 1;
     } else {
-      _controller.forward();
+      _controller.repeat();
       _stepTimer = Timer.periodic(const Duration(milliseconds: 180), (_) {
         if (mounted) setState(() => _walkFrame = !_walkFrame);
       });
@@ -142,26 +143,42 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                     child: AnimatedBuilder(
                       animation: _controller,
                       builder: (context, _) {
-                        final t = Curves.easeInOut.transform(_controller.value);
-                        final chasing = t > .80;
+                        final phase = _controller.value;
+                        final journey = phase < .5
+                            ? phase * 2
+                            : (1 - phase) * 2;
+                        final t = Curves.easeInOut.transform(journey);
+                        final chasing = t > .76;
                         return LayoutBuilder(
                           builder: (context, bounds) => Stack(
                             children: [
                               Positioned(
                                 left: 12 + t * (bounds.maxWidth - 166),
-                                top: 24 + (chasing ? 18 : 0),
-                                child: LeoSprite(
-                                  pose: chasing
-                                      ? LeoPose.butterfly
-                                      : (_walkFrame
-                                            ? LeoPose.walkA
-                                            : LeoPose.walkB),
-                                  size: 130,
+                                top:
+                                    24 +
+                                    (chasing
+                                        ? 18
+                                        : 5 *
+                                              math
+                                                  .sin(phase * math.pi * 4)
+                                                  .abs()),
+                                child: Transform.flip(
+                                  flipX: phase >= .5,
+                                  child: LeoSprite(
+                                    pose: chasing
+                                        ? LeoPose.butterfly
+                                        : (_walkFrame
+                                              ? LeoPose.walkA
+                                              : LeoPose.walkB),
+                                    size: 130,
+                                  ),
                                 ),
                               ),
                               Positioned(
-                                right: 24,
-                                top: 42 + (1 - t) * 20,
+                                left: 72 + t * (bounds.maxWidth - 126),
+                                top:
+                                    36 +
+                                    18 * math.sin(phase * math.pi * 2).abs(),
                                 child: const Text(
                                   '🦋',
                                   style: TextStyle(fontSize: 30),

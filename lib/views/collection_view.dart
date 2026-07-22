@@ -1,6 +1,9 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/achievement_data.dart';
 import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
@@ -15,6 +18,43 @@ class CollectionView extends ConsumerWidget {
     final progress = ref.watch(progressProvider);
     final handwriting = ref.watch(handwritingHistoryProvider);
     final grammar = ref.watch(grammarGardenProvider);
+    final selectedEnvironment = ref.watch(nestEnvironmentProvider);
+    final placedIds = ref.watch(nestDisplayProvider);
+    final snapshot = AchievementSnapshot(
+      missions: progress.completedMissions.length,
+      postcards: progress.completedPostcards.length,
+      streak: progress.streak,
+      handwritingAttempts: handwriting.length,
+      bestHandwriting: handwriting.fold(
+        0,
+        (best, item) => item.score > best ? item.score : best,
+      ),
+      grammarPlanted: grammar.cards.length,
+      grammarReviews: grammar.reviewCount,
+      cultureEvidence: progress.skillEvidence[SkillArea.culture] ?? 0,
+      interactionEvidence: progress.skillEvidence[SkillArea.interaction] ?? 0,
+      xp: progress.xp,
+    );
+    final unlockedCount = achievements
+        .where((item) => item.unlocked(snapshot))
+        .length;
+    final placeableItems = <({String id, String emoji, String label})>[
+      for (final mission in missions)
+        if (progress.unlockedRewards.contains(mission.reward))
+          (
+            id: 'mission:${mission.id}',
+            emoji: mission.rewardEmoji,
+            label: mission.reward,
+          ),
+      for (final achievement in achievements)
+        if (achievement.rewardType == AchievementRewardType.nestItem &&
+            achievement.unlocked(snapshot))
+          (
+            id: 'achievement:${achievement.id}',
+            emoji: achievement.emoji,
+            label: achievement.reward,
+          ),
+    ];
     return Scaffold(
       appBar: AppBar(title: const Text('Nest Collection')),
       body: ResponsiveContent(
@@ -22,218 +62,141 @@ class CollectionView extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Every object holds a memory',
+              'Your cosy world',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Nest items come from abilities you demonstrated, not random purchases.',
-            ),
-            const SizedBox(height: 16),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: missions.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 1.2,
-              ),
-              itemBuilder: (context, index) {
-                final mission = missions[index];
-                final unlocked = progress.unlockedRewards.contains(
-                  mission.reward,
-                );
-                return Card(
-                  margin: EdgeInsets.zero,
-                  color: unlocked ? Colors.white : const Color(0xFFE8E6E2),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          unlocked ? mission.rewardEmoji : '🔒',
-                          style: const TextStyle(fontSize: 38),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          mission.reward,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.w900),
-                        ),
-                        Text(
-                          unlocked
-                              ? mission.district
-                              : 'Complete “${mission.title}”',
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.muted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+            Text(
+              '$unlockedCount of ${achievements.length} memories found. Every reward comes from learning, never spending.',
             ),
             const SizedBox(height: 18),
             Text(
-              'Milestone badges',
+              'Choose Leo’s Nest',
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
+            const SizedBox(height: 4),
+            const Text(
+              'Rooms provide space. Achievements add small objects, reactions, stamps and profile styles without making the Nest cluttered.',
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 154,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: NestEnvironment.values.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  final environment = NestEnvironment.values[index];
+                  final unlocked = _environmentUnlocked(environment, progress);
+                  return _EnvironmentCard(
+                    environment: environment,
+                    unlocked: unlocked,
+                    selected: environment == selectedEnvironment,
+                    onTap: unlocked
+                        ? () => ref
+                              .read(nestEnvironmentProvider.notifier)
+                              .choose(environment)
+                        : null,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
               children: [
-                _Badge(
-                  emoji: '🐾',
-                  title: 'First Steps',
-                  unlocked: progress.completedMissions.isNotEmpty,
+                Expanded(
+                  child: Text(
+                    'Placeable memories',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
                 ),
-                _Badge(
-                  emoji: '🏡',
-                  title: 'Nest Builder',
-                  unlocked: progress.unlockedRewards.length >= 5,
-                ),
-                _Badge(
-                  emoji: '✍️',
-                  title: 'Paper Practice',
-                  unlocked: handwriting.isNotEmpty,
-                ),
-                _Badge(
-                  emoji: '🗾',
-                  title: 'Postcard Friend',
-                  unlocked: progress.completedPostcards.length >= 3,
-                ),
-                _Badge(
-                  emoji: '🗺️',
-                  title: 'Seven Stops',
-                  unlocked: progress.completedPostcards.length >= 7,
-                ),
-                _Badge(
-                  emoji: '🎒',
-                  title: 'Postcard Traveller',
-                  unlocked: progress.completedPostcards.length >= 12,
-                ),
-                _Badge(
-                  emoji: '🌱',
-                  title: 'Memory Seedling',
-                  unlocked: progress.completedMissions.length >= 3,
-                ),
-                _Badge(
-                  emoji: '🌳',
-                  title: 'Memory Grove',
-                  unlocked: progress.completedMissions.length >= 10,
-                ),
-                _Badge(
-                  emoji: '🖌️',
-                  title: 'Steady Hand',
-                  unlocked: handwriting.any((item) => item.score >= 80),
-                ),
-                _Badge(
-                  emoji: '💯',
-                  title: 'Hundred Marks',
-                  unlocked: handwriting.length >= 100,
-                ),
-                _Badge(
-                  emoji: '🔥',
-                  title: 'Cosy Week',
-                  unlocked: progress.streak >= 7,
-                ),
-                _Badge(
-                  emoji: '🏮',
-                  title: 'Culture Friend',
-                  unlocked:
-                      (progress.skillEvidence[SkillArea.culture] ?? 0) >= 3,
-                ),
-                _Badge(
-                  emoji: '💬',
-                  title: 'Conversation Keeper',
-                  unlocked:
-                      (progress.skillEvidence[SkillArea.interaction] ?? 0) >= 6,
-                ),
-                _Badge(
-                  emoji: '🎓',
-                  title: 'Professional Route',
-                  unlocked: progress.stage == ProficiencyStage.professional,
-                ),
-                _Badge(
-                  emoji: '🔖',
-                  title: 'Curious Reader',
-                  unlocked: grammar.bookmarks.isNotEmpty,
-                ),
-                _Badge(
-                  emoji: '🌿',
-                  title: 'Grammar Patch',
-                  unlocked: grammar.cards.length >= 10,
-                ),
-                _Badge(
-                  emoji: '🪴',
-                  title: 'Grammar Keeper',
-                  unlocked: grammar.cards.length >= 50,
-                ),
-                _Badge(
-                  emoji: '🌺',
-                  title: 'Pattern Garden',
-                  unlocked: grammar.cards.length >= 100,
-                ),
-                _Badge(
-                  emoji: '🌲',
-                  title: 'Grammar Forest',
-                  unlocked: grammar.cards.length >= 250,
-                ),
-                _Badge(
-                  emoji: '🏞️',
-                  title: 'Living Language',
-                  unlocked: grammar.cards.length >= 500,
-                ),
-                _Badge(
-                  emoji: '🗻',
-                  title: 'All 828',
-                  unlocked: grammar.cards.length >= 828,
-                ),
-                _Badge(
-                  emoji: '🐈',
-                  title: 'Leo’s Study Pal',
-                  unlocked: grammar.reviewCount >= 25,
-                ),
-                _Badge(
-                  emoji: '🍵',
-                  title: 'Calm Reviewer',
-                  unlocked: grammar.reviewCount >= 100,
-                ),
-                _Badge(
-                  emoji: '✨',
-                  title: 'Memory Glow',
-                  unlocked: grammar.reviewCount >= 500,
-                ),
-                _Badge(
-                  emoji: '🌟',
-                  title: 'Memory Master',
-                  unlocked: grammar.reviewCount >= 2000,
-                ),
-                _Badge(
-                  emoji: '🧭',
-                  title: 'Thirty Postcards',
-                  unlocked: progress.completedPostcards.length >= 30,
-                ),
-                _Badge(
-                  emoji: '🧶',
-                  title: 'Cosy Month',
-                  unlocked: progress.streak >= 30,
-                ),
-                _Badge(
-                  emoji: '🛋️',
-                  title: 'Full Nest',
-                  unlocked: progress.unlockedRewards.length >= missions.length,
+                Text(
+                  '${placedIds.length}/${NestDisplayNotifier.maxItems} placed',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.matcha,
+                  ),
                 ),
               ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Choose up to eight small objects. Everything else stays safely in your collection.',
+            ),
+            const SizedBox(height: 9),
+            if (placeableItems.isEmpty)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Text(
+                    'Complete your first Can-Do to unlock a placeable Nest memory.',
+                  ),
+                ),
+              )
+            else
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final item in placeableItems)
+                    FilterChip(
+                      selected: placedIds.contains(item.id),
+                      avatar: Text(item.emoji),
+                      label: Text(item.label),
+                      onSelected: (_) async {
+                        final changed = await ref
+                            .read(nestDisplayProvider.notifier)
+                            .toggle(item.id);
+                        if (!changed && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Your Nest has eight display spaces. Remove one item before adding another.',
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                ],
+              ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Achievement memories',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Text(
+                  '$unlockedCount/${achievements.length}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.matcha,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Some memories stay mysterious until you are close. Tap any card to see its reward type.',
+            ),
+            const SizedBox(height: 10),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: achievements.length,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 180,
+                mainAxisExtent: 156,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemBuilder: (context, index) => _AchievementCard(
+                achievement: achievements[index],
+                snapshot: snapshot,
+              ),
             ),
           ],
         ),
@@ -242,60 +205,211 @@ class CollectionView extends ConsumerWidget {
   }
 }
 
-class _Badge extends StatelessWidget {
-  const _Badge({
-    required this.emoji,
-    required this.title,
+bool _environmentUnlocked(
+  NestEnvironment environment,
+  LearnerProgress progress,
+) {
+  final japanMonth = DateTime.now().toUtc().add(const Duration(hours: 9)).month;
+  return switch (environment) {
+    NestEnvironment.fireside => true,
+    NestEnvironment.springVeranda =>
+      progress.completedPostcards.length >= 3 ||
+          japanMonth >= 3 && japanMonth <= 5,
+    NestEnvironment.nightTrain =>
+      progress.stage.index >= ProficiencyStage.dailyLife.index,
+    NestEnvironment.snowLodge =>
+      progress.streak >= 7 || japanMonth == 12 || japanMonth <= 2,
+    NestEnvironment.japanHome =>
+      progress.stage.index >= ProficiencyStage.connected.index,
+  };
+}
+
+class _EnvironmentCard extends StatelessWidget {
+  const _EnvironmentCard({
+    required this.environment,
     required this.unlocked,
+    required this.selected,
+    required this.onTap,
   });
-  final String emoji;
-  final String title;
+
+  final NestEnvironment environment;
   final bool unlocked;
+  final bool selected;
+  final VoidCallback? onTap;
+
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: '$title, ${unlocked ? 'unlocked' : 'locked'}',
-    child: InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () => showModalBottomSheet<void>(
-        context: context,
-        showDragHandle: true,
-        builder: (context) => SafeArea(
+  Widget build(BuildContext context) => SizedBox(
+    width: 205,
+    child: Card(
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      color: selected ? AppColors.bambooMist : Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    environment.asset,
+                    fit: BoxFit.cover,
+                    color: unlocked ? null : Colors.grey,
+                    colorBlendMode: unlocked ? null : BlendMode.saturation,
+                  ),
+                  if (!unlocked)
+                    Container(color: Colors.white.withValues(alpha: .38)),
+                  if (!unlocked)
+                    const Center(
+                      child: Icon(
+                        Icons.lock_rounded,
+                        color: AppColors.charcoal,
+                      ),
+                    ),
+                  if (selected)
+                    const Positioned(
+                      top: 8,
+                      right: 8,
+                      child: CircleAvatar(
+                        radius: 13,
+                        backgroundColor: AppColors.matcha,
+                        child: Icon(
+                          Icons.check_rounded,
+                          size: 17,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Text(
+                environment.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _AchievementCard extends StatelessWidget {
+  const _AchievementCard({required this.achievement, required this.snapshot});
+
+  final AchievementDefinition achievement;
+  final AchievementSnapshot snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    final unlocked = achievement.unlocked(snapshot);
+    final current = achievement.progress(snapshot).clamp(0, achievement.target);
+    final hidden = achievement.secret && !unlocked;
+    return Semantics(
+      button: true,
+      label:
+          '${hidden ? 'Secret achievement' : achievement.title}, ${unlocked ? 'unlocked' : 'locked'}',
+      child: Card(
+        margin: EdgeInsets.zero,
+        color: unlocked ? AppColors.bambooMist : const Color(0xFFE8E6E2),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _showAchievement(context, unlocked, hidden),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+            padding: const EdgeInsets.all(12),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  unlocked ? emoji : '🔒',
-                  style: const TextStyle(fontSize: 52),
+                ImageFiltered(
+                  imageFilter: ui.ImageFilter.blur(
+                    sigmaX: hidden ? 3 : 0,
+                    sigmaY: hidden ? 3 : 0,
+                  ),
+                  child: Text(
+                    unlocked
+                        ? achievement.emoji
+                        : hidden
+                        ? '🌙'
+                        : '🔒',
+                    style: const TextStyle(fontSize: 30),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Text(title, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 6),
+                const SizedBox(height: 5),
+                Text(
+                  hidden ? 'Secret memory' : achievement.title,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                const Spacer(),
+                LinearProgressIndicator(
+                  value: achievement.target == 0
+                      ? 0
+                      : current / achievement.target,
+                  minHeight: 6,
+                ),
+                const SizedBox(height: 5),
                 Text(
                   unlocked
-                      ? 'This memory is yours. Leo has placed it safely in the Nest.'
-                      : 'Keep learning at your own pace. Leo will celebrate when this memory unlocks.',
-                  textAlign: TextAlign.center,
+                      ? rewardTypeLabel(achievement.rewardType)
+                      : hidden
+                      ? 'Keep exploring'
+                      : '$current / ${achievement.target}',
+                  style: const TextStyle(fontSize: 10, color: AppColors.muted),
                 ),
               ],
             ),
           ),
         ),
       ),
-      child: Container(
-        width: 122,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: unlocked ? AppColors.bambooMist : const Color(0xFFE8E6E2),
-          borderRadius: BorderRadius.circular(18),
-        ),
+    );
+  }
+
+  void _showAchievement(
+    BuildContext context,
+    bool unlocked,
+    bool hidden,
+  ) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(unlocked ? emoji : '🔒', style: const TextStyle(fontSize: 28)),
             Text(
-              title,
+              unlocked ? achievement.emoji : '🔒',
+              style: const TextStyle(fontSize: 52),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              hidden ? 'A secret memory' : achievement.title,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              hidden
+                  ? 'Leo will reveal this when your learning path reaches the right moment.'
+                  : achievement.requirement,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Chip(
+              label: Text('${rewardTypeLabel(achievement.rewardType)} reward'),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              unlocked
+                  ? achievement.reward
+                  : 'The exact reward is revealed when unlocked.',
               textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),

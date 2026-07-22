@@ -5,7 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
-import '../widgets/leo_sprite.dart';
+import 'leaderboard_view.dart';
 
 class PassportView extends ConsumerWidget {
   const PassportView({super.key});
@@ -40,7 +40,9 @@ class PassportView extends ConsumerWidget {
                 const CircleAvatar(
                   radius: 34,
                   backgroundColor: Colors.white,
-                  child: LeoSprite(pose: LeoPose.smile, size: 62),
+                  backgroundImage: AssetImage(
+                    'assets/branding/leo-face-icon.png',
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -132,6 +134,14 @@ class PassportView extends ConsumerWidget {
             ),
             icon: const Icon(Icons.ios_share_rounded),
             label: const Text('Share a privacy-safe milestone'),
+          ),
+          const SizedBox(height: 9),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const LeaderboardView())),
+            icon: const Icon(Icons.emoji_events_outlined),
+            label: const Text('Open the cosy achievement board'),
           ),
           const SizedBox(height: 14),
           const Card(

@@ -79,4 +79,77 @@ class CloudService {
     final snapshot = response?['snapshot'];
     return snapshot is Map ? Map<String, dynamic>.from(snapshot) : null;
   }
+
+  Future<Map<String, dynamic>?> loadOwnProfile() async {
+    final client = _client;
+    final user = currentUser;
+    if (client == null || user == null) return null;
+    final response = await client
+        .from('profiles')
+        .select('display_name, leaderboard_opt_in, achievement_count, xp')
+        .eq('id', user.id)
+        .maybeSingle();
+    return response == null ? null : Map<String, dynamic>.from(response);
+  }
+
+  Future<void> updatePublicProfile({
+    required String displayName,
+    required bool leaderboardOptIn,
+    required int achievementCount,
+    required int xp,
+  }) async {
+    final client = _client;
+    final user = currentUser;
+    if (client == null || user == null) throw StateError('Sign in first.');
+    await client
+        .from('profiles')
+        .update({
+          'display_name': displayName.trim(),
+          'leaderboard_opt_in': leaderboardOptIn,
+          'achievement_count': achievementCount,
+          'xp': xp,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', user.id);
+  }
+
+  Future<List<LeaderboardEntry>> loadLeaderboard() async {
+    final client = _client;
+    if (client == null || currentUser == null) return const [];
+    final response = await client
+        .from('profiles')
+        .select('id, display_name, achievement_count, xp')
+        .eq('leaderboard_opt_in', true)
+        .order('achievement_count', ascending: false)
+        .order('xp', ascending: false)
+        .limit(100);
+    return (response as List)
+        .map(
+          (item) =>
+              LeaderboardEntry.fromJson(Map<String, dynamic>.from(item as Map)),
+        )
+        .toList();
+  }
+}
+
+class LeaderboardEntry {
+  const LeaderboardEntry({
+    required this.id,
+    required this.nickname,
+    required this.achievements,
+    required this.xp,
+  });
+
+  final String id;
+  final String nickname;
+  final int achievements;
+  final int xp;
+
+  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) =>
+      LeaderboardEntry(
+        id: '${json['id'] ?? ''}',
+        nickname: '${json['display_name'] ?? 'Learner'}',
+        achievements: (json['achievement_count'] as num?)?.toInt() ?? 0,
+        xp: (json['xp'] as num?)?.toInt() ?? 0,
+      );
 }

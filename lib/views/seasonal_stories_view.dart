@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/festival_calendar_data.dart';
 import '../theme/app_theme.dart';
 
 typedef SeasonalFeature = ({String emoji, String title, String description});
@@ -210,6 +211,9 @@ class SeasonalStoriesView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final month = japanToday().month;
+    final currentFestivals = festivalCalendar
+        .where((event) => event.isCurrent(japanToday()))
+        .toList();
     final ordered = [..._stories]
       ..sort((a, b) {
         final aCurrent = _featuredMonth(a.$3) == month ? 0 : 1;
@@ -230,7 +234,14 @@ class SeasonalStoriesView extends StatelessWidget {
             const Text(
               'The first stories match today’s season in Japan. Every story remains in the archive, so nobody loses learning because they took a break. Dates that follow a lunar calendar or local bloom times are presented as cultural windows, not fixed national dates.',
             ),
+            const SizedBox(height: 14),
+            _FestivalTimeline(events: currentFestivals),
             const SizedBox(height: 16),
+            Text(
+              'Seasonal story archive',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
             for (final story in ordered)
               Card(
                 margin: const EdgeInsets.only(bottom: 10),
@@ -277,4 +288,103 @@ class SeasonalStoriesView extends StatelessWidget {
       ),
     );
   }
+}
+
+class _FestivalTimeline extends StatelessWidget {
+  const _FestivalTimeline({required this.events});
+
+  final List<FestivalEvent> events;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    color: AppColors.bambooMist,
+    child: ExpansionTile(
+      initiallyExpanded: true,
+      leading: const Icon(
+        Icons.calendar_month_rounded,
+        color: AppColors.matcha,
+      ),
+      title: const Text(
+        'Living festival calendar',
+        style: TextStyle(fontWeight: FontWeight.w900),
+      ),
+      subtitle: Text(
+        '${festivalCalendar.length} cultural windows · ${events.length} featured this month in Japan',
+      ),
+      childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+      children: [
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Regional schedules, bloom dates and lunar-calendar observances can move. LinguaTomo uses date windows and keeps every activity available in the archive.',
+          ),
+        ),
+        const SizedBox(height: 10),
+        for (final event in events.take(6))
+          Card(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: ExpansionTile(
+              leading: Text(event.emoji, style: const TextStyle(fontSize: 27)),
+              title: Text(
+                event.englishName,
+                style: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+              subtitle: Text('${event.japaneseName} · ${event.dateWindow}'),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('${event.place}. ${event.description}'),
+                ),
+                const SizedBox(height: 8),
+                for (final word in event.vocabulary)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('• $word'),
+                  ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Chip(label: Text('Memory reward: ${event.reward}')),
+                ),
+              ],
+            ),
+          ),
+        OutlinedButton.icon(
+          onPressed: () => showModalBottomSheet<void>(
+            context: context,
+            showDragHandle: true,
+            isScrollControlled: true,
+            builder: (context) => DraggableScrollableSheet(
+              expand: false,
+              initialChildSize: .82,
+              builder: (context, controller) => ListView.builder(
+                controller: controller,
+                padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+                itemCount: festivalCalendar.length,
+                itemBuilder: (context, index) {
+                  final event = festivalCalendar[index];
+                  return ListTile(
+                    leading: Text(
+                      event.emoji,
+                      style: const TextStyle(fontSize: 25),
+                    ),
+                    title: Text(
+                      event.englishName,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    subtitle: Text(
+                      '${event.japaneseName} · ${event.dateWindow} · ${event.place}',
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          icon: const Icon(Icons.event_note_rounded),
+          label: const Text('Browse the full festival year'),
+        ),
+      ],
+    ),
+  );
 }

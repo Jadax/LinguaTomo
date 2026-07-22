@@ -25,18 +25,14 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 - Both basic syllabaries contain 46 distinct characters.
 - Missions preserve stage order, valid prerequisites and usable answer keys.
 - Postcards contain complete Japanese study sets without broken characters.
+- The 46-achievement catalogue has unique IDs, progression and real rewards.
+- The cultural calendar covers every month with vocabulary and a reward.
 
-## Last verified release
+## Release verification
 
-Version 1.6.0, build 9 was verified on 22 July 2026 with Flutter 3.44.7
-and Dart 3.12.2:
-
-- static analysis: no issues;
-- tests: 7 passed;
-- direct production dependencies: current;
-- Web release build: passed;
-- Android APK release build: passed;
-- PowerShell verification script syntax: passed.
+Version 1.6.0, build 9 is the last fully verified release. For the 1.7.0,
+build 10 candidate, Dart static analysis reports no issues. The GitHub Web,
+Android and unsigned iOS gates must pass before 1.7.0 is described as stable.
 
 The next stability tests should cover Hive restoration, FSRS persistence,
 placement boundaries, cloud-disabled account screens and OCR service fallbacks.

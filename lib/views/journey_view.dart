@@ -5,6 +5,8 @@ import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
+import 'kana_grid_view.dart';
+import 'mission_view.dart';
 
 class JourneyView extends ConsumerWidget {
   const JourneyView({super.key});
@@ -38,6 +40,10 @@ class JourneyView extends ConsumerWidget {
             Text(
               '$completedCount of ${missions.length} core Can-Do missions evidenced',
             ),
+            if (completedCount == 0) ...[
+              const SizedBox(height: 14),
+              _BeginnerStartCard(firstMission: missions.first),
+            ],
             const SizedBox(height: 18),
             const _FrameworkNote(),
             const SizedBox(height: 16),
@@ -58,6 +64,51 @@ class JourneyView extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _BeginnerStartCard extends StatelessWidget {
+  const _BeginnerStartCard({required this.firstMission});
+
+  final Mission firstMission;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    color: AppColors.bambooMist,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Start here, one cosy step at a time',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Beginners follow two short tracks together: learn Japanese sounds and hiragana, then use one useful spoken phrase. Completing a Can-Do is what “evidence” means.',
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const KanaGridView())),
+            icon: const Icon(Icons.grid_view_rounded),
+            label: const Text('1. Learn sounds and hiragana'),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => MissionView(mission: firstMission),
+              ),
+            ),
+            icon: const Icon(Icons.play_arrow_rounded),
+            label: const Text('2. Begin “A warm first hello”'),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _FrameworkNote extends StatelessWidget {
@@ -162,6 +213,14 @@ class _StageCard extends StatelessWidget {
               ),
               title: Text(mission.title),
               subtitle: Text(mission.canDo),
+              trailing: completedIds.contains(mission.id)
+                  ? null
+                  : const Icon(Icons.play_arrow_rounded),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => MissionView(mission: mission),
+                ),
+              ),
             ),
           const Divider(),
           ListTile(
@@ -174,8 +233,10 @@ class _StageCard extends StatelessWidget {
               _checkpoint[stage]!,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
-            subtitle: const Text(
-              'Unlocks after the stage evidence is complete. Untimed practice remains available.',
+            subtitle: Text(
+              isComplete
+                  ? 'Ready. This in-app check is untimed and has no certification value.'
+                  : 'Complete $complete of ${stageMissions.length} Can-Do lessons above. Each completed lesson is one piece of stage evidence.',
             ),
           ),
         ],

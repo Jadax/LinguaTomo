@@ -2,6 +2,32 @@ import 'package:flutter/material.dart';
 
 enum ExperienceMode { visualExplorer, standard, comfort }
 
+enum NestEnvironment {
+  fireside,
+  springVeranda,
+  nightTrain,
+  snowLodge,
+  japanHome,
+}
+
+extension NestEnvironmentX on NestEnvironment {
+  String get label => switch (this) {
+    NestEnvironment.fireside => 'Fireside Nest',
+    NestEnvironment.springVeranda => 'Sakura Veranda',
+    NestEnvironment.nightTrain => 'Night Train Nook',
+    NestEnvironment.snowLodge => 'Snow-country Lodge',
+    NestEnvironment.japanHome => 'Home in Japan',
+  };
+
+  String get asset => switch (this) {
+    NestEnvironment.fireside => 'assets/branding/nest-home-pixel.png',
+    NestEnvironment.springVeranda => 'assets/branding/nest-spring-pixel.png',
+    NestEnvironment.nightTrain => 'assets/branding/nest-journey-pixel.png',
+    NestEnvironment.snowLodge => 'assets/branding/nest-winter-pixel.png',
+    NestEnvironment.japanHome => 'assets/branding/nest-japan-pixel.png',
+  };
+}
+
 enum JourneyStart { starter, elementary, intermediate, advanced, expert }
 
 extension JourneyStartX on JourneyStart {

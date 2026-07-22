@@ -32,6 +32,58 @@ final experienceProvider = NotifierProvider<ExperienceNotifier, ExperienceMode>(
   ExperienceNotifier.new,
 );
 
+class NestEnvironmentNotifier extends Notifier<NestEnvironment> {
+  static const _key = 'nest_environment_v1';
+
+  @override
+  NestEnvironment build() {
+    final stored = '${_box?.get(_key) ?? ''}';
+    return NestEnvironment.values
+            .where((environment) => environment.name == stored)
+            .firstOrNull ??
+        NestEnvironment.fireside;
+  }
+
+  Future<void> choose(NestEnvironment environment) async {
+    state = environment;
+    await _box?.put(_key, environment.name);
+  }
+}
+
+final nestEnvironmentProvider =
+    NotifierProvider<NestEnvironmentNotifier, NestEnvironment>(
+      NestEnvironmentNotifier.new,
+    );
+
+class NestDisplayNotifier extends Notifier<List<String>> {
+  static const _key = 'nest_display_items_v1';
+  static const maxItems = 8;
+
+  @override
+  List<String> build() {
+    final raw = _box?.get(_key);
+    return raw is Iterable
+        ? raw.map((item) => '$item').take(maxItems).toList()
+        : const [];
+  }
+
+  Future<bool> toggle(String id) async {
+    if (state.contains(id)) {
+      state = state.where((item) => item != id).toList();
+      await _box?.put(_key, state);
+      return true;
+    }
+    if (state.length >= maxItems) return false;
+    state = [...state, id];
+    await _box?.put(_key, state);
+    return true;
+  }
+}
+
+final nestDisplayProvider = NotifierProvider<NestDisplayNotifier, List<String>>(
+  NestDisplayNotifier.new,
+);
+
 class LearnerProfileNotifier extends Notifier<LearnerProfile> {
   static const _key = 'learner_profile_v1';
 

@@ -54,6 +54,25 @@ Exact bundled provenance lives in `../THIRD_PARTY_CONTENT.md`.
 - Offer systematic kanji components, but connect them to vocabulary and context.
 - Provide more than one explanation for difficult grammar.
 
+## Seasonal culture calendar
+
+The in-app festival calendar contains original summaries and vocabulary prompts,
+not copied tourism copy. Dates are modelled as display windows rather than fixed
+global holidays because many matsuri are local and some observances vary by year
+or region. The July Gion Matsuri entry highlights the main processions on 17 and
+24 July, while variable events are plainly labelled as such in the interface.
+
+Primary cultural references reviewed for the calendar:
+
+- Japan National Tourism Organization, `Festivals and Events`;
+- Japan National Tourism Organization, `Gion Matsuri`;
+- Japan National Tourism Organization, `Get involved in local festivals`;
+- Web Japan, seasonal customs and annual events.
+
+The calendar is educational context, not an exhaustive event timetable. The
+all-ages core omits adult-themed festival rewards and avoids sacred imagery as
+casual decoration. Future additions require the same cultural and rights review.
+
 ## Research workflow
 
 For broad source discovery, use a search, fetch, rank and cache workflow such as

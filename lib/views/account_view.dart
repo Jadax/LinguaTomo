@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/cloud_config.dart';
+import '../data/achievement_data.dart';
+import '../models/app_models.dart';
+import '../providers/app_state.dart';
+import '../providers/grammar_state.dart';
 import '../providers/sync_state.dart';
 import '../services/cloud_service.dart';
 import '../theme/app_theme.dart';
@@ -17,10 +21,13 @@ class AccountView extends ConsumerStatefulWidget {
 
 class _AccountViewState extends ConsumerState<AccountView> {
   final _emailController = TextEditingController();
+  final _nicknameController = TextEditingController();
   final CloudService _cloud = const CloudService();
   bool _sending = false;
   String? _message;
   StreamSubscription<dynamic>? _authSubscription;
+  bool _leaderboardOptIn = false;
+  bool _savingProfile = false;
 
   @override
   void initState() {
@@ -31,8 +38,10 @@ class _AccountViewState extends ConsumerState<AccountView> {
         ref.read(syncProvider.notifier).refreshAuth();
         if (event.session != null) {
           await ref.read(syncProvider.notifier).syncNow();
+          await _loadProfile();
         }
       });
+      if (_cloud.currentUser != null) _loadProfile();
     }
   }
 
@@ -40,7 +49,84 @@ class _AccountViewState extends ConsumerState<AccountView> {
   void dispose() {
     _authSubscription?.cancel();
     _emailController.dispose();
+    _nicknameController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await _cloud.loadOwnProfile();
+      if (!mounted || profile == null) return;
+      setState(() {
+        _nicknameController.text = '${profile['display_name'] ?? ''}';
+        _leaderboardOptIn = profile['leaderboard_opt_in'] == true;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _message =
+              'Profile settings will be available after the latest cloud schema is applied.',
+        );
+      }
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    final nickname = _nicknameController.text.trim();
+    if (nickname.length < 2 || nickname.length > 24) {
+      setState(
+        () => _message = 'Choose a nickname between 2 and 24 characters.',
+      );
+      return;
+    }
+    setState(() {
+      _savingProfile = true;
+      _message = null;
+    });
+    final progress = ref.read(progressProvider);
+    final handwriting = ref.read(handwritingHistoryProvider);
+    final grammar = ref.read(grammarGardenProvider);
+    final snapshot = AchievementSnapshot(
+      missions: progress.completedMissions.length,
+      postcards: progress.completedPostcards.length,
+      streak: progress.streak,
+      handwritingAttempts: handwriting.length,
+      bestHandwriting: handwriting.fold(
+        0,
+        (best, item) => item.score > best ? item.score : best,
+      ),
+      grammarPlanted: grammar.cards.length,
+      grammarReviews: grammar.reviewCount,
+      cultureEvidence: progress.skillEvidence[SkillArea.culture] ?? 0,
+      interactionEvidence: progress.skillEvidence[SkillArea.interaction] ?? 0,
+      xp: progress.xp,
+    );
+    try {
+      await _cloud.updatePublicProfile(
+        displayName: nickname,
+        leaderboardOptIn: _leaderboardOptIn,
+        achievementCount: achievements
+            .where((item) => item.unlocked(snapshot))
+            .length,
+        xp: progress.xp,
+      );
+      if (mounted) {
+        setState(
+          () => _message = _leaderboardOptIn
+              ? 'Nickname saved. You are visible on the cosy board.'
+              : 'Nickname saved. Your profile remains private.',
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _message =
+              'Profile settings could not be saved. Your learning progress is still safe.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingProfile = false);
+    }
   }
 
   Future<void> _sendLink() async {
@@ -139,6 +225,51 @@ class _AccountViewState extends ConsumerState<AccountView> {
                 ),
               ),
               const SizedBox(height: 10),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Nickname and cosy board',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'Your email is never shown. Joining the achievement board is optional and available only to adult accounts.',
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: _nicknameController,
+                        maxLength: 24,
+                        decoration: const InputDecoration(
+                          labelText: 'Public nickname',
+                          prefixIcon: Icon(Icons.badge_outlined),
+                        ),
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        value: _leaderboardOptIn,
+                        onChanged: (value) =>
+                            setState(() => _leaderboardOptIn = value),
+                        title: const Text('Join the cosy achievement board'),
+                        subtitle: const Text(
+                          'Nickname, achievement count and XP only.',
+                        ),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _savingProfile ? null : _saveProfile,
+                        icon: const Icon(Icons.save_rounded),
+                        label: Text(
+                          _savingProfile ? 'Saving…' : 'Save profile choice',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
               FilledButton.icon(
                 onPressed: sync.status == SyncStatus.syncing
                     ? null
@@ -179,7 +310,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LinguaTomo 1.6.0',
+                      'LinguaTomo 1.7.0',
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     SizedBox(height: 4),

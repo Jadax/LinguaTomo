@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/curriculum_data.dart';
+import '../data/achievement_data.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../providers/review_state.dart';
@@ -25,11 +26,52 @@ class DashboardView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
+    final environment = ref.watch(nestEnvironmentProvider);
     final next = ref.watch(nextMissionProvider);
     final mode = ref.watch(experienceProvider);
+    final grammar = ref.watch(grammarGardenProvider);
+    final handwriting = ref.watch(handwritingHistoryProvider);
     final dueReviews =
-        ref.watch(reviewDeckProvider).dueMissions.length +
-        ref.watch(grammarGardenProvider).dueCount;
+        ref.watch(reviewDeckProvider).dueMissions.length + grammar.dueCount;
+    final achievementSnapshot = AchievementSnapshot(
+      missions: progress.completedMissions.length,
+      postcards: progress.completedPostcards.length,
+      streak: progress.streak,
+      handwritingAttempts: handwriting.length,
+      bestHandwriting: handwriting.fold(
+        0,
+        (best, item) => item.score > best ? item.score : best,
+      ),
+      grammarPlanted: grammar.cards.length,
+      grammarReviews: grammar.reviewCount,
+      cultureEvidence: progress.skillEvidence[SkillArea.culture] ?? 0,
+      interactionEvidence: progress.skillEvidence[SkillArea.interaction] ?? 0,
+      xp: progress.xp,
+    );
+    final unlockedNestAchievementIds = achievements
+        .where(
+          (item) =>
+              item.rewardType == AchievementRewardType.nestItem &&
+              item.unlocked(achievementSnapshot),
+        )
+        .map((item) => item.id)
+        .toSet();
+    final placedIds = ref.watch(nestDisplayProvider);
+    final placedItems = <String>[
+      for (final id in placedIds)
+        if (id.startsWith('mission:'))
+          ...missions
+              .where((mission) => 'mission:${mission.id}' == id)
+              .map((mission) => mission.rewardEmoji)
+        else if (id.startsWith('achievement:'))
+          ...achievements
+              .where(
+                (item) =>
+                    'achievement:${item.id}' == id &&
+                    unlockedNestAchievementIds.contains(item.id),
+              )
+              .map((item) => item.emoji),
+    ];
     return ResponsiveContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -66,6 +108,8 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 14),
           _NestRoom(
             progress: progress,
+            environment: environment,
+            achievementItems: placedItems,
             reduceMotion: mode == ExperienceMode.comfort,
             onTap: () => Navigator.of(
               context,
@@ -277,10 +321,14 @@ abstract final class AppNavigation {
 class _NestRoom extends StatefulWidget {
   const _NestRoom({
     required this.progress,
+    required this.environment,
+    required this.achievementItems,
     required this.reduceMotion,
     required this.onTap,
   });
   final LearnerProgress progress;
+  final NestEnvironment environment;
+  final List<String> achievementItems;
   final bool reduceMotion;
   final VoidCallback onTap;
 
@@ -323,31 +371,10 @@ class _NestRoomState extends State<_NestRoom> {
 
   @override
   Widget build(BuildContext context) {
-    final rewards = missions
-        .where(
-          (mission) => widget.progress.unlockedRewards.contains(mission.reward),
-        )
-        .toList();
-    final (background, title, destination) = switch (widget.progress.stage) {
-      ProficiencyStage.kittenSteps || ProficiencyStage.firstEncounters => (
-        'assets/branding/nest-home-pixel.png',
-        'Leo’s Fireside Nest',
-        'Next stop: Leo’s travelling study nook',
-      ),
-      ProficiencyStage.dailyLife || ProficiencyStage.independent => (
-        'assets/branding/nest-journey-pixel.png',
-        'Leo’s Travelling Nest',
-        'Next stop: Leo’s home in Japan',
-      ),
-      ProficiencyStage.connected || ProficiencyStage.professional => (
-        'assets/branding/nest-japan-pixel.png',
-        'Leo’s Home in Japan',
-        'Keep collecting memories for the room',
-      ),
-    };
+    final title = 'Leo’s ${widget.environment.label}';
     return Semantics(
       label:
-          'Your Nest with ${widget.progress.unlockedRewards.length} unlocked items',
+          'Your Nest with ${widget.achievementItems.length} placed memory items',
       button: true,
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
@@ -357,7 +384,7 @@ class _NestRoomState extends State<_NestRoom> {
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(background),
+              image: AssetImage(widget.environment.asset),
               fit: BoxFit.cover,
             ),
             borderRadius: BorderRadius.circular(24),
@@ -386,23 +413,24 @@ class _NestRoomState extends State<_NestRoom> {
                   ),
                 ),
               ),
-              for (var index = 0; index < math.min(rewards.length, 8); index++)
+              for (
+                var index = 0;
+                index < math.min(widget.achievementItems.length, 8);
+                index++
+              )
                 Positioned(
-                  right: 18 + (index % 4) * 46,
-                  top: 62 + (index ~/ 5) * 48,
-                  child: Tooltip(
-                    message: rewards[index].reward,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: .84),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Text(
-                          rewards[index].rewardEmoji,
-                          style: const TextStyle(fontSize: 25),
-                        ),
+                  left: 18 + (index % 4) * 46,
+                  top: 58 + (index ~/ 4) * 46,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: .82),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Text(
+                        widget.achievementItems[index],
+                        style: const TextStyle(fontSize: 24),
                       ),
                     ),
                   ),
@@ -413,8 +441,8 @@ class _NestRoomState extends State<_NestRoom> {
                     : const Duration(milliseconds: 900),
                 curve: Curves.easeInOut,
                 alignment: _atChair
-                    ? const Alignment(.70, .44)
-                    : const Alignment(-.50, .72),
+                    ? const Alignment(.70, .18)
+                    : const Alignment(-.72, .32),
                 child: GestureDetector(
                   onTap: _moveLeo,
                   child: LeoSprite(
@@ -443,29 +471,6 @@ class _NestRoomState extends State<_NestRoom> {
                     child: Text(
                       title,
                       style: const TextStyle(fontWeight: FontWeight.w900),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 14,
-                top: 56,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.charcoal.withValues(alpha: .70),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 7,
-                    ),
-                    child: Text(
-                      destination,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
                     ),
                   ),
                 ),
