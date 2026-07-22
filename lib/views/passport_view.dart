@@ -2,10 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../data/achievement_data.dart';
 import '../models/app_models.dart';
+import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
 import 'leaderboard_view.dart';
+
+/// Frame colours granted by unlocked profile-style achievements. The most
+/// recently earned frame in catalogue order is worn around Leo's portrait.
+const _frameColours = <String, Color>{
+  'connected': Color(0xFF5C6BC0),
+  'ink_glow': AppColors.charcoal,
+  'living_language': AppColors.matcha,
+  'memory_master': Color(0xFF8E7CC3),
+  'season_keeper': AppColors.persimmon,
+  'long_journey': Color(0xFF35506B),
+};
 
 class PassportView extends ConsumerWidget {
   const PassportView({super.key});
@@ -14,6 +27,16 @@ class PassportView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
     final stage = progress.stage;
+    final unlocked = ref.watch(unlockedAchievementsProvider);
+    final styles = unlocked
+        .where((item) => item.rewardType == AchievementRewardType.profileStyle)
+        .toList();
+    final frame = styles.reversed
+        .where((item) => _frameColours.containsKey(item.id))
+        .firstOrNull;
+    final title = styles.reversed
+        .where((item) => item.reward.toLowerCase().endsWith('title'))
+        .firstOrNull;
     return ResponsiveContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -37,11 +60,23 @@ class PassportView extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 34,
-                  backgroundColor: Colors.white,
-                  backgroundImage: AssetImage(
-                    'assets/branding/leo-face-icon.png',
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: frame == null
+                          ? Colors.white.withValues(alpha: .55)
+                          : _frameColours[frame.id]!,
+                      width: 3.5,
+                    ),
+                  ),
+                  child: const CircleAvatar(
+                    radius: 46,
+                    backgroundColor: Colors.white,
+                    backgroundImage: AssetImage(
+                      'assets/branding/leo-face-icon.png',
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -68,6 +103,15 @@ class PassportView extends ConsumerWidget {
                         '${progress.verifiedCanDos} verified Can-Dos',
                         style: const TextStyle(color: Colors.white),
                       ),
+                      if (title != null)
+                        Text(
+                          'Title earned: ${title.reward.replaceAll(RegExp(' title\$'), '')}',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
                     ],
                   ),
                 ),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../data/festival_calendar_data.dart';
+import '../providers/festival_state.dart';
 import '../theme/app_theme.dart';
 
 typedef SeasonalFeature = ({String emoji, String title, String description});
-
-DateTime japanToday() => DateTime.now().toUtc().add(const Duration(hours: 9));
 
 class SeasonalStoriesView extends StatelessWidget {
   const SeasonalStoriesView({super.key});

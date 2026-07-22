@@ -8,6 +8,7 @@ enum NestEnvironment {
   nightTrain,
   snowLodge,
   japanHome,
+  rainyLibrary,
 }
 
 extension NestEnvironmentX on NestEnvironment {
@@ -17,6 +18,7 @@ extension NestEnvironmentX on NestEnvironment {
     NestEnvironment.nightTrain => 'Night Train Nook',
     NestEnvironment.snowLodge => 'Snow-country Lodge',
     NestEnvironment.japanHome => 'Home in Japan',
+    NestEnvironment.rainyLibrary => 'Rainy Reading Room',
   };
 
   String get asset => switch (this) {
@@ -25,6 +27,7 @@ extension NestEnvironmentX on NestEnvironment {
     NestEnvironment.nightTrain => 'assets/branding/nest-journey-pixel.png',
     NestEnvironment.snowLodge => 'assets/branding/nest-winter-pixel.png',
     NestEnvironment.japanHome => 'assets/branding/nest-japan-pixel.png',
+    NestEnvironment.rainyLibrary => 'assets/branding/leo-nest-room.png',
   };
 }
 

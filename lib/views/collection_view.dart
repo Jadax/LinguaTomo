@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/achievement_data.dart';
 import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
+import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
-import '../providers/grammar_state.dart';
 import '../theme/app_theme.dart';
 
 class CollectionView extends ConsumerWidget {
@@ -16,25 +16,9 @@ class CollectionView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
-    final handwriting = ref.watch(handwritingHistoryProvider);
-    final grammar = ref.watch(grammarGardenProvider);
     final selectedEnvironment = ref.watch(nestEnvironmentProvider);
     final placedIds = ref.watch(nestDisplayProvider);
-    final snapshot = AchievementSnapshot(
-      missions: progress.completedMissions.length,
-      postcards: progress.completedPostcards.length,
-      streak: progress.streak,
-      handwritingAttempts: handwriting.length,
-      bestHandwriting: handwriting.fold(
-        0,
-        (best, item) => item.score > best ? item.score : best,
-      ),
-      grammarPlanted: grammar.cards.length,
-      grammarReviews: grammar.reviewCount,
-      cultureEvidence: progress.skillEvidence[SkillArea.culture] ?? 0,
-      interactionEvidence: progress.skillEvidence[SkillArea.interaction] ?? 0,
-      xp: progress.xp,
-    );
+    final snapshot = ref.watch(achievementSnapshotProvider);
     final unlockedCount = achievements
         .where((item) => item.unlocked(snapshot))
         .length;
@@ -87,7 +71,11 @@ class CollectionView extends ConsumerWidget {
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final environment = NestEnvironment.values[index];
-                  final unlocked = _environmentUnlocked(environment, progress);
+                  final unlocked = _environmentUnlocked(
+                    environment,
+                    progress,
+                    unlockedCount,
+                  );
                   return _EnvironmentCard(
                     environment: environment,
                     unlocked: unlocked,
@@ -121,7 +109,7 @@ class CollectionView extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Choose up to eight small objects. Everything else stays safely in your collection.',
+              'Choose up to twelve small objects. Everything else stays safely in your collection, and trophies sit on their own shelf.',
             ),
             const SizedBox(height: 9),
             if (placeableItems.isEmpty)
@@ -151,7 +139,7 @@ class CollectionView extends ConsumerWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
-                                'Your Nest has eight display spaces. Remove one item before adding another.',
+                                'Your Nest has twelve display spaces. Remove one item before adding another.',
                               ),
                             ),
                           );
@@ -189,7 +177,7 @@ class CollectionView extends ConsumerWidget {
               itemCount: achievements.length,
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 180,
-                mainAxisExtent: 156,
+                mainAxisExtent: 168,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
@@ -208,6 +196,7 @@ class CollectionView extends ConsumerWidget {
 bool _environmentUnlocked(
   NestEnvironment environment,
   LearnerProgress progress,
+  int unlockedAchievements,
 ) {
   final japanMonth = DateTime.now().toUtc().add(const Duration(hours: 9)).month;
   return switch (environment) {
@@ -221,6 +210,8 @@ bool _environmentUnlocked(
       progress.streak >= 7 || japanMonth == 12 || japanMonth <= 2,
     NestEnvironment.japanHome =>
       progress.stage.index >= ProficiencyStage.connected.index,
+    NestEnvironment.rainyLibrary =>
+      unlockedAchievements >= 5 || japanMonth == 6,
   };
 }
 
@@ -312,47 +303,71 @@ class _AchievementCard extends StatelessWidget {
     final unlocked = achievement.unlocked(snapshot);
     final current = achievement.progress(snapshot).clamp(0, achievement.target);
     final hidden = achievement.secret && !unlocked;
+    final fraction = achievement.target == 0
+        ? 0.0
+        : current / achievement.target;
+    // Locked memories blur away: untouched goals are only a soft shadow,
+    // and the picture clears as the learner gets closer.
+    final undiscovered = !unlocked && !hidden && fraction == 0;
+    final blur = unlocked
+        ? 0.0
+        : hidden
+        ? 3.0
+        : (4.5 * (1 - fraction) + 1.5).clamp(1.5, 6.0);
     return Semantics(
       button: true,
       label:
-          '${hidden ? 'Secret achievement' : achievement.title}, ${unlocked ? 'unlocked' : 'locked'}',
+          '${hidden || undiscovered ? 'Hidden achievement' : achievement.title}, ${unlocked ? 'unlocked' : 'locked'}',
       child: Card(
         margin: EdgeInsets.zero,
         color: unlocked ? AppColors.bambooMist : const Color(0xFFE8E6E2),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => _showAchievement(context, unlocked, hidden),
+          onTap: () => _showAchievement(context, unlocked, hidden, fraction),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
-                ImageFiltered(
-                  imageFilter: ui.ImageFilter.blur(
-                    sigmaX: hidden ? 3 : 0,
-                    sigmaY: hidden ? 3 : 0,
-                  ),
-                  child: Text(
-                    unlocked
-                        ? achievement.emoji
-                        : hidden
-                        ? '🌙'
-                        : '🔒',
-                    style: const TextStyle(fontSize: 30),
+                SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: ImageFiltered(
+                      imageFilter: ui.ImageFilter.blur(
+                        sigmaX: blur,
+                        sigmaY: blur,
+                      ),
+                      child: Opacity(
+                        opacity: unlocked ? 1 : .72,
+                        child: Text(
+                          hidden ? '🌙' : achievement.emoji,
+                          style: const TextStyle(fontSize: 30),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  hidden ? 'Secret memory' : achievement.title,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                SizedBox(
+                  height: 36,
+                  child: Center(
+                    child: Text(
+                      hidden
+                          ? 'Secret memory'
+                          : undiscovered
+                          ? 'Hidden memory'
+                          : achievement.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
                 ),
                 const Spacer(),
                 LinearProgressIndicator(
-                  value: achievement.target == 0
-                      ? 0
-                      : current / achievement.target,
+                  value: fraction,
                   minHeight: 6,
                 ),
                 const SizedBox(height: 5),
@@ -361,7 +376,11 @@ class _AchievementCard extends StatelessWidget {
                       ? rewardTypeLabel(achievement.rewardType)
                       : hidden
                       ? 'Keep exploring'
+                      : undiscovered
+                      ? 'Not yet discovered'
                       : '$current / ${achievement.target}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 10, color: AppColors.muted),
                 ),
               ],
@@ -376,6 +395,7 @@ class _AchievementCard extends StatelessWidget {
     BuildContext context,
     bool unlocked,
     bool hidden,
+    double fraction,
   ) => showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -386,18 +406,28 @@ class _AchievementCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              unlocked ? achievement.emoji : '🔒',
+              unlocked || (!hidden && fraction > 0)
+                  ? achievement.emoji
+                  : hidden
+                  ? '🌙'
+                  : '✨',
               style: const TextStyle(fontSize: 52),
             ),
             const SizedBox(height: 8),
             Text(
-              hidden ? 'A secret memory' : achievement.title,
+              hidden
+                  ? 'A secret memory'
+                  : !unlocked && fraction == 0
+                  ? 'A hidden memory'
+                  : achievement.title,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
               hidden
                   ? 'Leo will reveal this when your learning path reaches the right moment.'
+                  : !unlocked && fraction == 0
+                  ? 'Something cosy is waiting here. Keep learning and it will slowly come into focus.'
                   : achievement.requirement,
               textAlign: TextAlign.center,
             ),

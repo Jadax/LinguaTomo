@@ -7,6 +7,7 @@ import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
 import 'kana_grid_view.dart';
 import 'mission_view.dart';
+import 'writing_canvas_view.dart';
 
 class JourneyView extends ConsumerWidget {
   const JourneyView({super.key});
@@ -25,6 +26,10 @@ class JourneyView extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (completedCount == 0) ...[
+              _BeginnerStartCard(firstMission: missions.first),
+              const SizedBox(height: 18),
+            ],
             Text(
               'You are here',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -40,10 +45,6 @@ class JourneyView extends ConsumerWidget {
             Text(
               '$completedCount of ${missions.length} core Can-Do missions evidenced',
             ),
-            if (completedCount == 0) ...[
-              const SizedBox(height: 14),
-              _BeginnerStartCard(firstMission: missions.first),
-            ],
             const SizedBox(height: 18),
             const _FrameworkNote(),
             const SizedBox(height: 16),
@@ -75,25 +76,30 @@ class _BeginnerStartCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     color: AppColors.bambooMist,
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Start here, one cosy step at a time',
-            style: Theme.of(context).textTheme.titleMedium,
+            '🐾 Brand new? Start right here',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Do these three small things in order. That is the whole of Kitten Steps — no tests, no timers, and Leo walks with you the entire way.',
           ),
           const SizedBox(height: 6),
           const Text(
-            'Beginners follow two short tracks together: learn Japanese sounds and hiragana, then use one useful spoken phrase. Completing a Can-Do is what “evidence” means.',
+            '“Evidence” simply means finishing a Can-Do lesson. One finished lesson = one piece of evidence on your route.',
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           OutlinedButton.icon(
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const KanaGridView())),
             icon: const Icon(Icons.grid_view_rounded),
-            label: const Text('1. Learn sounds and hiragana'),
+            label: const Text('1. Meet the Japanese sounds and hiragana'),
           ),
           const SizedBox(height: 8),
           FilledButton.icon(
@@ -103,7 +109,15 @@ class _BeginnerStartCard extends StatelessWidget {
               ),
             ),
             icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('2. Begin “A warm first hello”'),
+            label: const Text('2. Try your first Can-Do: “A warm first hello”'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const WritingCanvasView()),
+            ),
+            icon: const Icon(Icons.draw_rounded),
+            label: const Text('3. Trace your very first character'),
           ),
         ],
       ),
@@ -122,12 +136,17 @@ class _FrameworkNote extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'How the route is organised',
+            'How learning works here',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 6),
           const Text(
-            'Practical situations follow the conversation-management logic used by FSI FAST. Can-Do evidence follows CEFR and JF Standard principles. JLPT remains an exam-readiness reference, while ILR is shown as a separate functional target.',
+            'Your route is a row of small real-world missions called Can-Dos. Open the next one, listen, try it, and mark it done — that finished lesson becomes one piece of “stage evidence”. Finish every lesson in a stage and its gentle, untimed checkpoint opens. Nothing is ever locked behind an exam.',
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Under the bonnet, situations follow FSI FAST conversation logic, Can-Do evidence follows CEFR and JF Standard principles, and JLPT remains only an exam-readiness reference.',
+            style: TextStyle(color: AppColors.muted, fontSize: 12),
           ),
         ],
       ),
@@ -236,9 +255,20 @@ class _StageCard extends StatelessWidget {
             subtitle: Text(
               isComplete
                   ? 'Ready. This in-app check is untimed and has no certification value.'
-                  : 'Complete $complete of ${stageMissions.length} Can-Do lessons above. Each completed lesson is one piece of stage evidence.',
+                  : 'Stage evidence: $complete of ${stageMissions.length} lessons finished. Finish them all and this checkpoint opens — no test is hiding here.',
             ),
           ),
+          if (!isComplete && stage == ProficiencyStage.kittenSteps)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const KanaGridView()),
+                ),
+                icon: const Icon(Icons.grid_view_rounded, size: 18),
+                label: const Text('Practise kana for this check'),
+              ),
+            ),
         ],
       ),
     );

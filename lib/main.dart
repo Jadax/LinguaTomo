@@ -6,6 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'config/storage_keys.dart';
 import 'models/app_models.dart';
+import 'providers/achievement_state.dart';
 import 'providers/app_state.dart';
 import 'providers/sync_state.dart';
 import 'services/cloud_service.dart';
@@ -39,14 +40,41 @@ class LinguaTomoApp extends ConsumerStatefulWidget {
 }
 
 class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
+  var _ready = false;
   var _showLoading = true;
+  var _prepared = false;
 
   @override
-  void initState() {
-    super.initState();
-    Future<void>.delayed(const Duration(milliseconds: 2200), () {
-      if (mounted) setState(() => _showLoading = false);
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_prepared) return;
+    _prepared = true;
+    _prepare();
+  }
+
+  /// The loading screen stays up until the app is genuinely ready: core
+  /// artwork is cached, the first frames have rendered, and a short minimum
+  /// dwell has passed so Leo's butterfly chase never feels cut short.
+  Future<void> _prepare() async {
+    final minimum = Future<void>.delayed(const Duration(milliseconds: 2400));
+    final artwork = _precacheArtwork();
+    await Future.wait(<Future<void>>[minimum, artwork]);
+    if (mounted) setState(() => _ready = true);
+  }
+
+  Future<void> _precacheArtwork() async {
+    try {
+      await Future.wait(<Future<void>>[
+        for (final environment in NestEnvironment.values)
+          precacheImage(AssetImage(environment.asset), context),
+        precacheImage(
+          const AssetImage('assets/branding/leo-face-icon.png'),
+          context,
+        ),
+      ]).timeout(const Duration(milliseconds: 1200), onTimeout: () => <void>[]);
+    } catch (_) {
+      // Artwork caching is best-effort; the app must always open.
+    }
   }
 
   @override
@@ -68,7 +96,13 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
         child: child!,
       ),
       home: _showLoading
-          ? LeoLoadingScreen(reduceMotion: mode == ExperienceMode.comfort)
+          ? LeoLoadingScreen(
+              reduceMotion: mode == ExperienceMode.comfort,
+              ready: _ready,
+              onFinished: () {
+                if (mounted) setState(() => _showLoading = false);
+              },
+            )
           : ref.watch(learnerProfileProvider).onboardingComplete
           ? const AppShell()
           : const WelcomeJourneyView(),
@@ -86,6 +120,7 @@ class AppShell extends ConsumerStatefulWidget {
 class _AppShellState extends ConsumerState<AppShell> {
   int _selectedIndex = 0;
   Timer? _syncDebounce;
+  Timer? _boardDebounce;
 
   @override
   void initState() {
@@ -93,11 +128,16 @@ class _AppShellState extends ConsumerState<AppShell> {
     AppNavigation.goTo = _selectPage;
     ref.listenManual(progressProvider, (_, _) => _scheduleSync());
     ref.listenManual(handwritingHistoryProvider, (_, _) => _scheduleSync());
+    ref.listenManual(unlockedAchievementsProvider, (previous, next) {
+      if (previous?.length == next.length) return;
+      _scheduleBoardSync(next.length);
+    });
   }
 
   @override
   void dispose() {
     _syncDebounce?.cancel();
+    _boardDebounce?.cancel();
     if (AppNavigation.goTo == _selectPage) AppNavigation.goTo = null;
     super.dispose();
   }
@@ -108,6 +148,33 @@ class _AppShellState extends ConsumerState<AppShell> {
     _syncDebounce?.cancel();
     _syncDebounce = Timer(const Duration(seconds: 3), () {
       ref.read(syncProvider.notifier).syncNow();
+    });
+  }
+
+  /// Quietly refreshes the learner's public achievement count whenever it
+  /// changes — only for adults who explicitly joined the cosy board. The
+  /// board shows nickname, count and XP; email is never shared.
+  void _scheduleBoardSync(int achievementCount) {
+    final prefs = ref.read(leaderboardPrefsProvider);
+    const cloud = CloudService();
+    if (!prefs.optIn ||
+        prefs.nickname.trim().length < 2 ||
+        !cloud.isConfigured ||
+        cloud.currentUser == null) {
+      return;
+    }
+    _boardDebounce?.cancel();
+    _boardDebounce = Timer(const Duration(seconds: 5), () async {
+      try {
+        await cloud.updatePublicProfile(
+          displayName: prefs.nickname,
+          leaderboardOptIn: true,
+          achievementCount: achievementCount,
+          xp: ref.read(progressProvider).xp,
+        );
+      } catch (_) {
+        // The board is a gentle extra; learning is never blocked by it.
+      }
     });
   }
 
@@ -127,15 +194,15 @@ class _AppShellState extends ConsumerState<AppShell> {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: AppColors.persimmon.withValues(alpha: .14),
-                borderRadius: BorderRadius.circular(13),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(13),
+              child: Image.asset(
+                'assets/branding/leo-face-icon.png',
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
+                semanticLabel: 'Leo',
               ),
-              alignment: Alignment.center,
-              child: const Text('ね', style: TextStyle(fontSize: 22)),
             ),
             const SizedBox(width: 10),
             const Column(
@@ -174,7 +241,18 @@ class _AppShellState extends ConsumerState<AppShell> {
         ],
       ),
       body: SafeArea(
-        child: IndexedStack(index: _selectedIndex, children: pages),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            // Hidden tabs keep their state but pause their animations, so
+            // the Nest's gentle weather never drains the battery elsewhere.
+            for (var index = 0; index < pages.length; index++)
+              TickerMode(
+                enabled: index == _selectedIndex,
+                child: pages[index],
+              ),
+          ],
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,

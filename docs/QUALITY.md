@@ -19,20 +19,21 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 
 ## Current automated tests
 
-- Guided start choice reaches the Nest and Learning Library.
+- Guided start choice waits for the loading chase finale, then reaches the Nest and Learning Library.
 - Grammar repository loads exactly 828 records with expected N-level counts.
 - Every bundled grammar point contains at least one example.
 - Both basic syllabaries contain 46 distinct characters.
 - Missions preserve stage order, valid prerequisites and usable answer keys.
 - Postcards contain complete Japanese study sets without broken characters.
-- The 46-achievement catalogue has unique IDs, progression and real rewards.
+- The 69-achievement catalogue has unique IDs, progression, real rewards and at least six trophies.
 - The cultural calendar covers every month with vocabulary and a reward.
 
 ## Release verification
 
-Version 1.6.0, build 9 is the last fully verified release. For the 1.7.0,
-build 10 candidate, Dart static analysis reports no issues. The GitHub Web,
-Android and unsigned iOS gates must pass before 1.7.0 is described as stable.
+Version 1.6.0, build 9 is the last fully verified release. For the 1.8.0,
+build 11 candidate, Dart static analysis reports no issues, all tests pass and
+the Web release builds locally. The GitHub Web, Android and unsigned iOS gates
+must pass before 1.8.0 is described as stable.
 
 The next stability tests should cover Hive restoration, FSRS persistence,
 placement boundaries, cloud-disabled account screens and OCR service fallbacks.

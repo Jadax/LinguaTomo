@@ -83,9 +83,19 @@ class _LeoSpritePainter extends CustomPainter {
 }
 
 class LeoLoadingScreen extends StatefulWidget {
-  const LeoLoadingScreen({super.key, required this.reduceMotion});
+  const LeoLoadingScreen({
+    super.key,
+    required this.reduceMotion,
+    required this.ready,
+    required this.onFinished,
+  });
 
   final bool reduceMotion;
+
+  /// True once the app has genuinely finished preparing. Leo keeps chasing
+  /// the butterfly until this moment, then plays a short catch finale.
+  final bool ready;
+  final VoidCallback onFinished;
 
   @override
   State<LeoLoadingScreen> createState() => _LeoLoadingScreenState();
@@ -95,14 +105,16 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   Timer? _stepTimer;
+  Timer? _finishTimer;
   var _walkFrame = false;
+  var _caught = false;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3600),
+      duration: const Duration(milliseconds: 2600),
     );
     if (widget.reduceMotion) {
       _controller.value = 1;
@@ -112,11 +124,33 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
         if (mounted) setState(() => _walkFrame = !_walkFrame);
       });
     }
+    if (widget.ready) _playFinale();
+  }
+
+  @override
+  void didUpdateWidget(covariant LeoLoadingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.ready && !oldWidget.ready) _playFinale();
+  }
+
+  void _playFinale() {
+    if (_caught) return;
+    if (widget.reduceMotion) {
+      widget.onFinished();
+      return;
+    }
+    _stepTimer?.cancel();
+    _controller.stop();
+    setState(() => _caught = true);
+    _finishTimer = Timer(const Duration(milliseconds: 750), () {
+      if (mounted) widget.onFinished();
+    });
   }
 
   @override
   void dispose() {
     _stepTimer?.cancel();
+    _finishTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -150,42 +184,55 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                         final t = Curves.easeInOut.transform(journey);
                         final chasing = t > .76;
                         return LayoutBuilder(
-                          builder: (context, bounds) => Stack(
-                            children: [
-                              Positioned(
-                                left: 12 + t * (bounds.maxWidth - 166),
-                                top:
-                                    24 +
-                                    (chasing
-                                        ? 18
-                                        : 5 *
-                                              math
-                                                  .sin(phase * math.pi * 4)
-                                                  .abs()),
-                                child: Transform.flip(
-                                  flipX: phase >= .5,
-                                  child: LeoSprite(
-                                    pose: chasing
-                                        ? LeoPose.butterfly
-                                        : (_walkFrame
-                                              ? LeoPose.walkA
-                                              : LeoPose.walkB),
-                                    size: 130,
+                          builder: (context, bounds) {
+                            final leoLeft = _caught
+                                ? (bounds.maxWidth - 166)
+                                : 12 + t * (bounds.maxWidth - 166);
+                            return Stack(
+                              children: [
+                                Positioned(
+                                  left: leoLeft,
+                                  top:
+                                      24 +
+                                      (_caught || chasing
+                                          ? 18
+                                          : 5 *
+                                                math
+                                                    .sin(phase * math.pi * 4)
+                                                    .abs()),
+                                  child: Transform.flip(
+                                    flipX: !_caught && phase >= .5,
+                                    child: LeoSprite(
+                                      pose: _caught
+                                          ? LeoPose.celebrate
+                                          : chasing
+                                          ? LeoPose.butterfly
+                                          : (_walkFrame
+                                                ? LeoPose.walkA
+                                                : LeoPose.walkB),
+                                      size: 130,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Positioned(
-                                left: 72 + t * (bounds.maxWidth - 126),
-                                top:
-                                    36 +
-                                    18 * math.sin(phase * math.pi * 2).abs(),
-                                child: const Text(
-                                  '🦋',
-                                  style: TextStyle(fontSize: 30),
+                                Positioned(
+                                  left: _caught
+                                      ? bounds.maxWidth - 92
+                                      : 72 + t * (bounds.maxWidth - 126),
+                                  top: _caught
+                                      ? 18.0
+                                      : 36 +
+                                            18 *
+                                                math
+                                                    .sin(phase * math.pi * 2)
+                                                    .abs(),
+                                  child: const Text(
+                                    '🦋',
+                                    style: TextStyle(fontSize: 30),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            );
+                          },
                         );
                       },
                     ),
@@ -199,7 +246,11 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text('Leo is warming up your next Japanese adventure...'),
+                Text(
+                  _caught
+                      ? 'Caught it! Off we go...'
+                      : 'Leo is warming up your next Japanese adventure...',
+                ),
               ],
             ),
           ),

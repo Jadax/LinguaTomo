@@ -3,6 +3,7 @@ enum AchievementRewardType {
   leoReaction,
   postcardStamp,
   profileStyle,
+  trophy,
 }
 
 class AchievementSnapshot {
@@ -17,6 +18,11 @@ class AchievementSnapshot {
     required this.cultureEvidence,
     required this.interactionEvidence,
     required this.xp,
+    this.festivalsCelebrated = 0,
+    this.seasonsCelebrated = 0,
+    this.summerFestivals = 0,
+    this.winterFestivals = 0,
+    this.nestItemsPlaced = 0,
   });
 
   final int missions;
@@ -29,6 +35,21 @@ class AchievementSnapshot {
   final int cultureEvidence;
   final int interactionEvidence;
   final int xp;
+
+  /// Distinct festival windows experienced inside the app.
+  final int festivalsCelebrated;
+
+  /// Distinct seasons (spring, summer, autumn, winter) with a celebration.
+  final int seasonsCelebrated;
+
+  /// Distinct festivals celebrated during June, July or August.
+  final int summerFestivals;
+
+  /// Distinct festivals celebrated during December, January or February.
+  final int winterFestivals;
+
+  /// Memory objects currently placed inside the Nest.
+  final int nestItemsPlaced;
 }
 
 class AchievementDefinition {
@@ -62,6 +83,7 @@ String rewardTypeLabel(AchievementRewardType type) => switch (type) {
   AchievementRewardType.leoReaction => 'Leo reaction',
   AchievementRewardType.postcardStamp => 'Postcard stamp',
   AchievementRewardType.profileStyle => 'Profile style',
+  AchievementRewardType.trophy => 'Trophy',
 };
 
 final achievements = <AchievementDefinition>[
@@ -466,6 +488,206 @@ final achievements = <AchievementDefinition>[
     target: 1000,
   ),
   AchievementDefinition(
+    id: 'first_habit',
+    title: 'A Small Habit',
+    emoji: '🕰️',
+    requirement: 'Learn on 3 consecutive days.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Small woven rug',
+    progress: (s) => s.streak,
+    target: 3,
+  ),
+  AchievementDefinition(
+    id: 'cosy_year',
+    title: 'Cosy Hearth Year',
+    emoji: '🪵',
+    requirement: 'Learn on 180 consecutive days.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Hearth trophy',
+    progress: (s) => s.streak,
+    target: 180,
+  ),
+  AchievementDefinition(
+    id: 'bright_path',
+    title: 'Bright Path',
+    emoji: '🔮',
+    requirement: 'Earn 2,500 XP.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Star globe',
+    progress: (s) => s.xp,
+    target: 2500,
+  ),
+  AchievementDefinition(
+    id: 'luminous',
+    title: 'Luminous Journey',
+    emoji: '💡',
+    requirement: 'Earn 5,000 XP.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Lighthouse trophy',
+    progress: (s) => s.xp,
+    target: 5000,
+  ),
+  AchievementDefinition(
+    id: 'path_finder',
+    title: 'Path Finder',
+    emoji: '🧭',
+    requirement: 'Complete 16 Can-Dos.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Compass trophy',
+    progress: (s) => s.missions,
+    target: 16,
+  ),
+  AchievementDefinition(
+    id: 'perfect_page',
+    title: 'Perfect Page',
+    emoji: '📜',
+    requirement: 'Reach a 100% handwriting score.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Golden brush',
+    progress: (s) => s.bestHandwriting,
+    target: 100,
+  ),
+  AchievementDefinition(
+    id: 'ink_river',
+    title: 'Ink River',
+    emoji: '🖋️',
+    requirement: 'Save 50 handwriting checks.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Inkstone',
+    progress: (s) => s.handwritingAttempts,
+    target: 50,
+  ),
+  AchievementDefinition(
+    id: 'tending_garden',
+    title: 'Tending the Garden',
+    emoji: '🏮',
+    requirement: 'Complete 1,000 grammar reviews.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Garden lantern',
+    progress: (s) => s.grammarReviews,
+    target: 1000,
+  ),
+  AchievementDefinition(
+    id: 'eternal_garden',
+    title: 'Eternal Garden',
+    emoji: '🌳',
+    requirement: 'Complete 5,000 grammar reviews.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Eternal garden trophy',
+    progress: (s) => s.grammarReviews,
+    target: 5000,
+  ),
+  AchievementDefinition(
+    id: 'postcard_curator',
+    title: 'Postcard Curator',
+    emoji: '🖼️',
+    requirement: 'Collect 25 Living Postcards.',
+    rewardType: AchievementRewardType.postcardStamp,
+    reward: 'Curator stamp',
+    progress: (s) => s.postcards,
+    target: 25,
+  ),
+  AchievementDefinition(
+    id: 'culture_keeper',
+    title: 'Culture Keeper',
+    emoji: '🎎',
+    requirement: 'Collect 15 culture evidence marks.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Kokoro trophy',
+    progress: (s) => s.cultureEvidence,
+    target: 15,
+  ),
+  AchievementDefinition(
+    id: 'bridge_builder',
+    title: 'Bridge Builder',
+    emoji: '🌉',
+    requirement: 'Collect 20 interaction evidence marks.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Bridge trophy',
+    progress: (s) => s.interactionEvidence,
+    target: 20,
+  ),
+  AchievementDefinition(
+    id: 'interior_touch',
+    title: 'Interior Touch',
+    emoji: '🛋️',
+    requirement: 'Place 4 memory objects in the Nest.',
+    rewardType: AchievementRewardType.leoReaction,
+    reward: 'Leo’s approving purr',
+    progress: (s) => s.nestItemsPlaced,
+    target: 4,
+  ),
+  AchievementDefinition(
+    id: 'nest_stylist',
+    title: 'Nest Stylist',
+    emoji: '🪑',
+    requirement: 'Place 8 memory objects in the Nest.',
+    rewardType: AchievementRewardType.profileStyle,
+    reward: 'Stylist title',
+    progress: (s) => s.nestItemsPlaced,
+    target: 8,
+  ),
+  AchievementDefinition(
+    id: 'festival_first',
+    title: 'First Festival',
+    emoji: '🎏',
+    requirement: 'Experience 1 Japanese festival window in the app.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Festival fan',
+    progress: (s) => s.festivalsCelebrated,
+    target: 1,
+  ),
+  AchievementDefinition(
+    id: 'festival_friend',
+    title: 'Festival Friend',
+    emoji: '🎆',
+    requirement: 'Experience 4 different festival windows.',
+    rewardType: AchievementRewardType.postcardStamp,
+    reward: 'Firework stamp',
+    progress: (s) => s.festivalsCelebrated,
+    target: 4,
+  ),
+  AchievementDefinition(
+    id: 'festival_traveller',
+    title: 'Festival Traveller',
+    emoji: '🏮',
+    requirement: 'Experience 8 different festival windows.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Paper lantern',
+    progress: (s) => s.festivalsCelebrated,
+    target: 8,
+  ),
+  AchievementDefinition(
+    id: 'festival_master',
+    title: 'Festival Master',
+    emoji: '🎇',
+    requirement: 'Experience 15 different festival windows.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Matsuri trophy',
+    progress: (s) => s.festivalsCelebrated,
+    target: 15,
+  ),
+  AchievementDefinition(
+    id: 'four_seasons',
+    title: 'Year-Round Learner',
+    emoji: '🗓️',
+    requirement: 'Celebrate festivals in all four seasons.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Four Seasons crown',
+    progress: (s) => s.seasonsCelebrated,
+    target: 4,
+  ),
+  AchievementDefinition(
+    id: 'summer_hero',
+    title: 'Summer Festival Hero',
+    emoji: '🎐',
+    requirement: 'Experience 3 summer festival windows.',
+    rewardType: AchievementRewardType.leoReaction,
+    reward: 'Leo’s yukata dance',
+    progress: (s) => s.summerFestivals,
+    target: 3,
+  ),
+  AchievementDefinition(
     id: 'secret_purr',
     title: 'Purrfect Timing',
     emoji: '😺',
@@ -529,6 +751,39 @@ final achievements = <AchievementDefinition>[
     reward: 'Japan Nest key',
     progress: (s) => s.missions,
     target: 18,
+    secret: true,
+  ),
+  AchievementDefinition(
+    id: 'secret_matsuri',
+    title: 'Matsuri Whisper',
+    emoji: '🥁',
+    requirement: 'The summer drums are calling.',
+    rewardType: AchievementRewardType.leoReaction,
+    reward: 'Secret festival meow',
+    progress: (s) => s.summerFestivals,
+    target: 1,
+    secret: true,
+  ),
+  AchievementDefinition(
+    id: 'secret_snow',
+    title: 'Snow Country Guest',
+    emoji: '⛄',
+    requirement: 'A quiet snowfall hides a small friend.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Hidden snow globe',
+    progress: (s) => s.winterFestivals,
+    target: 1,
+    secret: true,
+  ),
+  AchievementDefinition(
+    id: 'secret_seasons',
+    title: 'The Turning Year',
+    emoji: '🎑',
+    requirement: 'Three seasons have noticed you.',
+    rewardType: AchievementRewardType.postcardStamp,
+    reward: 'Seasonal round stamp',
+    progress: (s) => s.seasonsCelebrated,
+    target: 3,
     secret: true,
   ),
 ];

@@ -8,7 +8,10 @@ void main() {
   ) async {
     await tester.pumpWidget(const ProviderScope(child: LinguaTomoApp()));
     expect(find.text('LinguaTomo'), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 2300));
+    // The loading chase stays active until preparation finishes, then plays
+    // a short catch finale before the app opens.
+    await tester.pump(const Duration(milliseconds: 2600));
+    await tester.pump(const Duration(milliseconds: 900));
 
     expect(find.text('Welcome to LinguaTomo'), findsOneWidget);
     expect(find.text('Starter'), findsOneWidget);
@@ -24,7 +27,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Welcome home'), findsOneWidget);
-    expect(find.text('NEXT CAN-DO'), findsOneWidget);
+    expect(find.text('START HERE · YOUR FIRST CAN-DO'), findsOneWidget);
     expect(find.text('Meet the characters'), findsNothing);
 
     await tester.tap(find.text('Learn'));

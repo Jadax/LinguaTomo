@@ -57,7 +57,7 @@ final nestEnvironmentProvider =
 
 class NestDisplayNotifier extends Notifier<List<String>> {
   static const _key = 'nest_display_items_v1';
-  static const maxItems = 8;
+  static const maxItems = 12;
 
   @override
   List<String> build() {
@@ -83,6 +83,39 @@ class NestDisplayNotifier extends Notifier<List<String>> {
 final nestDisplayProvider = NotifierProvider<NestDisplayNotifier, List<String>>(
   NestDisplayNotifier.new,
 );
+
+/// Local copy of the learner's cosy-board choice, so achievement counts can
+/// be refreshed quietly in the background without opening the account page.
+class LeaderboardPrefs {
+  const LeaderboardPrefs({this.nickname = '', this.optIn = false});
+
+  final String nickname;
+  final bool optIn;
+}
+
+class LeaderboardPrefsNotifier extends Notifier<LeaderboardPrefs> {
+  static const _key = 'leaderboard_prefs_v1';
+
+  @override
+  LeaderboardPrefs build() {
+    final raw = _box?.get(_key);
+    if (raw is! Map) return const LeaderboardPrefs();
+    return LeaderboardPrefs(
+      nickname: '${raw['nickname'] ?? ''}',
+      optIn: raw['optIn'] == true,
+    );
+  }
+
+  Future<void> save(String nickname, bool optIn) async {
+    state = LeaderboardPrefs(nickname: nickname, optIn: optIn);
+    await _box?.put(_key, {'nickname': nickname, 'optIn': optIn});
+  }
+}
+
+final leaderboardPrefsProvider =
+    NotifierProvider<LeaderboardPrefsNotifier, LeaderboardPrefs>(
+      LeaderboardPrefsNotifier.new,
+    );
 
 class LearnerProfileNotifier extends Notifier<LearnerProfile> {
   static const _key = 'learner_profile_v1';

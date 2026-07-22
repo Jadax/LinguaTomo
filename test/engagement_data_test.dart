@@ -18,6 +18,18 @@ void main() {
       achievements.map((item) => item.rewardType).toSet(),
       containsAll(AchievementRewardType.values),
     );
+    // The trophy shelf needs a meaningful set of milestones to display.
+    expect(
+      achievements
+          .where((item) => item.rewardType == AchievementRewardType.trophy)
+          .length,
+      greaterThanOrEqualTo(6),
+    );
+    // Festival engagement must be able to grow through the whole year.
+    expect(
+      achievements.any((item) => item.id == 'four_seasons'),
+      isTrue,
+    );
   });
 
   test('festival calendar covers the year with usable learning content', () {

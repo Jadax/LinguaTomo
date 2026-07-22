@@ -6,12 +6,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/curriculum_data.dart';
 import '../data/achievement_data.dart';
+import '../data/festival_calendar_data.dart';
 import '../models/app_models.dart';
+import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
+import '../providers/festival_state.dart';
 import '../providers/review_state.dart';
 import '../providers/grammar_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/leo_sprite.dart';
+import '../widgets/nest_ambience.dart';
 import 'mission_view.dart';
 import 'collection_view.dart';
 import 'postcards_view.dart';
@@ -30,24 +34,9 @@ class DashboardView extends ConsumerWidget {
     final next = ref.watch(nextMissionProvider);
     final mode = ref.watch(experienceProvider);
     final grammar = ref.watch(grammarGardenProvider);
-    final handwriting = ref.watch(handwritingHistoryProvider);
     final dueReviews =
         ref.watch(reviewDeckProvider).dueMissions.length + grammar.dueCount;
-    final achievementSnapshot = AchievementSnapshot(
-      missions: progress.completedMissions.length,
-      postcards: progress.completedPostcards.length,
-      streak: progress.streak,
-      handwritingAttempts: handwriting.length,
-      bestHandwriting: handwriting.fold(
-        0,
-        (best, item) => item.score > best ? item.score : best,
-      ),
-      grammarPlanted: grammar.cards.length,
-      grammarReviews: grammar.reviewCount,
-      cultureEvidence: progress.skillEvidence[SkillArea.culture] ?? 0,
-      interactionEvidence: progress.skillEvidence[SkillArea.interaction] ?? 0,
-      xp: progress.xp,
-    );
+    final achievementSnapshot = ref.watch(achievementSnapshotProvider);
     final unlockedNestAchievementIds = achievements
         .where(
           (item) =>
@@ -56,6 +45,17 @@ class DashboardView extends ConsumerWidget {
         )
         .map((item) => item.id)
         .toSet();
+    final trophies = achievements
+        .where((item) => item.rewardType == AchievementRewardType.trophy)
+        .toList();
+    final unlockedTrophies = trophies
+        .where((item) => item.unlocked(achievementSnapshot))
+        .toList();
+    final reactionsUnlocked = achievements.any(
+      (item) =>
+          item.rewardType == AchievementRewardType.leoReaction &&
+          item.unlocked(achievementSnapshot),
+    );
     final placedIds = ref.watch(nestDisplayProvider);
     final placedItems = <String>[
       for (final id in placedIds)
@@ -111,9 +111,15 @@ class DashboardView extends ConsumerWidget {
             environment: environment,
             achievementItems: placedItems,
             reduceMotion: mode == ExperienceMode.comfort,
+            reactionsUnlocked: reactionsUnlocked,
             onTap: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const CollectionView())),
+          ),
+          const SizedBox(height: 10),
+          _TrophyShelf(
+            unlocked: unlockedTrophies,
+            total: trophies.length,
           ),
           const SizedBox(height: 14),
           Card(
@@ -234,7 +240,11 @@ class DashboardView extends ConsumerWidget {
             const SizedBox(height: 12),
           ],
           if (next != null)
-            _NextMissionCard(mission: next)
+            _NextMissionCard(
+              mission: next,
+              isFirst: progress.completedMissions.isEmpty &&
+                  progress.placedOutMissions.isEmpty,
+            )
           else
             const _JourneyCompleteCard(),
           const SizedBox(height: 12),
@@ -324,12 +334,14 @@ class _NestRoom extends StatefulWidget {
     required this.environment,
     required this.achievementItems,
     required this.reduceMotion,
+    required this.reactionsUnlocked,
     required this.onTap,
   });
   final LearnerProgress progress;
   final NestEnvironment environment;
   final List<String> achievementItems;
   final bool reduceMotion;
+  final bool reactionsUnlocked;
   final VoidCallback onTap;
 
   @override
@@ -337,14 +349,47 @@ class _NestRoom extends StatefulWidget {
 }
 
 class _NestRoomState extends State<_NestRoom> {
+  static const _reactionPoses = [
+    LeoPose.celebrate,
+    LeoPose.meow,
+    LeoPose.smile,
+    LeoPose.butterfly,
+  ];
+
   Timer? _timer;
+  Timer? _reactionTimer;
   var _atChair = false;
   var _walking = false;
   var _step = false;
+  LeoPose? _reaction;
+  var _reactionIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Once the learner has earned a Leo reaction, Leo occasionally shows a
+    // little burst of personality while resting in the Nest.
+    _reactionTimer = Timer.periodic(const Duration(seconds: 24), (_) {
+      if (!mounted ||
+          !widget.reactionsUnlocked ||
+          widget.reduceMotion ||
+          _walking) {
+        return;
+      }
+      setState(() {
+        _reaction = _reactionPoses[_reactionIndex % _reactionPoses.length];
+        _reactionIndex++;
+      });
+      Timer(const Duration(milliseconds: 1500), () {
+        if (mounted) setState(() => _reaction = null);
+      });
+    });
+  }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _reactionTimer?.cancel();
     super.dispose();
   }
 
@@ -358,6 +403,7 @@ class _NestRoomState extends State<_NestRoom> {
       _walking = true;
       _step = !_step;
       _atChair = !_atChair;
+      _reaction = null;
     });
     _timer = Timer.periodic(const Duration(milliseconds: 180), (timer) {
       if (!mounted || timer.tick >= 5) {
@@ -413,24 +459,34 @@ class _NestRoomState extends State<_NestRoom> {
                   ),
                 ),
               ),
+              Positioned.fill(
+                child: NestAmbience(
+                  kind: nestAmbienceFor(japanToday()),
+                  reduceMotion: widget.reduceMotion,
+                ),
+              ),
               for (
                 var index = 0;
-                index < math.min(widget.achievementItems.length, 8);
+                index <
+                    math.min(
+                      widget.achievementItems.length,
+                      NestDisplayNotifier.maxItems,
+                    );
                 index++
               )
                 Positioned(
-                  left: 18 + (index % 4) * 46,
-                  top: 58 + (index ~/ 4) * 46,
+                  left: 16 + (index % 6) * 42,
+                  top: 52 + (index ~/ 6) * 42,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: .82),
                       shape: BoxShape.circle,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(4),
                       child: Text(
                         widget.achievementItems[index],
-                        style: const TextStyle(fontSize: 24),
+                        style: const TextStyle(fontSize: 20),
                       ),
                     ),
                   ),
@@ -441,14 +497,15 @@ class _NestRoomState extends State<_NestRoom> {
                     : const Duration(milliseconds: 900),
                 curve: Curves.easeInOut,
                 alignment: _atChair
-                    ? const Alignment(.70, .18)
-                    : const Alignment(-.72, .32),
+                    ? const Alignment(.64, .48)
+                    : const Alignment(-.62, .58),
                 child: GestureDetector(
                   onTap: _moveLeo,
                   child: LeoSprite(
                     pose: _walking
                         ? (_step ? LeoPose.walkA : LeoPose.walkB)
-                        : (_atChair ? LeoPose.sit : LeoPose.idle),
+                        : (_reaction ??
+                              (_atChair ? LeoPose.sit : LeoPose.idle)),
                     size: _atChair ? 158 : 142,
                     semanticLabel:
                         'Leo. Tap him to walk between the fireside and his chair.',
@@ -483,29 +540,111 @@ class _NestRoomState extends State<_NestRoom> {
   }
 }
 
-class _SeasonalEventCard extends StatelessWidget {
+class _TrophyShelf extends StatelessWidget {
+  const _TrophyShelf({required this.unlocked, required this.total});
+
+  final List<AchievementDefinition> unlocked;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: EdgeInsets.zero,
+    color: const Color(0xFFF6EBDD),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.emoji_events_rounded,
+            color: Color(0xFFB08945),
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            'Trophy shelf · ${unlocked.length} of $total',
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: SizedBox(
+              height: 30,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: total,
+                separatorBuilder: (_, _) => const SizedBox(width: 6),
+                itemBuilder: (context, index) {
+                  if (index < unlocked.length) {
+                    return Text(
+                      unlocked[index].emoji,
+                      style: const TextStyle(fontSize: 22),
+                    );
+                  }
+                  return Icon(
+                    Icons.emoji_events_outlined,
+                    size: 22,
+                    color: AppColors.charcoal.withValues(alpha: .18),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _SeasonalEventCard extends ConsumerStatefulWidget {
   const _SeasonalEventCard();
 
   @override
+  ConsumerState<_SeasonalEventCard> createState() => _SeasonalEventCardState();
+}
+
+class _SeasonalEventCardState extends ConsumerState<_SeasonalEventCard> {
+  @override
+  void initState() {
+    super.initState();
+    // Quietly remember that the learner experienced today's festival windows.
+    Future.microtask(() => ref.read(festivalMemoryProvider.notifier).markToday());
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final today = japanToday();
+    final festivals = festivalCalendar
+        .where((event) => event.isCurrent(today))
+        .toList();
     final story = SeasonalStoriesView.featured();
+    final festival = festivals.isEmpty
+        ? null
+        : festivals[today.day % festivals.length];
     return Card(
       color: const Color(0xFFFFEAF0),
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: Row(
           children: [
-            Text(story.emoji, style: const TextStyle(fontSize: 38)),
+            Text(
+              festival?.emoji ?? story.emoji,
+              style: const TextStyle(fontSize: 38),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Now in Japan: ${story.title}',
+                    festival == null
+                        ? 'Now in Japan: ${story.title}'
+                        : 'Festival season: ${festival.englishName}',
                     style: const TextStyle(fontWeight: FontWeight.w900),
                   ),
-                  Text(story.description),
+                  Text(
+                    festival == null
+                        ? story.description
+                        : '${festival.japaneseName} · ${festival.dateWindow}. Being here during a festival adds to your festival memories.',
+                  ),
                 ],
               ),
             ),
@@ -523,8 +662,9 @@ class _SeasonalEventCard extends StatelessWidget {
 }
 
 class _NextMissionCard extends StatelessWidget {
-  const _NextMissionCard({required this.mission});
+  const _NextMissionCard({required this.mission, this.isFirst = false});
   final Mission mission;
+  final bool isFirst;
   @override
   Widget build(BuildContext context) => Card(
     margin: EdgeInsets.zero,
@@ -555,9 +695,9 @@ class _NextMissionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'NEXT CAN-DO',
-                    style: TextStyle(
+                  Text(
+                    isFirst ? 'START HERE · YOUR FIRST CAN-DO' : 'NEXT CAN-DO',
+                    style: const TextStyle(
                       color: AppColors.persimmon,
                       fontSize: 11,
                       fontWeight: FontWeight.w900,

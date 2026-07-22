@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.7.0, build 10**
+**Version 1.8.0, build 11**
 
 | Area | Available now |
 |---|---|
@@ -33,10 +33,10 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 | Memory | FSRS scheduling for phrases and grammar patterns |
 | Characters | Hiragana, katakana and an introductory kanji studio with KanjiVG diagrams |
 | Writing | 104 kana and introductory kanji targets, daily and level sets, touch canvas, plus paper-photo OCR grading on Android and iOS |
-| Culture | 30 Living Postcards, 24 seasonal story side quests and a 30-event Japanese festival calendar |
-| Motivation | Interactive tabby Leo, five selectable pixel-art Nests, 46 achievements with useful rewards, streaks and stress-free streak freezes |
+| Culture | 30 Living Postcards, 24 seasonal story side quests and a 30-event Japanese festival calendar that remembers the festivals you experience |
+| Motivation | Interactive tabby Leo, six selectable Nests with seasonal weather, 69 achievements with real rewards (Nest items, Leo reactions, postcard stamps, profile styles and a trophy shelf), streaks and stress-free streak freezes |
 | Accessibility | Visual Explorer, Standard and Comfort experiences |
-| Cloud | Optional Supabase PKCE account, progress synchronisation, nickname and opt-in achievement board |
+| Cloud | Optional Supabase PKCE account, progress synchronisation, nickname and opt-in achievement board that refreshes quietly as you learn |
 
 The application does not yet contain native-speaker recordings, complete
 systematic kanji coverage, graded readers, speech recognition or full mock

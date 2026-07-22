@@ -5,9 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/cloud_config.dart';
 import '../data/achievement_data.dart';
-import '../models/app_models.dart';
+import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
-import '../providers/grammar_state.dart';
 import '../providers/sync_state.dart';
 import '../services/cloud_service.dart';
 import '../theme/app_theme.dart';
@@ -57,10 +56,13 @@ class _AccountViewState extends ConsumerState<AccountView> {
     try {
       final profile = await _cloud.loadOwnProfile();
       if (!mounted || profile == null) return;
+      final nickname = '${profile['display_name'] ?? ''}';
+      final optIn = profile['leaderboard_opt_in'] == true;
       setState(() {
-        _nicknameController.text = '${profile['display_name'] ?? ''}';
-        _leaderboardOptIn = profile['leaderboard_opt_in'] == true;
+        _nicknameController.text = nickname;
+        _leaderboardOptIn = optIn;
       });
+      await ref.read(leaderboardPrefsProvider.notifier).save(nickname, optIn);
     } catch (_) {
       if (mounted) {
         setState(
@@ -84,23 +86,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
       _message = null;
     });
     final progress = ref.read(progressProvider);
-    final handwriting = ref.read(handwritingHistoryProvider);
-    final grammar = ref.read(grammarGardenProvider);
-    final snapshot = AchievementSnapshot(
-      missions: progress.completedMissions.length,
-      postcards: progress.completedPostcards.length,
-      streak: progress.streak,
-      handwritingAttempts: handwriting.length,
-      bestHandwriting: handwriting.fold(
-        0,
-        (best, item) => item.score > best ? item.score : best,
-      ),
-      grammarPlanted: grammar.cards.length,
-      grammarReviews: grammar.reviewCount,
-      cultureEvidence: progress.skillEvidence[SkillArea.culture] ?? 0,
-      interactionEvidence: progress.skillEvidence[SkillArea.interaction] ?? 0,
-      xp: progress.xp,
-    );
+    final snapshot = ref.read(achievementSnapshotProvider);
     try {
       await _cloud.updatePublicProfile(
         displayName: nickname,
@@ -110,6 +96,9 @@ class _AccountViewState extends ConsumerState<AccountView> {
             .length,
         xp: progress.xp,
       );
+      await ref
+          .read(leaderboardPrefsProvider.notifier)
+          .save(nickname, _leaderboardOptIn);
       if (mounted) {
         setState(
           () => _message = _leaderboardOptIn
@@ -310,7 +299,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LinguaTomo 1.7.0',
+                      'LinguaTomo 1.8.0',
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     SizedBox(height: 4),
