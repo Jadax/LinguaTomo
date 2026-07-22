@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fsrs/fsrs.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../config/storage_keys.dart';
 import '../data/grammar_repository.dart';
 import '../models/grammar_models.dart';
 
@@ -34,7 +35,7 @@ class GrammarGarden {
 
 class GrammarGardenNotifier extends Notifier<GrammarGarden> {
   static const _key = 'grammar_garden_v1';
-  static const _boxName = 'linguatomo_user_data';
+  static const _boxName = StorageKeys.userData;
   final Scheduler _scheduler = Scheduler(desiredRetention: .9);
 
   Box<dynamic>? get _box =>

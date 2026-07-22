@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.3.0, build 5**
+**Version 1.4.0, build 6**
 
 | Area | Available now |
 |---|---|
@@ -71,7 +71,7 @@ quality gates.
 | Speech | Device Japanese text-to-speech, with a warm voice preference |
 | Optional backend | Supabase Auth, PostgreSQL, Storage and Realtime |
 
-All direct production dependencies were current when build 5 was verified on
+All direct production dependencies were current when build 6 was verified on
 22 July 2026.
 
 ## Repository map
@@ -188,6 +188,7 @@ Read only the document needed for the task:
 | Change lessons, stages or assessments | [Curriculum](docs/CURRICULUM.md) |
 | Import or attribute learning material | [Content and sources](docs/CONTENT.md) |
 | Build, configure or release | [Development](docs/DEVELOPMENT.md) |
+| Host the website and connect a domain | [Deployment](docs/DEPLOYMENT.md) |
 | Diagnose failures and warnings | [Quality](docs/QUALITY.md) |
 | Select the next feature | [Roadmap](docs/ROADMAP.md) |
 | Work with an LLM agent | [AGENTS.md](AGENTS.md) |

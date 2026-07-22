@@ -292,13 +292,12 @@ class _NestRoom extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         onTap: onTap,
         child: Container(
-          height: 230,
+          height: 260,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFEBD8), Color(0xFFF4E1C8)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+            image: const DecorationImage(
+              image: AssetImage('assets/branding/leo-nest-fireplace.png'),
+              fit: BoxFit.cover,
             ),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
@@ -311,41 +310,39 @@ class _NestRoom extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              Positioned.fill(child: CustomPaint(painter: _RoomPainter())),
-              const Positioned(
-                left: 24,
-                bottom: 25,
-                child: Text('🛋️', style: TextStyle(fontSize: 60)),
-              ),
-              Positioned(
-                right: 24,
-                bottom: 18,
-                child: AnimatedScale(
-                  duration: reduceMotion
-                      ? Duration.zero
-                      : const Duration(milliseconds: 500),
-                  scale: 1,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: Image.asset(
-                      'assets/branding/leo-cheer.png',
-                      width: 92,
-                      height: 92,
-                      fit: BoxFit.cover,
-                      semanticLabel: 'Leo waving in your Nest',
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withValues(alpha: .05),
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: .24),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                   ),
                 ),
               ),
               for (var index = 0; index < rewards.length; index++)
                 Positioned(
-                  left: 100 + (index % 4) * 48,
-                  top: 42 + (index ~/ 4) * 54,
+                  left: 24 + (index % 5) * 48,
+                  top: 62 + (index ~/ 5) * 48,
                   child: Tooltip(
                     message: rewards[index].reward,
-                    child: Text(
-                      rewards[index].rewardEmoji,
-                      style: const TextStyle(fontSize: 34),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: .84),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Text(
+                          rewards[index].rewardEmoji,
+                          style: const TextStyle(fontSize: 25),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -354,14 +351,34 @@ class _NestRoom extends StatelessWidget {
                 left: 14,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: .85),
+                    color: const Color(0xFFFFF7E8).withValues(alpha: .92),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                     child: Text(
-                      'Leo’s Nest',
+                      'Leo’s fireside Nest',
                       style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 14,
+                bottom: 12,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.charcoal.withValues(alpha: .70),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+                    child: Text(
+                      'Tap to arrange your memories',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
@@ -408,30 +425,6 @@ class _SeasonalEventCard extends StatelessWidget {
       ),
     ),
   );
-}
-
-class _RoomPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final line = Paint()
-      ..color = AppColors.persimmon.withValues(alpha: .1)
-      ..strokeWidth = 2;
-    canvas.drawLine(
-      Offset(0, size.height * .64),
-      Offset(size.width, size.height * .64),
-      line,
-    );
-    for (var x = -size.height; x < size.width; x += 42) {
-      canvas.drawLine(
-        Offset(x.toDouble(), size.height),
-        Offset(x + size.height * .36, size.height * .64),
-        line,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _NextMissionCard extends StatelessWidget {

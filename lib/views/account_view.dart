@@ -166,27 +166,15 @@ class _AccountViewState extends ConsumerState<AccountView> {
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Row(
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Image.asset(
-                      'assets/branding/astraiva.png',
-                      width: 92,
-                      semanticLabel: 'Astraiva',
+                    Text(
+                      'LinguaTomo 1.4.0',
+                      style: TextStyle(fontWeight: FontWeight.w900),
                     ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'LinguaTomo 1.1.0',
-                            style: TextStyle(fontWeight: FontWeight.w900),
-                          ),
-                          Text('Created by Tushant Sharma'),
-                          Text('An Astraiva product'),
-                        ],
-                      ),
-                    ),
+                    SizedBox(height: 4),
+                    Text('Created by Tushant Sharma for Astraiva'),
                   ],
                 ),
               ),

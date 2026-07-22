@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fsrs/fsrs.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../config/storage_keys.dart';
 import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
 import 'app_state.dart';
@@ -26,8 +27,8 @@ class ReviewDeckNotifier extends Notifier<ReviewDeck> {
   @override
   ReviewDeck build() {
     final progress = ref.watch(progressProvider);
-    final raw = Hive.isBoxOpen('linguatomo_user_data')
-        ? Hive.box<dynamic>('linguatomo_user_data').get(_key)
+    final raw = Hive.isBoxOpen(StorageKeys.userData)
+        ? Hive.box<dynamic>(StorageKeys.userData).get(_key)
         : null;
     final stored = <String, Card>{};
     if (raw is Map) {
@@ -53,8 +54,8 @@ class ReviewDeckNotifier extends Notifier<ReviewDeck> {
     if (current == null) return;
     final result = _scheduler.reviewCard(current, rating);
     state = ReviewDeck(cards: {...state.cards, missionId: result.card});
-    if (Hive.isBoxOpen('linguatomo_user_data')) {
-      await Hive.box<dynamic>('linguatomo_user_data').put(_key, {
+    if (Hive.isBoxOpen(StorageKeys.userData)) {
+      await Hive.box<dynamic>(StorageKeys.userData).put(_key, {
         for (final entry in state.cards.entries) entry.key: entry.value.toMap(),
       });
     }

@@ -10,6 +10,7 @@ load the minimum useful context.
 | `CURRICULUM.md` | Progression, pedagogy, assessment and content quality |
 | `CONTENT.md` | Source audit, licences, attribution and imports |
 | `DEVELOPMENT.md` | Toolchain, configuration, builds, signing and release steps |
+| `DEPLOYMENT.md` | Web hosting, custom domain and production launch checks |
 | `QUALITY.md` | Test matrix, known warnings and troubleshooting |
 | `ROADMAP.md` | Feature gaps, priorities and acceptance criteria |
 | `../THIRD_PARTY_CONTENT.md` | Exact bundled third-party provenance |

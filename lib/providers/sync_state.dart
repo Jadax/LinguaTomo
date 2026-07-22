@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../config/cloud_config.dart';
+import '../config/storage_keys.dart';
 import '../services/cloud_service.dart';
 import 'app_state.dart';
 
@@ -20,8 +21,8 @@ class SyncNotifier extends Notifier<SyncState> {
   static const _outboxKey = 'cloud_sync_outbox';
   final CloudService _cloud = const CloudService();
 
-  Box<dynamic>? get _box => Hive.isBoxOpen('linguatomo_user_data')
-      ? Hive.box<dynamic>('linguatomo_user_data')
+  Box<dynamic>? get _box => Hive.isBoxOpen(StorageKeys.userData)
+      ? Hive.box<dynamic>(StorageKeys.userData)
       : null;
 
   @override

@@ -252,22 +252,56 @@ class _Badge extends StatelessWidget {
   final String title;
   final bool unlocked;
   @override
-  Widget build(BuildContext context) => Container(
-    width: 122,
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: unlocked ? AppColors.bambooMist : const Color(0xFFE8E6E2),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: '$title, ${unlocked ? 'unlocked' : 'locked'}',
+    child: InkWell(
       borderRadius: BorderRadius.circular(18),
-    ),
-    child: Column(
-      children: [
-        Text(unlocked ? emoji : '🔒', style: const TextStyle(fontSize: 28)),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontWeight: FontWeight.w800),
+      onTap: () => showModalBottomSheet<void>(
+        context: context,
+        showDragHandle: true,
+        builder: (context) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  unlocked ? emoji : '🔒',
+                  style: const TextStyle(fontSize: 52),
+                ),
+                const SizedBox(height: 8),
+                Text(title, style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 6),
+                Text(
+                  unlocked
+                      ? 'This memory is yours. Leo has placed it safely in the Nest.'
+                      : 'Keep learning at your own pace. Leo will celebrate when this memory unlocks.',
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
-      ],
+      ),
+      child: Container(
+        width: 122,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: unlocked ? AppColors.bambooMist : const Color(0xFFE8E6E2),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Column(
+          children: [
+            Text(unlocked ? emoji : '🔒', style: const TextStyle(fontSize: 28)),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }

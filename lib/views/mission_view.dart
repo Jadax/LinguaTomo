@@ -5,6 +5,7 @@ import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../theme/app_theme.dart';
 import '../services/speech_service.dart';
+import '../widgets/leo_companion.dart';
 
 class MissionView extends ConsumerStatefulWidget {
   const MissionView({required this.mission, super.key});
@@ -312,7 +313,12 @@ class _CompleteStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      const Text('🐱', style: TextStyle(fontSize: 72)),
+      const LeoCompanion(
+        mood: LeoMood.cheer,
+        size: 104,
+        message: 'You did it! I saved this memory in our cosy Nest.',
+      ),
+      const SizedBox(height: 14),
       Text(
         'Can-Do verified!',
         style: Theme.of(context).textTheme.headlineSmall,

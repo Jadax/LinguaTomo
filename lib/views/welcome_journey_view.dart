@@ -40,25 +40,14 @@ class _WelcomeJourneyViewState extends ConsumerState<WelcomeJourneyView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 18),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Welcome to LinguaTomo',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        const Text('Japanese, with a friend beside you.'),
-                      ],
-                    ),
+                  Text(
+                    'Welcome to LinguaTomo',
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                  Image.asset(
-                    'assets/branding/astraiva.png',
-                    width: 92,
-                    semanticLabel: 'Astraiva',
-                  ),
+                  const Text('Japanese, with a friend beside you.'),
                 ],
               ),
               const SizedBox(height: 18),

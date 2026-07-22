@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../config/storage_keys.dart';
 import '../theme/app_theme.dart';
 
 @immutable
@@ -18,8 +19,8 @@ class WritingProgressNotifier extends Notifier<WritingProgress> {
 
   @override
   WritingProgress build() {
-    final box = Hive.isBoxOpen('linguatomo_user_data')
-        ? Hive.box<dynamic>('linguatomo_user_data')
+    final box = Hive.isBoxOpen(StorageKeys.userData)
+        ? Hive.box<dynamic>(StorageKeys.userData)
         : null;
     final raw = box?.get(_storageKey);
     if (raw is Map) {
@@ -37,8 +38,8 @@ class WritingProgressNotifier extends Notifier<WritingProgress> {
     if (score <= previous) return;
     final updated = {...state.bestScores, character: score};
     state = WritingProgress(bestScores: updated);
-    if (Hive.isBoxOpen('linguatomo_user_data')) {
-      await Hive.box<dynamic>('linguatomo_user_data').put(_storageKey, updated);
+    if (Hive.isBoxOpen(StorageKeys.userData)) {
+      await Hive.box<dynamic>(StorageKeys.userData).put(_storageKey, updated);
     }
   }
 }

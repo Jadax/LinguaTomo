@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../config/storage_keys.dart';
 import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
 
-const _boxName = 'linguatomo_user_data';
+const _boxName = StorageKeys.userData;
 
 Box<dynamic>? get _box =>
     Hive.isBoxOpen(_boxName) ? Hive.box<dynamic>(_boxName) : null;

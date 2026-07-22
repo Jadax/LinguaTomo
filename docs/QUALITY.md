@@ -22,14 +22,17 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 - Guided start choice reaches the Nest and Learning Library.
 - Grammar repository loads exactly 828 records with expected N-level counts.
 - Every bundled grammar point contains at least one example.
+- Both basic syllabaries contain 46 distinct characters.
+- Missions preserve stage order, valid prerequisites and usable answer keys.
+- Postcards contain complete Japanese study sets without broken characters.
 
 ## Last verified release
 
-Version 1.3.0, build 5 was verified on 22 July 2026 with Flutter 3.44.7
+Version 1.4.0, build 6 was verified on 22 July 2026 with Flutter 3.44.7
 and Dart 3.12.2:
 
 - static analysis: no issues;
-- tests: 3 passed;
+- tests: 7 passed;
 - direct production dependencies: current;
 - Web release build: passed;
 - Android APK release build: passed;

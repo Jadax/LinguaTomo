@@ -62,6 +62,14 @@ class _LeoCompanionState extends State<LeoCompanion>
     LeoMood.gentle => 'Mistakes are safe here. Let us have another calm try.',
   };
 
+  String get _moodGlyph => switch (widget.mood) {
+    LeoMood.welcome => '♡',
+    LeoMood.cheer => '✨',
+    LeoMood.proud => '🌟',
+    LeoMood.thinking => '…',
+    LeoMood.gentle => '🌱',
+  };
+
   @override
   Widget build(BuildContext context) => Row(
     crossAxisAlignment: CrossAxisAlignment.center,
@@ -69,25 +77,53 @@ class _LeoCompanionState extends State<LeoCompanion>
       AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          final lift = widget.reduceMotion
-              ? 0.0
-              : math.sin(_controller.value * math.pi) * -4;
-          final tilt = widget.reduceMotion
-              ? 0.0
-              : math.sin(_controller.value * math.pi) * .015;
-          return Transform.translate(
-            offset: Offset(0, lift),
-            child: Transform.rotate(angle: tilt, child: child),
-          );
+          final breathe = widget.reduceMotion
+              ? 1.0
+              : 1 + math.sin(_controller.value * math.pi) * .012;
+          return Transform.scale(scale: breathe, child: child);
         },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(widget.size * .28),
-          child: Image.asset(
-            'assets/branding/leo-cheer.png',
-            width: widget.size,
-            height: widget.size,
-            fit: BoxFit.cover,
-            semanticLabel: 'Leo, the Norwegian Forest Cat learning companion',
+        child: SizedBox(
+          width: widget.size * 1.25,
+          height: widget.size,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(widget.size * .22),
+                  child: Image.asset(
+                    'assets/branding/leo-nest-fireplace.png',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.centerRight,
+                    semanticLabel:
+                        'Leo, the Norwegian Forest Cat, resting in his fireside chair',
+                  ),
+                ),
+              ),
+              Positioned(
+                right: -4,
+                top: -8,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .94),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: .08),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(7),
+                    child: Text(
+                      _moodGlyph,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
