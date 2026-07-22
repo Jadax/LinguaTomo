@@ -1,4 +1,5 @@
 import '../models/app_models.dart';
+import 'postcard_archive_data.dart';
 
 const missions = <Mission>[
   Mission(
@@ -550,4 +551,5 @@ const postcards = <DailyPostcard>[
     cultureNote:
         '～てみる means to try doing something and is useful for low-pressure invitations.',
   ),
+  ...postcardArchive,
 ];

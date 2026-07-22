@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fsrs/fsrs.dart' show Rating;
 
 import '../models/app_models.dart';
+import '../models/grammar_models.dart';
+import '../providers/grammar_state.dart';
 import '../providers/review_state.dart';
 import '../theme/app_theme.dart';
 
@@ -19,14 +21,19 @@ class _ReviewViewState extends ConsumerState<ReviewView> {
   @override
   Widget build(BuildContext context) {
     final due = ref.watch(reviewDeckProvider).dueMissions;
+    final grammarGarden = ref.watch(grammarGardenProvider);
+    final grammar = ref.watch(grammarCatalogueProvider);
+    final dueGrammarIds = grammarGarden.cards.entries
+        .where((entry) => !entry.value.due.isAfter(DateTime.now().toUtc()))
+        .map((entry) => entry.key)
+        .toSet();
     return Scaffold(
       appBar: AppBar(title: const Text('Memory Garden')),
       body: ResponsiveContent(
-        child: due.isEmpty
-            ? const _EmptyReview()
-            : _ReviewCard(
+        child: due.isNotEmpty
+            ? _ReviewCard(
                 mission: due.first,
-                remaining: due.length,
+                remaining: due.length + dueGrammarIds.length,
                 revealed: _revealed,
                 onReveal: () => setState(() => _revealed = true),
                 onRate: (rating) async {
@@ -35,10 +42,142 @@ class _ReviewViewState extends ConsumerState<ReviewView> {
                       .rate(due.first.id, rating);
                   if (mounted) setState(() => _revealed = false);
                 },
+              )
+            : grammar.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, _) => const _EmptyReview(),
+                data: (catalogue) {
+                  final duePoints = catalogue.points
+                      .where((point) => dueGrammarIds.contains(point.id))
+                      .toList(growable: false);
+                  if (duePoints.isEmpty) {
+                    return _EmptyReview(planted: grammarGarden.cards.length);
+                  }
+                  return _GrammarReviewCard(
+                    point: duePoints.first,
+                    remaining: duePoints.length,
+                    revealed: _revealed,
+                    onReveal: () => setState(() => _revealed = true),
+                    onRate: (rating) async {
+                      await ref
+                          .read(grammarGardenProvider.notifier)
+                          .rate(duePoints.first.id, rating);
+                      if (mounted) setState(() => _revealed = false);
+                    },
+                  );
+                },
               ),
       ),
     );
   }
+}
+
+class _GrammarReviewCard extends StatelessWidget {
+  const _GrammarReviewCard({
+    required this.point,
+    required this.remaining,
+    required this.revealed,
+    required this.onReveal,
+    required this.onRate,
+  });
+
+  final GrammarPoint point;
+  final int remaining;
+  final bool revealed;
+  final VoidCallback onReveal;
+  final ValueChanged<Rating> onRate;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Row(
+        children: [
+          Expanded(
+            child: Text(
+              'A grammar plant is ready',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+          Text('$remaining due'),
+        ],
+      ),
+      const SizedBox(height: 7),
+      const Text('Recall the grammar pattern before revealing the notes.'),
+      const SizedBox(height: 16),
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            children: [
+              Chip(label: Text('${point.level} reference')),
+              const SizedBox(height: 10),
+              Text(
+                point.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              if (!revealed) ...[
+                const SizedBox(height: 16),
+                FilledButton.tonal(
+                  onPressed: onReveal,
+                  child: const Text('Show the lesson'),
+                ),
+              ] else ...[
+                const SizedBox(height: 14),
+                Text(point.summary, textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Text(
+                  point.formation,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      if (revealed) ...[
+        const SizedBox(height: 12),
+        const Text(
+          'How well did you remember?',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _RateButton(
+              label: 'Again',
+              color: AppColors.persimmon,
+              onTap: () => onRate(Rating.again),
+            ),
+            _RateButton(
+              label: 'Hard',
+              color: const Color(0xFFB5792F),
+              onTap: () => onRate(Rating.hard),
+            ),
+            _RateButton(
+              label: 'Good',
+              color: AppColors.matcha,
+              onTap: () => onRate(Rating.good),
+            ),
+            _RateButton(
+              label: 'Easy',
+              color: AppColors.teal,
+              onTap: () => onRate(Rating.easy),
+            ),
+          ],
+        ),
+      ],
+    ],
+  );
 }
 
 class _ReviewCard extends StatelessWidget {
@@ -177,7 +316,8 @@ class _RateButton extends StatelessWidget {
 }
 
 class _EmptyReview extends StatelessWidget {
-  const _EmptyReview();
+  const _EmptyReview({this.planted = 0});
+  final int planted;
   @override
   Widget build(BuildContext context) => Column(
     children: [
@@ -188,9 +328,13 @@ class _EmptyReview extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       const Text(
-        'No phrases are due right now. FSRS will bring them back when the timing is useful.',
+        'No phrases or grammar patterns are due right now. FSRS will bring them back when the timing is useful.',
         textAlign: TextAlign.center,
       ),
+      if (planted > 0) ...[
+        const SizedBox(height: 8),
+        Text('$planted grammar plant${planted == 1 ? '' : 's'} are growing.'),
+      ],
     ],
   );
 }

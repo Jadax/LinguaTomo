@@ -27,7 +27,7 @@ void main() {
     await tester.tap(find.text('Learn'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Meet the characters'), findsOneWidget);
-    expect(find.text('Hiragana'), findsOneWidget);
+    expect(find.text('Your learning library'), findsOneWidget);
+    expect(find.text('Grammar course atlas'), findsOneWidget);
   });
 }

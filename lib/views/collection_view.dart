@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
+import '../providers/grammar_state.dart';
 import '../theme/app_theme.dart';
 
 class CollectionView extends ConsumerWidget {
@@ -13,6 +14,7 @@ class CollectionView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
     final handwriting = ref.watch(handwritingHistoryProvider);
+    final grammar = ref.watch(grammarGardenProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Nest Collection')),
       body: ResponsiveContent(
@@ -160,6 +162,76 @@ class CollectionView extends ConsumerWidget {
                   emoji: '🎓',
                   title: 'Professional Route',
                   unlocked: progress.stage == ProficiencyStage.professional,
+                ),
+                _Badge(
+                  emoji: '🔖',
+                  title: 'Curious Reader',
+                  unlocked: grammar.bookmarks.isNotEmpty,
+                ),
+                _Badge(
+                  emoji: '🌿',
+                  title: 'Grammar Patch',
+                  unlocked: grammar.cards.length >= 10,
+                ),
+                _Badge(
+                  emoji: '🪴',
+                  title: 'Grammar Keeper',
+                  unlocked: grammar.cards.length >= 50,
+                ),
+                _Badge(
+                  emoji: '🌺',
+                  title: 'Pattern Garden',
+                  unlocked: grammar.cards.length >= 100,
+                ),
+                _Badge(
+                  emoji: '🌲',
+                  title: 'Grammar Forest',
+                  unlocked: grammar.cards.length >= 250,
+                ),
+                _Badge(
+                  emoji: '🏞️',
+                  title: 'Living Language',
+                  unlocked: grammar.cards.length >= 500,
+                ),
+                _Badge(
+                  emoji: '🗻',
+                  title: 'All 828',
+                  unlocked: grammar.cards.length >= 828,
+                ),
+                _Badge(
+                  emoji: '🐈',
+                  title: 'Leo’s Study Pal',
+                  unlocked: grammar.reviewCount >= 25,
+                ),
+                _Badge(
+                  emoji: '🍵',
+                  title: 'Calm Reviewer',
+                  unlocked: grammar.reviewCount >= 100,
+                ),
+                _Badge(
+                  emoji: '✨',
+                  title: 'Memory Glow',
+                  unlocked: grammar.reviewCount >= 500,
+                ),
+                _Badge(
+                  emoji: '🌟',
+                  title: 'Memory Master',
+                  unlocked: grammar.reviewCount >= 2000,
+                ),
+                _Badge(
+                  emoji: '🧭',
+                  title: 'Thirty Postcards',
+                  unlocked: progress.completedPostcards.length >= 30,
+                ),
+                _Badge(
+                  emoji: '🧶',
+                  title: 'Cosy Month',
+                  unlocked: progress.streak >= 30,
+                ),
+                _Badge(
+                  emoji: '🛋️',
+                  title: 'Full Nest',
+                  unlocked: progress.unlockedRewards.length >= missions.length,
                 ),
               ],
             ),

@@ -8,7 +8,7 @@ import 'providers/sync_state.dart';
 import 'services/cloud_service.dart';
 import 'theme/app_theme.dart';
 import 'views/dashboard_view.dart';
-import 'views/kana_grid_view.dart';
+import 'views/learning_hub_view.dart';
 import 'views/passport_view.dart';
 import 'views/snap_grade_view.dart';
 import 'views/writing_canvas_view.dart';
@@ -84,7 +84,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     final mode = ref.watch(experienceProvider);
     final pages = <Widget>[
       const DashboardView(),
-      const KanaGridView(),
+      const LearningHubView(),
       const SnapGradeView(),
       const WritingCanvasView(),
       const PassportView(),

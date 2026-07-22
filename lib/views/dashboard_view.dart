@@ -5,6 +5,7 @@ import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../providers/review_state.dart';
+import '../providers/grammar_state.dart';
 import '../theme/app_theme.dart';
 import 'mission_view.dart';
 import 'collection_view.dart';
@@ -22,7 +23,9 @@ class DashboardView extends ConsumerWidget {
     final progress = ref.watch(progressProvider);
     final next = ref.watch(nextMissionProvider);
     final mode = ref.watch(experienceProvider);
-    final dueReviews = ref.watch(reviewDeckProvider).dueMissions.length;
+    final dueReviews =
+        ref.watch(reviewDeckProvider).dueMissions.length +
+        ref.watch(grammarGardenProvider).dueCount;
     return ResponsiveContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -251,7 +254,7 @@ class DashboardView extends ConsumerWidget {
     builder: (context) => AlertDialog(
       title: const Text('How the Memory Garden works'),
       content: const Text(
-        'Each learned phrase becomes a plant. FSRS estimates when that memory is likely to become difficult, then brings it back just before it fades. Again shortens the interval; Hard, Good and Easy lengthen it by different amounts. There is no penalty for returning late, and the garden never dies.',
+        'Each learned phrase or grammar pattern becomes a plant. FSRS estimates when that memory is likely to become difficult, then brings it back just before it fades. Again shortens the interval; Hard, Good and Easy lengthen it by different amounts. There is no penalty for returning late, and the garden never dies.',
       ),
       actions: [
         TextButton(
