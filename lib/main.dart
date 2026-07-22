@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'config/storage_keys.dart';
 import 'models/app_models.dart';
 import 'providers/app_state.dart';
 import 'providers/sync_state.dart';
@@ -18,8 +19,8 @@ import 'views/welcome_journey_view.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-  final userBox = await Hive.openBox<dynamic>('linguatomo_user_data');
-  final legacyBox = await Hive.openBox<dynamic>('nekokana_user_data');
+  final userBox = await Hive.openBox<dynamic>(StorageKeys.userData);
+  final legacyBox = await Hive.openBox<dynamic>(StorageKeys.legacyUserData);
   if (userBox.isEmpty && legacyBox.isNotEmpty) {
     await userBox.putAll(legacyBox.toMap());
   }

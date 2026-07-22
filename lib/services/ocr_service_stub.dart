@@ -7,7 +7,7 @@ class JapaneseOcrService {
 
   Future<OcrAnalysis> analyze(XFile file) {
     throw UnsupportedError(
-      'Japanese photo OCR is currently available in the Android app.',
+      'Japanese photo OCR is available in the Android and iOS apps.',
     );
   }
 

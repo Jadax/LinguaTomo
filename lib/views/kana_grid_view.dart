@@ -1,35 +1,11 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../theme/app_theme.dart';
+import '../data/character_data.dart';
+import '../models/character_entry.dart';
 import '../services/speech_service.dart';
-
-enum CharacterSet { hiragana, katakana, kanjiN5 }
-
-@immutable
-class CharacterEntry {
-  const CharacterEntry({
-    required this.symbol,
-    required this.reading,
-    required this.meaning,
-    required this.examples,
-    required this.pitchPattern,
-  });
-
-  final String symbol;
-  final String reading;
-  final String meaning;
-  final List<String> examples;
-  final List<int> pitchPattern;
-
-  String get kanjiVgUrl {
-    final code = symbol.runes.first.toRadixString(16).padLeft(5, '0');
-    return 'https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/$code.svg';
-  }
-}
+import '../theme/app_theme.dart';
 
 @immutable
 class GridFilterState {
@@ -47,7 +23,6 @@ class GridFilterNotifier extends Notifier<GridFilterState> {
   GridFilterState build() => const GridFilterState();
 
   void selectSet(CharacterSet value) => state = state.copyWith(set: value);
-
   void search(String value) =>
       state = state.copyWith(query: value.trim().toLowerCase());
 }
@@ -56,277 +31,6 @@ final gridFilterProvider =
     NotifierProvider<GridFilterNotifier, GridFilterState>(
       GridFilterNotifier.new,
     );
-
-const _characters = <CharacterSet, List<CharacterEntry>>{
-  CharacterSet.hiragana: [
-    CharacterEntry(
-      symbol: 'あ',
-      reading: 'a',
-      meaning: 'a',
-      examples: ['あさ · asa · morning', 'あめ · ame · rain'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'い',
-      reading: 'i',
-      meaning: 'i',
-      examples: ['いぬ · inu · dog', 'いえ · ie · house'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: 'う',
-      reading: 'u',
-      meaning: 'u',
-      examples: ['うみ · umi · sea', 'うえ · ue · above'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'え',
-      reading: 'e',
-      meaning: 'e',
-      examples: ['えき · eki · station', 'え · e · picture'],
-      pitchPattern: [1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'お',
-      reading: 'o',
-      meaning: 'o',
-      examples: ['おと · oto · sound', 'おちゃ · ocha · tea'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'か',
-      reading: 'ka',
-      meaning: 'ka',
-      examples: ['かさ · kasa · umbrella', 'かお · kao · face'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: 'き',
-      reading: 'ki',
-      meaning: 'ki',
-      examples: ['き · ki · tree', 'きた · kita · north'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'く',
-      reading: 'ku',
-      meaning: 'ku',
-      examples: ['くち · kuchi · mouth', 'くも · kumo · cloud'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'け',
-      reading: 'ke',
-      meaning: 'ke',
-      examples: ['けさ · kesa · this morning', 'け · ke · hair'],
-      pitchPattern: [1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'こ',
-      reading: 'ko',
-      meaning: 'ko',
-      examples: ['こえ · koe · voice', 'ここ · koko · here'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'さ',
-      reading: 'sa',
-      meaning: 'sa',
-      examples: ['さかな · sakana · fish', 'さる · saru · monkey'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'し',
-      reading: 'shi',
-      meaning: 'shi',
-      examples: ['しお · shio · salt', 'しま · shima · island'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: 'す',
-      reading: 'su',
-      meaning: 'su',
-      examples: ['すし · sushi', 'すな · suna · sand'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'せ',
-      reading: 'se',
-      meaning: 'se',
-      examples: ['せかい · sekai · world', 'せみ · semi · cicada'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'そ',
-      reading: 'so',
-      meaning: 'so',
-      examples: ['そら · sora · sky', 'そと · soto · outside'],
-      pitchPattern: [1, 0, 0],
-    ),
-  ],
-  CharacterSet.katakana: [
-    CharacterEntry(
-      symbol: 'ア',
-      reading: 'a',
-      meaning: 'a',
-      examples: ['アイス · aisu · ice cream', 'アジア · Ajia · Asia'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'イ',
-      reading: 'i',
-      meaning: 'i',
-      examples: ['インク · inku · ink', 'イタリア · Itaria · Italy'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: 'ウ',
-      reading: 'u',
-      meaning: 'u',
-      examples: ['ウール · uuru · wool', 'ウイルス · uirusu · virus'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'エ',
-      reading: 'e',
-      meaning: 'e',
-      examples: ['エアコン · eakon · air conditioner', 'エネルギー · enerugii · energy'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: 'オ',
-      reading: 'o',
-      meaning: 'o',
-      examples: ['オレンジ · orenji · orange', 'オイル · oiru · oil'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'カ',
-      reading: 'ka',
-      meaning: 'ka',
-      examples: ['カメラ · kamera · camera', 'カレー · karee · curry'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: 'キ',
-      reading: 'ki',
-      meaning: 'ki',
-      examples: ['キス · kisu · kiss', 'キロ · kiro · kilo'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'ク',
-      reading: 'ku',
-      meaning: 'ku',
-      examples: ['クラス · kurasu · class', 'クリーム · kuriimu · cream'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: 'ケ',
-      reading: 'ke',
-      meaning: 'ke',
-      examples: ['ケーキ · keeki · cake', 'ケース · keesu · case'],
-      pitchPattern: [1, 0],
-    ),
-    CharacterEntry(
-      symbol: 'コ',
-      reading: 'ko',
-      meaning: 'ko',
-      examples: ['コーヒー · koohii · coffee', 'コート · kooto · coat'],
-      pitchPattern: [0, 1, 0],
-    ),
-  ],
-  CharacterSet.kanjiN5: [
-    CharacterEntry(
-      symbol: '一',
-      reading: 'いち · ichi',
-      meaning: 'one',
-      examples: ['一つ · hitotsu · one thing', '一日 · ichinichi · one day'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: '人',
-      reading: 'ひと · hito',
-      meaning: 'person',
-      examples: [
-        '日本人 · nihonjin · Japanese person',
-        '一人 · hitori · one person',
-      ],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: '日',
-      reading: 'ひ · hi / にち · nichi',
-      meaning: 'day, sun',
-      examples: ['日本 · nihon · Japan', '休日 · kyuujitsu · holiday'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: '月',
-      reading: 'つき · tsuki / げつ · getsu',
-      meaning: 'moon, month',
-      examples: ['月曜日 · getsuyoubi · Monday', '今月 · kongetsu · this month'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: '火',
-      reading: 'ひ · hi / か · ka',
-      meaning: 'fire',
-      examples: ['火曜日 · kayoubi · Tuesday', '花火 · hanabi · fireworks'],
-      pitchPattern: [1, 0, 0],
-    ),
-    CharacterEntry(
-      symbol: '水',
-      reading: 'みず · mizu',
-      meaning: 'water',
-      examples: ['水曜日 · suiyoubi · Wednesday', '水 · mizu · water'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: '木',
-      reading: 'き · ki',
-      meaning: 'tree, wood',
-      examples: ['木曜日 · mokuyoubi · Thursday', '木 · ki · tree'],
-      pitchPattern: [1, 0],
-    ),
-    CharacterEntry(
-      symbol: '金',
-      reading: 'かね · kane / きん · kin',
-      meaning: 'gold, money',
-      examples: ['金曜日 · kinyoubi · Friday', 'お金 · okane · money'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: '土',
-      reading: 'つち · tsuchi',
-      meaning: 'earth, soil',
-      examples: ['土曜日 · doyoubi · Saturday', '土地 · tochi · land'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: '山',
-      reading: 'やま · yama',
-      meaning: 'mountain',
-      examples: ['富士山 · fujisan · Mt Fuji', '山道 · yamamichi · mountain road'],
-      pitchPattern: [0, 1, 1],
-    ),
-    CharacterEntry(
-      symbol: '川',
-      reading: 'かわ · kawa',
-      meaning: 'river',
-      examples: ['川 · kawa · river', '小川 · ogawa · stream'],
-      pitchPattern: [0, 1, 0],
-    ),
-    CharacterEntry(
-      symbol: '本',
-      reading: 'ほん · hon',
-      meaning: 'book, origin',
-      examples: ['本 · hon · book', '日本 · nihon · Japan'],
-      pitchPattern: [1, 0],
-    ),
-  ],
-};
 
 class KanaGridView extends ConsumerStatefulWidget {
   const KanaGridView({super.key});
@@ -353,9 +57,7 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Audio is unavailable. Check your connection and try again.',
-            ),
+            content: Text('Audio is unavailable just now. Please try again.'),
           ),
         );
       }
@@ -367,10 +69,10 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
   @override
   Widget build(BuildContext context) {
     final filter = ref.watch(gridFilterProvider);
-    final entries = _characters[filter.set]!.where((entry) {
-      final haystack = '${entry.symbol} ${entry.reading} ${entry.meaning}'
-          .toLowerCase();
-      return haystack.contains(filter.query);
+    final entries = characterLibrary[filter.set]!.where((entry) {
+      return '${entry.symbol} ${entry.reading} ${entry.meaning}'
+          .toLowerCase()
+          .contains(filter.query);
     }).toList();
 
     return ResponsiveContent(
@@ -382,7 +84,9 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 4),
-          const Text('Tap a card to see how it is written and spoken.'),
+          const Text(
+            'Learn the basic syllabaries, then connect kanji to useful words.',
+          ),
           const SizedBox(height: 16),
           SegmentedButton<CharacterSet>(
             segments: const [
@@ -409,10 +113,15 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
             onChanged: ref.read(gridFilterProvider.notifier).search,
             decoration: const InputDecoration(
               prefixIcon: Icon(Icons.search_rounded),
-              hintText: 'Search a character, reading, or meaning',
+              hintText: 'Search a character, reading or meaning',
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          Text(
+            '${entries.length} characters',
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(height: 8),
           if (entries.isEmpty)
             const _EmptyResults()
           else
@@ -439,7 +148,7 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
                       entry: entry,
                       playing: _playing == entry.symbol,
                       onAudio: () => _play(entry),
-                      onOpen: () => _showDetails(context, entry),
+                      onOpen: () => _showDetails(entry),
                     );
                   },
                 );
@@ -450,10 +159,11 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
     );
   }
 
-  void _showDetails(BuildContext context, CharacterEntry entry) {
+  void _showDetails(CharacterEntry entry) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      showDragHandle: true,
       constraints: const BoxConstraints(maxWidth: 600),
       builder: (_) =>
           _CharacterDetails(entry: entry, onAudio: () => _play(entry)),
@@ -468,204 +178,148 @@ class _CharacterCard extends StatelessWidget {
     required this.onAudio,
     required this.onOpen,
   });
-
   final CharacterEntry entry;
   final bool playing;
   final VoidCallback onAudio;
   final VoidCallback onOpen;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: FittedBox(
-                  child: Text(
-                    entry.symbol,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
+  Widget build(BuildContext context) => Card(
+    margin: EdgeInsets.zero,
+    clipBehavior: Clip.antiAlias,
+    child: InkWell(
+      onTap: onOpen,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: FittedBox(
+                child: Text(
+                  entry.symbol,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
+            ),
+            Text(
+              entry.reading,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            if (entry.meaning != entry.reading)
               Text(
-                entry.reading,
+                entry.meaning,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w800),
+                style: const TextStyle(fontSize: 11, color: AppColors.muted),
               ),
-              if (entry.meaning != entry.reading)
-                Text(
-                  entry.meaning,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11, color: AppColors.muted),
-                ),
-              SizedBox(
-                height: 34,
-                child: IconButton(
-                  tooltip: 'Play ${entry.reading}',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: playing ? null : onAudio,
-                  icon: playing
-                      ? const SizedBox.square(
-                          dimension: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(
-                          Icons.volume_up_rounded,
-                          size: 20,
-                          color: AppColors.teal,
-                        ),
-                ),
+            SizedBox(
+              height: 34,
+              child: IconButton(
+                tooltip: 'Play ${entry.reading}',
+                visualDensity: VisualDensity.compact,
+                onPressed: playing ? null : onAudio,
+                icon: playing
+                    ? const SizedBox.square(
+                        dimension: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(
+                        Icons.volume_up_rounded,
+                        size: 20,
+                        color: AppColors.teal,
+                      ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
-class _CharacterDetails extends StatefulWidget {
+class _CharacterDetails extends StatelessWidget {
   const _CharacterDetails({required this.entry, required this.onAudio});
-
   final CharacterEntry entry;
   final VoidCallback onAudio;
 
   @override
-  State<_CharacterDetails> createState() => _CharacterDetailsState();
-}
-
-class _CharacterDetailsState extends State<_CharacterDetails>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1800),
-  )..forward();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final entry = widget.entry;
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          4,
-          20,
-          24 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Text(
-                  entry.symbol,
-                  style: const TextStyle(
-                    fontSize: 64,
-                    fontWeight: FontWeight.w600,
-                  ),
+  Widget build(BuildContext context) => SafeArea(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Text(
+                entry.symbol,
+                style: const TextStyle(
+                  fontSize: 64,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        entry.reading,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      Text(
-                        entry.meaning,
-                        style: const TextStyle(color: AppColors.muted),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton.filled(
-                  onPressed: widget.onAudio,
-                  icon: const Icon(Icons.volume_up_rounded),
-                  tooltip: 'Play pronunciation',
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Stroke order',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: SizedBox(
-                height: 210,
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) => ClipRect(
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      widthFactor: _controller.value,
-                      child: child,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      entry.reading,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: SvgPicture.network(
-                      entry.kanjiVgUrl,
-                      semanticsLabel:
-                          '${entry.symbol} stroke order from KanjiVG',
-                      placeholderBuilder: (_) =>
-                          const Center(child: CircularProgressIndicator()),
+                    Text(
+                      entry.meaning,
+                      style: const TextStyle(color: AppColors.muted),
                     ),
-                  ),
+                  ],
+                ),
+              ),
+              IconButton.filled(
+                onPressed: onAudio,
+                icon: const Icon(Icons.volume_up_rounded),
+                tooltip: 'Play pronunciation',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text('Stroke order', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Card(
+            child: SizedBox(
+              height: 210,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: SvgPicture.network(
+                  entry.kanjiVgUrl,
+                  semanticsLabel: '${entry.symbol} stroke order from KanjiVG',
+                  placeholderBuilder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
                 ),
               ),
             ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => _controller.forward(from: 0),
-                icon: const Icon(Icons.replay_rounded),
-                label: const Text('Replay strokes'),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            color: AppColors.teal.withValues(alpha: .08),
+            child: const Padding(
+              padding: EdgeInsets.all(14),
+              child: Text(
+                'Pitch accent belongs to whole words and can vary by word and region. LinguaTomo teaches it with verified word audio, never as an invented property of an isolated character.',
               ),
             ),
-            Text(
-              'Pitch accent',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: SizedBox(
-                height: 96,
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: CustomPaint(
-                    painter: _PitchAccentPainter(entry.pitchPattern),
-                    child: const SizedBox.expand(),
-                  ),
-                ),
-              ),
-            ),
+          ),
+          if (entry.examples.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
               'Example words',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 6),
-            ...entry.examples.map(
-              (example) => ListTile(
+            for (final example in entry.examples)
+              ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const CircleAvatar(
                   backgroundColor: AppColors.peach,
@@ -677,86 +331,30 @@ class _CharacterDetailsState extends State<_CharacterDetails>
                 ),
                 title: Text(example),
               ),
-            ),
           ],
-        ),
+        ],
       ),
-    );
-  }
-}
-
-class _PitchAccentPainter extends CustomPainter {
-  const _PitchAccentPainter(this.pattern);
-
-  final List<int> pattern;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (pattern.isEmpty) return;
-    final line = Paint()
-      ..color = AppColors.coral
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final dot = Paint()..color = AppColors.coral;
-    final guide = Paint()
-      ..color = AppColors.charcoal.withValues(alpha: .1)
-      ..strokeWidth = 1;
-    canvas.drawLine(
-      Offset(0, size.height * .25),
-      Offset(size.width, size.height * .25),
-      guide,
-    );
-    canvas.drawLine(
-      Offset(0, size.height * .75),
-      Offset(size.width, size.height * .75),
-      guide,
-    );
-    final step = pattern.length == 1 ? 0.0 : size.width / (pattern.length - 1);
-    final points = <Offset>[];
-    for (var i = 0; i < pattern.length; i++) {
-      points.add(
-        Offset(
-          i * step,
-          pattern[i] == 1 ? size.height * .25 : size.height * .75,
-        ),
-      );
-    }
-    final path = Path()..moveTo(points.first.dx, points.first.dy);
-    for (final point in points.skip(1)) {
-      path.lineTo(point.dx, point.dy);
-    }
-    canvas.drawPath(path, line);
-    for (final point in points) {
-      canvas.drawCircle(point, math.min(5, size.height / 10), dot);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _PitchAccentPainter oldDelegate) =>
-      oldDelegate.pattern != pattern;
+    ),
+  );
 }
 
 class _EmptyResults extends StatelessWidget {
   const _EmptyResults();
-
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          children: [
-            const Text('🐾', style: TextStyle(fontSize: 38)),
-            const SizedBox(height: 8),
-            Text(
-              'Leo could not find that one.',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const Text('Try a character, romaji reading, or English meaning.'),
-          ],
-        ),
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        children: [
+          const Text('🐾', style: TextStyle(fontSize: 38)),
+          const SizedBox(height: 8),
+          Text(
+            'Leo could not find that one.',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const Text('Try a character, romaji reading or English meaning.'),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }

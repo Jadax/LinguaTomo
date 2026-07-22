@@ -12,6 +12,11 @@ The route combines, but does not conflate:
 The long-term functional target is ILR 3. Passing JLPT N1 alone does not prove
 ILR 3 speaking or professional interaction.
 
+LinguaTomo provides the complete instructional route from first kana to
+advanced independent use. It has no instructor marketplace and does not imply
+access to Japanese teachers. It can also act as a structured companion for
+learners who choose to work with an external teacher.
+
 ## Current structure
 
 | Stage | Reference | Functional focus |
@@ -30,8 +35,10 @@ Current bundled scale:
 - 30 postcards
 - 24 seasonal story side quests
 
-The route is not yet a complete expert curriculum. Vocabulary, systematic kanji,
-graded reading, native listening and exam banks remain roadmap work.
+The bundled route is a tested foundation, not yet a complete expert curriculum.
+Vocabulary, systematic kanji, graded reading, verified listening and original
+exam banks remain tracked delivery work. The interface must state this honestly
+until each coverage gate has passed.
 
 ## Lesson quality gate
 

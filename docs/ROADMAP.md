@@ -4,6 +4,13 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
+## Product teaching model
+
+LinguaTomo is the in-app instructor from beginner through advanced study. There
+will be no instructor marketplace, booked tutoring or implied access to native
+speakers. The course should stand alone for committed self-study and also fit
+alongside lessons delivered by a learner's own external teacher.
+
 ## P0: launch-critical depth
 
 1. **Complete kana course**
@@ -47,12 +54,25 @@ defined.
 ## P3: optional community
 
 1. Friend challenges and ghost-mode personal bests.
-2. Moderated questions and community corrections.
+2. Moderated peer questions and clearly labelled community suggestions.
 3. Guardian-controlled child accounts.
 4. Opt-in leaderboards with complete stress-free disablement.
 
 Direct messaging is out of scope until safeguarding, moderation and reporting
 are independently designed and reviewed.
+
+## Beyond v2: durable mastery
+
+1. Complete original N5 to N1 lesson, reader, listening and mock-exam banks.
+2. Professional domains including workplace interaction, public services,
+   academic reading, formal presentation and mediation.
+3. Dialect and register awareness using licensed recordings and original
+   explanations.
+4. Downloadable offline course packs with versioned content migrations.
+5. A deep Nest collection, postcard archive, memory garden and seasonal story
+   catalogue tied to demonstrated learning rather than compulsive spending.
+6. Longitudinal progress views showing current position, next checkpoint,
+   remaining scope and confidence decay.
 
 ## Definition of done
 

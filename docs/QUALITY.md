@@ -1,5 +1,9 @@
 # Quality and known limitations
 
+GitHub Actions builds Web and Android on Linux and performs an unsigned iOS
+release build on macOS. Windows developers can therefore keep iPhone support in
+parity even though Apple signing and device distribution require Xcode on macOS.
+
 ## Required verification
 
 | Check | Purpose |
@@ -21,7 +25,7 @@
 
 ## Last verified release
 
-Version 1.2.1, build 4 was verified on 22 July 2026 with Flutter 3.44.7
+Version 1.3.0, build 5 was verified on 22 July 2026 with Flutter 3.44.7
 and Dart 3.12.2:
 
 - static analysis: no issues;

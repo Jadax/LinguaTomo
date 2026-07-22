@@ -1,5 +1,5 @@
 -- LinguaTomo canonical cloud schema.
--- Schema version: 1.2.1 (build 4), 22 July 2026.
+-- Schema version: 1.3.0 (build 5), 22 July 2026.
 -- Apply this single file to a fresh Supabase project. Local Hive data remains
 -- the offline source of truth. Never place service-role secrets in this file.
 create extension if not exists pgcrypto;

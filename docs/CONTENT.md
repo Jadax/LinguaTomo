@@ -1,5 +1,22 @@
 # Content sources and research
 
+## Clean-room publishing rule
+
+Every shipped explanation, dialogue, mnemonic, exercise, story, illustration
+and recording must be original to Astraiva or imported under a compatible,
+documented licence. A public webpage is not permission to copy it. Repository
+stars, the words “free resource”, educational use and visible source code do not
+replace an explicit licence.
+
+Research may inform topic coverage and teaching patterns, but authors must close
+the source and write new wording, examples and assessments. No protected exam
+question, textbook passage, anime clip, song, logo or community post may be
+copied into the app without written permission or a compatible licence.
+
+Each content batch requires a manifest recording author, reviewer, source type,
+licence, attribution requirement, locale, version and review date. Contributions
+must include an original-work declaration. Unclear rights mean do not ship.
+
 ## Import rule
 
 Open source code does not imply that linked text, audio, video, logos or
