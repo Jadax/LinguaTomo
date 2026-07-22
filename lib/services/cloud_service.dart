@@ -26,7 +26,8 @@ class CloudService {
 
   User? get currentUser => _client?.auth.currentUser;
 
-  Stream<AuthState> get authChanges => _client!.auth.onAuthStateChange;
+  Stream<AuthState> get authChanges =>
+      _client?.auth.onAuthStateChange ?? const Stream<AuthState>.empty();
 
   Future<void> sendMagicLink(String email) async {
     final client = _client;

@@ -5,8 +5,7 @@
     "display": "standalone",
     "background_color": "#FFF9F2",
     "theme_color": "#F05B4F",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "description": "A warm, free Japanese learning companion for every stage from first kana to advanced study.",
     "prefer_related_applications": false,
     "icons": [
         {

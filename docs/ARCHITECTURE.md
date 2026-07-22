@@ -1,42 +1,66 @@
-# LinguaTomo architecture
+# Architecture
 
 ## Decision
 
-LinguaTomo is a local-first Flutter application for Web, Android and iOS. Hive is the learning source of truth. Supabase is an optional synchronisation and social layer configured only through public build-time values.
+LinguaTomo is a local-first Flutter application. Core study must survive network
+failure, account failure and optional-service failure. Hive is the learning
+source of truth; Supabase is an optional synchronisation and social boundary.
+
+## Runtime flow
+
+```text
+Flutter views
+    ↓ user intent / rendered state
+Riverpod NotifierProviders
+    ↓ domain transitions
+Hive repositories and FSRS cards
+    ↘ optional device services: OCR, TTS, image picker, sharing
+    ↘ optional Supabase: PKCE auth and progress snapshots
+```
+
+## Module ownership
+
+- `lib/models`: immutable domain objects and enums
+- `lib/data`: bundled curriculum and parsing repositories
+- `lib/providers`: state transitions, FSRS scheduling and Hive persistence
+- `lib/services`: platform or network adapters
+- `lib/views`: feature screens and navigation destinations
+- `lib/widgets`: reusable UI without feature persistence
+- `lib/theme`: colours, typography, accessibility and responsive constraints
+
+Views must not write Hive directly. Platform packages must remain behind
+services. Optional cloud state must not block local application startup.
+
+## Persistence
+
+Hive box: `linguatomo_user_data`.
+
+The app performs a one-time compatible copy from the legacy
+`nekokana_user_data` box when the new box is empty. Do not remove that migration
+until a deliberate data-retention decision is made.
+
+Stored domains currently include learner profile, experience mode, mission and
+postcard progress, handwriting history, FSRS phrase cards, grammar cards,
+bookmarks and sync state.
 
 ## Supabase
 
-`supabase/linguatomo.sql` is the only canonical SQL file. Future schema changes must update that file and its version comment rather than adding migration fragments. The project URL is public and is supplied by default. A Supabase publishable key may be passed with `--dart-define=SUPABASE_PUBLISHABLE_KEY=...`. Service-role keys are server-only and must never be compiled into Flutter or committed to Git.
+`supabase/linguatomo.sql` is the only canonical SQL file. Modify it in place and
+update its schema-version comment. Do not add migration fragments.
 
-## Runtime layers
+Only `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` belong in Flutter build-time
+configuration. A service-role key is server-only.
 
-1. Flutter presentation: adaptive Material 3 UI, responsive layouts, CustomPainter graphics.
-2. Riverpod application state: progression, FSRS, accessibility, OCR history, synchronization.
-3. Local persistence: Hive/IndexedDB stores all learning data and a bounded sync outbox.
-4. Device services: ML Kit Japanese OCR on Android/iOS, system TTS, image picker, share sheet.
-5. Optional Supabase: PKCE authentication, PostgreSQL snapshots, private storage, Realtime social events, and row-level security.
+## Responsive and accessibility boundaries
 
-## Configuration
+- Mobile uses a portrait-first column flow.
+- Wide browsers centre content at a maximum width of 600 px.
+- Visual Explorer enlarges visuals and reduces typing.
+- Comfort increases contrast and type size while reducing motion.
+- Learning access never changes with presentation mode.
 
-No private service key belongs in the client. Use only the Supabase project URL and public anonymous key:
+## Graphics boundary
 
-```sh
-flutter run \
-  --dart-define=SUPABASE_URL=https://PROJECT.supabase.co \
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=PUBLIC_PUBLISHABLE_KEY
-```
-
-Apply `supabase/migrations/202607220001_initial_schema.sql` through the Supabase CLI or SQL editor before enabling sync.
-
-## Safety boundaries
-
-- Local learning never requires authentication.
-- Handwriting photos are not uploaded by default.
-- Child profiles require a guardian and cannot create community posts, friendships, or challenges.
-- Community submissions begin in `pending` moderation state.
-- Direct messaging is deliberately absent.
-- The client never awards official JLPT, CEFR, or ILR certification.
-
-## Future graphics layer
-
-Keep the main Nest in Flutter widgets and CustomPainter until room interactions exceed simple placement. If a larger explorable world is validated, adopt the open-source Flame engine inside an isolated feature module rather than rebuilding the whole app as a game.
+Keep the Nest in Flutter widgets and CustomPainter while interaction remains
+simple. Consider Flame only for a validated explorable-world requirement, and
+isolate it behind a feature module rather than replacing the application shell.

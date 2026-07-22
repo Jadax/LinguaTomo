@@ -47,7 +47,7 @@ class PassportView extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'NEKOKANA PASSPORT',
+                        'LINGUATOMO PASSPORT',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 10,
