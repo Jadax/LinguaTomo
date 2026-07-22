@@ -7,7 +7,7 @@ class SpeechService {
   Future<void> _prepareWarmJapaneseVoice() async {
     if (_prepared) return;
     await _tts.setLanguage('ja-JP');
-    await _tts.setSpeechRate(.38);
+    await _tts.setSpeechRate(.42);
     await _tts.setPitch(.96);
     await _tts.setVolume(.9);
 

@@ -13,7 +13,7 @@ class JourneyView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wordProgress = ref.watch(wordProgressProvider);
-    final overallProgress = wordProgress.wordsLearned / 200;
+    final overallProgress = wordProgress.wordsLearned / 400;
     return Scaffold(
       appBar: AppBar(title: const Text('My Japanese Route')),
       body: ListView(
@@ -34,7 +34,7 @@ class JourneyView extends ConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          '${wordProgress.wordsLearned} of 200 words',
+                          '${wordProgress.wordsLearned} of 400 words',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),

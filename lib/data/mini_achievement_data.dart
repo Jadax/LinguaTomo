@@ -106,7 +106,7 @@ final miniAchievements = <MiniAchievementDefinition>[
   MiniAchievementDefinition(
     id: 'mini_half_words',
     title: 'Halfway There',
-    description: 'Learn 100 of the 200 words.',
+    description: 'Learn 100 of the 400 words.',
     progress: (s) => s.wordsLearned,
     target: 100,
   ),

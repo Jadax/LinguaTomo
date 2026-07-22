@@ -43,6 +43,7 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
   var _ready = false;
   var _showLoading = true;
   var _prepared = false;
+  DifficultyTier? _loadingTier;
 
   @override
   void didChangeDependencies() {
@@ -99,8 +100,34 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
           ? LeoLoadingScreen(
               reduceMotion: mode == ExperienceMode.comfort,
               ready: _ready,
-              onFinished: () {
-                if (mounted) setState(() => _showLoading = false);
+              onTierSelected: (tier) async {
+                _loadingTier = tier;
+                final box = Hive.box<dynamic>(StorageKeys.userData);
+                await box.put('level_prefs_v1', tier.name);
+                await box.put(
+                  'word_progress_v1',
+                  {
+                    'completedWords': <String>[],
+                    'currentTier': tier.name,
+                    'wordLessonHistory': <String>[],
+                    'perfectLessonCount': 0,
+                    'wordActivityDates': <String>[],
+                  },
+                );
+              },
+              onFinished: () async {
+                if (!mounted) return;
+                if (_loadingTier != null) {
+                  final box = Hive.box<dynamic>(StorageKeys.userData);
+                  await box.put(
+                    'learner_profile_v1',
+                    {
+                      'start': _loadingTier!.name,
+                      'onboardingComplete': true,
+                    },
+                  );
+                }
+                setState(() => _showLoading = false);
               },
             )
           : ref.watch(learnerProfileProvider).onboardingComplete

@@ -34,7 +34,7 @@ class LearningHubView extends ConsumerWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            '${wordProgress.wordsLearned}/200 words · ${wordProgress.currentTier.label} tier',
+            '${wordProgress.wordsLearned}/400 words · ${wordProgress.currentTier.label} tier',
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
@@ -58,12 +58,12 @@ class LearningHubView extends ConsumerWidget {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
-                      Text('${wordProgress.wordsLearned}/200'),
+                      Text('${wordProgress.wordsLearned}/400'),
                     ],
                   ),
                   const SizedBox(height: 9),
                   LinearProgressIndicator(
-                    value: wordProgress.wordsLearned / 200,
+                    value: wordProgress.wordsLearned / 400,
                     minHeight: 10,
                   ),
                   const SizedBox(height: 9),

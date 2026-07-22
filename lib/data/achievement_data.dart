@@ -759,11 +759,11 @@ final achievements = <AchievementDefinition>[
     id: 'two_hundred_words',
     title: 'Word Master',
     emoji: '🏆',
-    requirement: 'Learn all 200 Japanese words.',
+    requirement: 'Learn all 400 Japanese words.',
     rewardType: AchievementRewardType.trophy,
     reward: 'Dictionary trophy',
     progress: (s) => s.wordsLearned,
-    target: 200,
+    target: 400,
   ),
   AchievementDefinition(
     id: 'starter_complete',

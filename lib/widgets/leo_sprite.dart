@@ -5,6 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../models/app_models.dart';
+
 enum LeoPose { idle, walkA, walkB, sit, smile, meow, celebrate, butterfly }
 
 class LeoSprite extends StatefulWidget {
@@ -88,6 +90,7 @@ class LeoLoadingScreen extends StatefulWidget {
     required this.reduceMotion,
     required this.ready,
     required this.onFinished,
+    this.onTierSelected,
   });
 
   final bool reduceMotion;
@@ -96,6 +99,7 @@ class LeoLoadingScreen extends StatefulWidget {
   /// the butterfly until this moment, then plays a short catch finale.
   final bool ready;
   final VoidCallback onFinished;
+  final ValueChanged<DifficultyTier>? onTierSelected;
 
   @override
   State<LeoLoadingScreen> createState() => _LeoLoadingScreenState();
@@ -108,6 +112,7 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
   Timer? _finishTimer;
   var _walkFrame = false;
   var _caught = false;
+  DifficultyTier? _selectedTier;
 
   @override
   void initState() {
@@ -164,9 +169,11 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
           constraints: const BoxConstraints(maxWidth: 600),
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                 AspectRatio(
                   aspectRatio: 1.7,
                   child: DecoratedBox(
@@ -251,7 +258,53 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                       ? 'Caught it! Off we go...'
                       : 'Leo is warming up your next Japanese adventure...',
                 ),
+                const SizedBox(height: 18),
+                if (!_caught)
+                  SizedBox(
+                    height: 280,
+                    child: SingleChildScrollView(
+                      child: RadioGroup<DifficultyTier>(
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _selectedTier = value);
+                          widget.onTierSelected?.call(value);
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Choose your level',
+                              style: Theme.of(context).textTheme.titleMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            for (final tier in DifficultyTier.values)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: Card(
+                                  color: _selectedTier == tier
+                                      ? const Color(0xFFD4EDDA)
+                                      : Colors.white,
+                                  child: RadioListTile<DifficultyTier>(
+                                    value: tier,
+                                    title: Text(
+                                      tier.label,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    subtitle: Text(tier.description),
+                                    dense: true,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
               ],
+              ),
             ),
           ),
         ),

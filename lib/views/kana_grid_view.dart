@@ -75,14 +75,17 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
           .contains(filter.query);
     }).toList();
 
-    return ResponsiveContent(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Meet the characters',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Kana and kanji studio')),
+      body: SafeArea(
+        child: ResponsiveContent(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Meet the characters',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
           const SizedBox(height: 4),
           const Text(
             'Learn the basic syllabaries, then connect kanji to useful words.',
@@ -155,6 +158,8 @@ class _KanaGridViewState extends ConsumerState<KanaGridView> {
               },
             ),
         ],
+          ),
+        ),
       ),
     );
   }
