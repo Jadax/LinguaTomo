@@ -4,42 +4,36 @@ enum ExperienceMode { visualExplorer, standard, comfort }
 
 enum WordCategory {
   greetings,
-  numbers,
-  food,
-  family,
-  colours,
-  body,
-  clothing,
   home,
+  people,
+  food,
+  activities,
+  places,
   nature,
-  transport,
+  animals,
 }
 
 extension WordCategoryX on WordCategory {
   String get label => switch (this) {
-    WordCategory.greetings => 'Greetings',
-    WordCategory.numbers => 'Numbers',
+    WordCategory.greetings => 'Greetings & Phrases',
+    WordCategory.home => 'Home & Daily Life',
+    WordCategory.people => 'People & Family',
     WordCategory.food => 'Food & Drink',
-    WordCategory.family => 'Family',
-    WordCategory.colours => 'Colours',
-    WordCategory.body => 'Body',
-    WordCategory.clothing => 'Clothing',
-    WordCategory.home => 'Home',
-    WordCategory.nature => 'Nature',
-    WordCategory.transport => 'Transport',
+    WordCategory.activities => 'Activities & Sports',
+    WordCategory.places => 'Places & Travel',
+    WordCategory.nature => 'Nature & World',
+    WordCategory.animals => 'Animals & Pets',
   };
 
   String get emoji => switch (this) {
     WordCategory.greetings => '👋',
-    WordCategory.numbers => '🔢',
-    WordCategory.food => '🍱',
-    WordCategory.family => '👨‍👩‍👧',
-    WordCategory.colours => '🎨',
-    WordCategory.body => '🫀',
-    WordCategory.clothing => '👕',
     WordCategory.home => '🏠',
-    WordCategory.nature => '🌸',
-    WordCategory.transport => '🚃',
+    WordCategory.people => '👨‍👩‍👧',
+    WordCategory.food => '🍜',
+    WordCategory.activities => '⚽',
+    WordCategory.places => '✈️',
+    WordCategory.nature => '🌍',
+    WordCategory.animals => '🐱',
   };
 }
 
@@ -61,11 +55,11 @@ extension DifficultyTierX on DifficultyTier {
   };
 
   String get description => switch (this) {
-    DifficultyTier.starter => 'Survival basics — greetings, numbers, simple words',
+    DifficultyTier.starter => 'Your first words — greetings, home, food and animals',
     DifficultyTier.elementary =>
-      'Everyday objects — food, family, home and colours',
+      'Everyday life — family, places, activities and nature',
     DifficultyTier.intermediate =>
-      'Conversations — actions, feelings and places',
+      'Conversations — feelings, descriptions and daily routines',
     DifficultyTier.advanced =>
       'Complex topics — abstract ideas and detailed expression',
     DifficultyTier.expert =>

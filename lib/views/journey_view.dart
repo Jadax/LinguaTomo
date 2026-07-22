@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/curriculum_data.dart';
 import '../data/word_bank.dart';
 import '../models/app_models.dart';
-import '../providers/app_state.dart';
 import '../providers/word_progress_state.dart';
 import '../theme/app_theme.dart';
-import 'kana_grid_view.dart';
-import 'mission_view.dart';
 import 'word_lesson_view.dart';
 
 class JourneyView extends ConsumerWidget {
@@ -16,252 +12,423 @@ class JourneyView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progress = ref.watch(progressProvider);
     final wordProgress = ref.watch(wordProgressProvider);
-    final done = {...progress.completedMissions, ...progress.placedOutMissions};
+    final overallProgress = wordProgress.wordsLearned / 200;
     return Scaffold(
       appBar: AppBar(title: const Text('My Japanese Route')),
-      body: ResponsiveContent(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          children: [
-            if (wordProgress.wordsLearned == 0) ...[
-              _BeginnerStartCard(),
-              const SizedBox(height: 18),
-            ],
-            Text(
-              'Your Word Route',
-              style: Theme.of(context).textTheme.headlineSmall,
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        children: [
+          // ── Overall progress banner ─────────────────────────────────
+          Card(
+            color: const Color(0xFFFFF0E8),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.trending_up_rounded,
+                          color: AppColors.persimmon),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '${wordProgress.wordsLearned} of 200 words',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      Text(
+                        '${(overallProgress * 100).round()}%',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.persimmon,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  LinearProgressIndicator(
+                    value: overallProgress,
+                    minHeight: 8,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              '${wordProgress.wordsLearned}/200 words learned · ${wordProgress.completedWords.isNotEmpty ? '${(wordProgress.completedWords.length / 200 * 100).round()}%' : '0%'}',
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: wordProgress.wordsLearned / 200,
-              minHeight: 12,
-            ),
-            const SizedBox(height: 18),
-            for (final tier in DifficultyTier.values)
-              _TierCard(tier: tier, wordProgress: wordProgress),
-            const SizedBox(height: 24),
-            Text(
-              'Can-Do Missions',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Real-world situations once you have some vocabulary under your belt.',
-            ),
-            const SizedBox(height: 12),
-            Text(
-              '${done.length}/${missions.length} missions completed',
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
+          ),
+          const SizedBox(height: 24),
+
+          // ── Snake path per tier ─────────────────────────────────────
+          for (final tier in DifficultyTier.values) ...[
+            _TierHeader(tier: tier, wordProgress: wordProgress),
             const SizedBox(height: 8),
-            for (final stage in ProficiencyStage.values)
-              _StageCard(stage: stage, completedIds: done),
+            _SnakeTier(
+              tier: tier,
+              wordProgress: wordProgress,
+            ),
+            const SizedBox(height: 28),
           ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _BeginnerStartCard extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) => Card(
-    color: AppColors.bambooMist,
-    child: Padding(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Start with words',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Learn Japanese words first — no need to know the alphabet yet. '
-            'Each lesson teaches 5 words with pictures, romaji and audio.',
-          ),
-          const SizedBox(height: 14),
-          FilledButton.icon(
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const WordLessonView())),
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Start your first word lesson'),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const KanaGridView())),
-            icon: const Icon(Icons.grid_view_rounded),
-            label: const Text('Or explore the kana studio'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-class _TierCard extends ConsumerWidget {
-  const _TierCard({required this.tier, required this.wordProgress});
-
+/// Tier header showing tier name, description and progress.
+class _TierHeader extends StatelessWidget {
+  const _TierHeader({required this.tier, required this.wordProgress});
   final DifficultyTier tier;
   final WordProgress wordProgress;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tierWords = wordsForTier(tier);
+  Widget build(BuildContext context) {
     final completed = wordProgress.tierProgress(tier);
-    final total = tierWords.length;
+    final total = wordsForTier(tier).length;
     final isUnlocked = tier.index <= wordProgress.currentTier.index;
     final isCurrent = tier == wordProgress.currentTier;
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      color: isCurrent ? const Color(0xFFFFF0E8) : null,
-      child: ExpansionTile(
-        initiallyExpanded: isCurrent,
-        leading: CircleAvatar(
-          backgroundColor: isUnlocked ? AppColors.matcha : AppColors.bambooMist,
-          child: Icon(
-            isUnlocked ? Icons.lock_open_rounded : Icons.lock_rounded,
-            color: isUnlocked ? Colors.white : AppColors.muted,
-          ),
-        ),
-        title: Text(
-          tier.label,
-          style: const TextStyle(fontWeight: FontWeight.w900),
-        ),
-        subtitle: Text('$completed/$total words · ${tier.description}'),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        children: [
-          for (final category in WordCategory.values)
-            _CategoryRow(
-              category: category,
-              tier: tier,
-              words: tierWords.where((w) => w.category == category).toList(),
-              wordProgress: wordProgress,
-              isUnlocked: isUnlocked,
-            ),
-          if (isUnlocked) ...[
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const WordLessonView()),
+      color: isCurrent
+          ? const Color(0xFFFFF0E8)
+          : isUnlocked
+              ? null
+              : Colors.grey.shade50,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: isUnlocked ? AppColors.matcha : AppColors.muted,
+                shape: BoxShape.circle,
               ),
-              icon: const Icon(Icons.play_arrow_rounded),
-              label: const Text('Start a word lesson'),
+              alignment: Alignment.center,
+              child: Text(
+                '${tier.index + 1}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                ),
+              ),
             ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tier.label,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    '$completed/$total words',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!isUnlocked)
+              const Icon(Icons.lock_rounded, color: AppColors.muted)
+            else if (completed == total)
+              const Icon(Icons.check_circle_rounded,
+                  color: AppColors.matcha, size: 28)
+            else
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 18,
+                color: isCurrent ? AppColors.persimmon : AppColors.muted,
+              ),
           ],
-        ],
+        ),
       ),
     );
   }
 }
 
-class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({
+/// The zigzag snake path for one tier's categories.
+class _SnakeTier extends StatelessWidget {
+  const _SnakeTier({required this.tier, required this.wordProgress});
+  final DifficultyTier tier;
+  final WordProgress wordProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = WordCategory.values;
+    final isUnlocked = tier.index <= wordProgress.currentTier.index;
+    final tierWords = wordsForTier(tier);
+
+    return Column(
+      children: List.generate(categories.length, (index) {
+        final category = categories[index];
+        final categoryWords =
+            tierWords.where((w) => w.category == category).toList();
+        final completedCount = categoryWords
+            .where((w) => wordProgress.completedWords.contains(w.id))
+            .length;
+        final allDone = completedCount == categoryWords.length;
+        final isLeft = index.isEven;
+
+        // Category is "active" if this tier is unlocked and user hasn't
+        // completed all words in this category yet.
+        final isActive = isUnlocked && !allDone;
+
+        return _SnakeNode(
+          category: category,
+          emoji: category.emoji,
+          label: category.label,
+          completed: completedCount,
+          total: categoryWords.length,
+          isLeft: isLeft,
+          isActive: isActive,
+          isCompleted: allDone,
+          isFirst: index == 0,
+          isLast: index == categories.length - 1,
+          onTap: isActive
+              ? () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WordLessonView(
+                        filterCategory: category,
+                        filterTier: tier,
+                      ),
+                    ),
+                  )
+              : null,
+        );
+      }),
+    );
+  }
+}
+
+/// A single node in the snake path with connecting lines.
+class _SnakeNode extends StatelessWidget {
+  const _SnakeNode({
     required this.category,
-    required this.tier,
-    required this.words,
-    required this.wordProgress,
-    required this.isUnlocked,
+    required this.emoji,
+    required this.label,
+    required this.completed,
+    required this.total,
+    required this.isLeft,
+    required this.isActive,
+    required this.isCompleted,
+    required this.isFirst,
+    required this.isLast,
+    this.onTap,
   });
 
   final WordCategory category;
-  final DifficultyTier tier;
-  final List<Word> words;
-  final WordProgress wordProgress;
-  final bool isUnlocked;
+  final String emoji;
+  final String label;
+  final int completed;
+  final int total;
+  final bool isLeft;
+  final bool isActive;
+  final bool isCompleted;
+  final bool isFirst;
+  final bool isLast;
+  final VoidCallback? onTap;
+
+  Color get _nodeColor {
+    if (isCompleted) return AppColors.matcha;
+    if (isActive) return AppColors.persimmon;
+    return AppColors.muted;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final completed = words.where((w) => wordProgress.completedWords.contains(w.id)).length;
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      leading: Text(category.emoji, style: const TextStyle(fontSize: 24)),
-      title: Text(
-        category.label,
-        style: const TextStyle(fontWeight: FontWeight.w800),
+    final nodeSize = 62.0;
+    final centerFraction = isLeft ? 0.28 : 0.72;
+    final textAlign = isLeft ? TextAlign.left : TextAlign.right;
+
+    return IntrinsicHeight(
+      child: Stack(
+        children: [
+          // ── Vertical connecting line (behind everything) ───────
+          Positioned(
+            left: MediaQuery.of(context).size.width * centerFraction,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: _nodeColor.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // ── Top connector (skip for first node) ───────────────
+          if (!isFirst)
+            Positioned(
+              left: MediaQuery.of(context).size.width * centerFraction - 1,
+              top: 0,
+              child: SizedBox(width: 6, height: nodeSize * 0.42),
+            ),
+
+          // ── Bottom connector ──────────────────────────────────
+          if (!isLast)
+            Positioned(
+              left: MediaQuery.of(context).size.width * centerFraction - 1,
+              bottom: 0,
+              child: SizedBox(width: 6, height: nodeSize * 0.42),
+            ),
+
+          // ── Category node ─────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                if (isLeft) ...[
+                  // Label on left
+                  Expanded(
+                    flex: 3,
+                    child: _NodeLabel(
+                      label: label,
+                      completed: completed,
+                      total: total,
+                      color: _nodeColor,
+                      textAlign: textAlign,
+                    ),
+                  ),
+                  const Spacer(flex: 2),
+                  // Node circle
+                  _NodeCircle(
+                    emoji: emoji,
+                    size: nodeSize,
+                    color: _nodeColor,
+                    isActive: isActive,
+                    onTap: onTap,
+                  ),
+                  const Spacer(flex: 3),
+                ] else ...[
+                  // Node circle
+                  const Spacer(flex: 3),
+                  _NodeCircle(
+                    emoji: emoji,
+                    size: nodeSize,
+                    color: _nodeColor,
+                    isActive: isActive,
+                    onTap: onTap,
+                  ),
+                  const Spacer(flex: 2),
+                  // Label on right
+                  Expanded(
+                    flex: 3,
+                    child: _NodeLabel(
+                      label: label,
+                      completed: completed,
+                      total: total,
+                      color: _nodeColor,
+                      textAlign: textAlign,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
-      subtitle: Text('$completed/${words.length} words'),
-      trailing: isUnlocked
-          ? Icon(
-              completed == words.length
-                  ? Icons.check_circle_rounded
-                  : Icons.arrow_forward_ios_rounded,
-              size: 18,
-              color: completed == words.length ? AppColors.matcha : AppColors.muted,
-            )
-          : const Icon(Icons.lock_rounded, size: 18, color: AppColors.muted),
     );
   }
 }
 
-class _StageCard extends StatelessWidget {
-  const _StageCard({required this.stage, required this.completedIds});
+/// The circular node with emoji.
+class _NodeCircle extends StatelessWidget {
+  const _NodeCircle({
+    required this.emoji,
+    required this.size,
+    required this.color,
+    required this.isActive,
+    this.onTap,
+  });
 
-  final ProficiencyStage stage;
-  final Set<String> completedIds;
-
-  static const _focus = {
-    ProficiencyStage.kittenSteps: 'Kana, sound system and learning routines',
-    ProficiencyStage.firstEncounters: 'Introductions and directions',
-    ProficiencyStage.dailyLife: 'Transport, shopping, food and emergencies',
-    ProficiencyStage.independent: 'Health, work and opinions',
-    ProficiencyStage.connected: 'News, formal requests and negotiation',
-    ProficiencyStage.professional: 'Complex texts and mediation',
-  };
+  final String emoji;
+  final double size;
+  final Color color;
+  final bool isActive;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final stageMissions = missions.where((item) => item.stage == stage).toList();
-    final complete = stageMissions.where((item) => completedIds.contains(item.id)).length;
-    final isComplete = stageMissions.isNotEmpty && complete == stageMissions.length;
-    if (stageMissions.isEmpty) return const SizedBox.shrink();
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ExpansionTile(
-        leading: CircleAvatar(
-          backgroundColor: isComplete ? AppColors.matcha : AppColors.bambooMist,
-          child: Icon(
-            isComplete ? Icons.check_rounded : Icons.route_rounded,
-            color: isComplete ? Colors.white : AppColors.matcha,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          shape: BoxShape.circle,
+          border: Border.all(color: color, width: 3),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
+        alignment: Alignment.center,
+        child: Text(emoji, style: TextStyle(fontSize: size * 0.42)),
+      ),
+    );
+  }
+}
+
+/// Text label beside a node.
+class _NodeLabel extends StatelessWidget {
+  const _NodeLabel({
+    required this.label,
+    required this.completed,
+    required this.total,
+    required this.color,
+    required this.textAlign,
+  });
+
+  final String label;
+  final int completed;
+  final int total;
+  final Color color;
+  final TextAlign textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: textAlign == TextAlign.left
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          textAlign: textAlign,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
+            color: color,
           ),
         ),
-        title: Text(stage.label, style: const TextStyle(fontWeight: FontWeight.w800)),
-        subtitle: Text('$complete/${stageMissions.length} · ${_focus[stage]}'),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        children: [
-          for (final mission in stageMissions)
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(
-                completedIds.contains(mission.id)
-                    ? Icons.check_circle_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                color: completedIds.contains(mission.id) ? AppColors.matcha : AppColors.muted,
-              ),
-              title: Text(mission.title),
-              subtitle: Text(mission.canDo),
-              trailing: completedIds.contains(mission.id)
-                  ? null
-                  : const Icon(Icons.play_arrow_rounded),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => MissionView(mission: mission)),
-              ),
-            ),
-        ],
-      ),
+        const SizedBox(height: 2),
+        Text(
+          '$completed/$total',
+          textAlign: textAlign,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: color.withValues(alpha: 0.7),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -135,12 +135,19 @@ class LearningHubView extends ConsumerWidget {
           ),
           _LearningTile(
             icon: Icons.celebration_rounded,
-            colour: const Color(0xFFE6F3F1),
+            colour: wordProgress.wordsLearned >= 20
+                ? const Color(0xFFE6F3F1)
+                : AppColors.bambooMist.withValues(alpha: .4),
             title: 'Seasonal stories',
-            subtitle: 'Gentle cultural adventures',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SeasonalStoriesView()),
-            ),
+            subtitle: wordProgress.wordsLearned >= 20
+                ? 'Gentle cultural adventures'
+                : 'Learn 20 words to unlock',
+            onTap: wordProgress.wordsLearned >= 20
+                ? () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const SeasonalStoriesView()),
+                  )
+                : null,
           ),
         ],
       ),

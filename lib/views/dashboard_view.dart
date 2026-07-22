@@ -15,6 +15,7 @@ import '../providers/festival_state.dart';
 import '../providers/review_state.dart';
 import '../providers/grammar_state.dart';
 import '../providers/word_progress_state.dart';
+import '../providers/level_prefs_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/leo_sprite.dart';
 import '../widgets/nest_ambience.dart';
@@ -83,7 +84,7 @@ class DashboardView extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Welcome home',
+                      _greetingForTier(wordProgress),
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     Text(
@@ -124,6 +125,8 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 14),
           _ContinueLearningCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
+          _LevelPickerCard(wordProgress: wordProgress),
+          const SizedBox(height: 12),
           Card(
             margin: EdgeInsets.zero,
             child: ListTile(
@@ -152,8 +155,10 @@ class DashboardView extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const _SeasonalEventCard(),
-          const SizedBox(height: 12),
+          if (wordProgress.wordsLearned >= 20) ...[
+            const _SeasonalEventCard(),
+            const SizedBox(height: 12),
+          ],
           Row(
             children: [
               Expanded(
@@ -239,6 +244,143 @@ class DashboardView extends ConsumerWidget {
 
 abstract final class AppNavigation {
   static ValueChanged<int>? goTo;
+}
+
+String _greetingForTier(WordProgress wp) {
+  if (wp.wordsLearned == 0) return 'Welcome home';
+  if (wp.wordsLearned < 20) return 'Nice start!';
+  if (wp.wordsLearned < 50) return 'Great progress!';
+  if (wp.wordsLearned < 100) return 'You are on a roll!';
+  if (wp.wordsLearned < 150) return 'Impressive work!';
+  return 'Word master!';
+}
+
+class _LevelPickerCard extends ConsumerWidget {
+  const _LevelPickerCard({required this.wordProgress});
+  final WordProgress wordProgress;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final current = ref.watch(levelPrefsProvider);
+    return Card(
+      margin: EdgeInsets.zero,
+      color: const Color(0xFFF0F4FF),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => _showLevelPicker(context, ref),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD6E4FF),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.signal_cellular_alt_rounded,
+                  color: Color(0xFF4A6FA5),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'YOUR LEVEL',
+                      style: TextStyle(
+                        color: Color(0xFF4A6FA5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    Text(
+                      '${current.label} tier',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      current.description,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.muted,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.swap_horiz_rounded,
+                color: AppColors.muted,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showLevelPicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      constraints: const BoxConstraints(maxWidth: 600),
+      builder: (context) {
+        final selected = ref.read(levelPrefsProvider);
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Choose your level',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const Text(
+                  'This changes which words you practise. You can switch at any time.',
+                ),
+                const SizedBox(height: 12),
+                for (final tier in DifficultyTier.values)
+                  Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: RadioListTile<DifficultyTier>(
+                      value: tier,
+                      // ignore: deprecated_member_use
+                      groupValue: selected,
+                      // ignore: deprecated_member_use
+                      onChanged: (value) {
+                        if (value == null) return;
+                        ref
+                            .read(levelPrefsProvider.notifier)
+                            .setLevel(value);
+                        ref
+                            .read(wordProgressProvider.notifier)
+                            .setTier(value);
+                        Navigator.pop(context);
+                      },
+                      title: Text(
+                        tier.label,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      subtitle: Text(tier.description),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _NestRoom extends StatefulWidget {

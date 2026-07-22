@@ -299,7 +299,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LinguaTomo 1.9.0',
+                      'LinguaTomo 1.10.0',
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     SizedBox(height: 4),

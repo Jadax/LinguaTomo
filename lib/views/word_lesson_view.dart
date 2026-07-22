@@ -12,9 +12,16 @@ import '../theme/app_theme.dart';
 import '../widgets/leo_sprite.dart';
 
 class WordLessonView extends ConsumerStatefulWidget {
-  const WordLessonView({super.key, this.words});
+  const WordLessonView({
+    super.key,
+    this.words,
+    this.filterCategory,
+    this.filterTier,
+  });
 
   final List<Word>? words;
+  final WordCategory? filterCategory;
+  final DifficultyTier? filterTier;
 
   @override
   ConsumerState<WordLessonView> createState() => _WordLessonViewState();
@@ -33,9 +40,36 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   @override
   void initState() {
     super.initState();
-    _words = widget.words ??
-        ref.read(wordProgressProvider.notifier).generateLesson();
+    if (widget.words != null) {
+      _words = widget.words!;
+    } else if (widget.filterCategory != null && widget.filterTier != null) {
+      _words = _generateFilteredLesson(
+        category: widget.filterCategory!,
+        tier: widget.filterTier!,
+      );
+    } else {
+      _words = ref.read(wordProgressProvider.notifier).generateLesson();
+    }
     _prepareQuestion();
+  }
+
+  List<Word> _generateFilteredLesson({
+    required WordCategory category,
+    required DifficultyTier tier,
+  }) {
+    final allWords = wordBank
+        .where((w) => w.category == category && w.tier == tier)
+        .toList();
+    final completed = ref.read(wordProgressProvider).completedWords;
+    final incomplete = allWords.where((w) => !completed.contains(w.id)).toList();
+    if (incomplete.length >= 5) {
+      incomplete.shuffle(_rng);
+      return incomplete.take(5).toList();
+    }
+    // If fewer than 5 incomplete, fill with already-learned for review
+    final alreadyLearned = allWords.where((w) => completed.contains(w.id)).toList();
+    final pool = [...incomplete, ...alreadyLearned]..shuffle(_rng);
+    return pool.take(5).toList();
   }
 
   @override

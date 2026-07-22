@@ -19,7 +19,7 @@ void main() {
     }
   });
 
-  test('each category has 4 words per tier', () {
+  test('each category has 5 words per tier', () {
     for (final tier in DifficultyTier.values) {
       for (final category in WordCategory.values) {
         final count = wordBank
@@ -27,9 +27,9 @@ void main() {
             .length;
         expect(
           count,
-          4,
+          5,
           reason:
-              '${tier.label} ${category.label} should have 4 words, found $count',
+              '${tier.label} ${category.label} should have 5 words, found $count',
         );
       }
     }
@@ -52,7 +52,7 @@ void main() {
 
   test('wordsForCategory returns correct category words', () {
     final greetings = wordsForCategory(WordCategory.greetings);
-    expect(greetings.length, 20);
+    expect(greetings.length, 25);
     expect(
       greetings.every((w) => w.category == WordCategory.greetings),
       isTrue,
