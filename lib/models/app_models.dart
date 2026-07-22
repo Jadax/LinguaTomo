@@ -2,6 +2,85 @@ import 'package:flutter/material.dart';
 
 enum ExperienceMode { visualExplorer, standard, comfort }
 
+enum WordCategory {
+  greetings,
+  numbers,
+  food,
+  family,
+  colours,
+  body,
+  clothing,
+  home,
+  nature,
+  transport,
+}
+
+extension WordCategoryX on WordCategory {
+  String get label => switch (this) {
+    WordCategory.greetings => 'Greetings',
+    WordCategory.numbers => 'Numbers',
+    WordCategory.food => 'Food & Drink',
+    WordCategory.family => 'Family',
+    WordCategory.colours => 'Colours',
+    WordCategory.body => 'Body',
+    WordCategory.clothing => 'Clothing',
+    WordCategory.home => 'Home',
+    WordCategory.nature => 'Nature',
+    WordCategory.transport => 'Transport',
+  };
+
+  String get emoji => switch (this) {
+    WordCategory.greetings => '👋',
+    WordCategory.numbers => '🔢',
+    WordCategory.food => '🍱',
+    WordCategory.family => '👨‍👩‍👧',
+    WordCategory.colours => '🎨',
+    WordCategory.body => '🫀',
+    WordCategory.clothing => '👕',
+    WordCategory.home => '🏠',
+    WordCategory.nature => '🌸',
+    WordCategory.transport => '🚃',
+  };
+}
+
+enum DifficultyTier {
+  starter,
+  elementary,
+  intermediate,
+  advanced,
+  expert,
+}
+
+extension DifficultyTierX on DifficultyTier {
+  String get label => switch (this) {
+    DifficultyTier.starter => 'Starter',
+    DifficultyTier.elementary => 'Elementary',
+    DifficultyTier.intermediate => 'Intermediate',
+    DifficultyTier.advanced => 'Advanced',
+    DifficultyTier.expert => 'Expert',
+  };
+
+  String get description => switch (this) {
+    DifficultyTier.starter => 'Survival basics — greetings, numbers, simple words',
+    DifficultyTier.elementary =>
+      'Everyday objects — food, family, home and colours',
+    DifficultyTier.intermediate =>
+      'Conversations — actions, feelings and places',
+    DifficultyTier.advanced =>
+      'Complex topics — abstract ideas and detailed expression',
+    DifficultyTier.expert =>
+      'Nuanced language — formal registers and specialist vocabulary',
+  };
+
+  int get wordCount => switch (this) {
+    DifficultyTier.starter => 40,
+    DifficultyTier.elementary => 40,
+    DifficultyTier.intermediate => 40,
+    DifficultyTier.advanced => 40,
+    DifficultyTier.expert => 40,
+  };
+}
+
 enum NestEnvironment {
   fireside,
   springVeranda,
@@ -277,6 +356,27 @@ class HandwritingRecord {
   final int balance;
   final DateTime createdAt;
   final String evidenceMode;
+}
+
+@immutable
+class Word {
+  const Word({
+    required this.id,
+    required this.japanese,
+    required this.romaji,
+    required this.english,
+    required this.category,
+    required this.tier,
+    required this.emoji,
+  });
+
+  final String id;
+  final String japanese;
+  final String romaji;
+  final String english;
+  final WordCategory category;
+  final DifficultyTier tier;
+  final String emoji;
 }
 
 String dateKey(DateTime value) => _dateKey(value);

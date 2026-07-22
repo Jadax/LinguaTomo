@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/curriculum_data.dart';
+import '../data/word_bank.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../providers/grammar_state.dart';
+import '../providers/word_progress_state.dart';
 import '../theme/app_theme.dart';
 import 'grammar_library_view.dart';
 import 'journey_view.dart';
 import 'kana_grid_view.dart';
 import 'postcards_view.dart';
 import 'seasonal_stories_view.dart';
+import 'word_lesson_view.dart';
 
 class LearningHubView extends ConsumerWidget {
   const LearningHubView({super.key});
@@ -20,6 +23,7 @@ class LearningHubView extends ConsumerWidget {
     final progress = ref.watch(progressProvider);
     final garden = ref.watch(grammarGardenProvider);
     final catalogue = ref.watch(grammarCatalogueProvider);
+    final wordProgress = ref.watch(wordProgressProvider);
     return ResponsiveContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -29,8 +33,9 @@ class LearningHubView extends ConsumerWidget {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 5),
-          const Text(
-            'One clear route, with deep practice whenever you want it.',
+          Text(
+            '${wordProgress.wordsLearned}/200 words · ${wordProgress.currentTier.label} tier',
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),
           Card(
@@ -43,35 +48,37 @@ class LearningHubView extends ConsumerWidget {
                   Row(
                     children: [
                       const Icon(
-                        Icons.route_rounded,
+                        Icons.menu_book_rounded,
                         color: AppColors.persimmon,
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'You are here: ${progress.stage.label}',
+                          'Word Route · ${wordProgress.currentTier.label}',
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                       ),
-                      Text('${progress.verifiedCanDos}/${missions.length}'),
+                      Text('${wordProgress.wordsLearned}/200'),
                     ],
                   ),
                   const SizedBox(height: 9),
                   LinearProgressIndicator(
-                    value: progress.verifiedCanDos / missions.length,
+                    value: wordProgress.wordsLearned / 200,
                     minHeight: 10,
                   ),
                   const SizedBox(height: 9),
                   Text(
-                    '${progress.stage.jlpt} reference • ${progress.stage.cefr} • ${progress.stage.ilr}',
+                    '${wordProgress.tierProgress(wordProgress.currentTier)}/${wordsForTier(wordProgress.currentTier).length} words in current tier',
                   ),
                   const SizedBox(height: 12),
                   FilledButton.icon(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const JourneyView()),
+                      MaterialPageRoute(
+                        builder: (_) => const WordLessonView(),
+                      ),
                     ),
-                    icon: const Icon(Icons.map_rounded),
-                    label: const Text('See my complete route'),
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    label: const Text('Start a word lesson'),
                   ),
                 ],
               ),
@@ -79,12 +86,21 @@ class LearningHubView extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
           _LearningTile(
+            icon: Icons.route_rounded,
+            colour: AppColors.sakura,
+            title: 'See my complete route',
+            subtitle: 'Word tiers and Can-Do missions',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const JourneyView()),
+            ),
+          ),
+          _LearningTile(
             icon: Icons.auto_stories_rounded,
             colour: AppColors.bambooMist,
             title: 'Grammar course atlas',
             subtitle: catalogue.when(
               data: (value) =>
-                  '${value.points.length} lessons from N5 foundations to N1 nuance • ${garden.cards.length} planted',
+                  '${value.points.length} lessons from N5 to N1 · ${garden.cards.length} planted',
               loading: () => 'Loading 828 lessons from N5 to N1',
               error: (_, _) => 'Tap to retry the course library',
             ),
@@ -97,38 +113,33 @@ class LearningHubView extends ConsumerWidget {
             icon: Icons.grid_view_rounded,
             colour: const Color(0xFFFFE7ED),
             title: 'Kana and kanji studio',
-            subtitle:
-                'Character grid, examples, pitch shapes and stroke practice',
+            subtitle: 'Character grid, examples and stroke practice',
             onTap: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const KanaGridView())),
           ),
           _LearningTile(
             icon: Icons.local_post_office_rounded,
-            colour: const Color(0xFFFFF1D8),
+            colour: wordProgress.postcardsUnlocked
+                ? const Color(0xFFFFF1D8)
+                : AppColors.bambooMist.withValues(alpha: .4),
             title: 'Living postcards',
-            subtitle:
-                '${progress.completedPostcards.length}/${postcards.length} collected • words, phrases and culture',
-            onTap: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const PostcardsView())),
+            subtitle: wordProgress.postcardsUnlocked
+                ? '${progress.completedPostcards.length}/${postcards.length} collected'
+                : 'Learn 10 words to unlock',
+            onTap: wordProgress.postcardsUnlocked
+                ? () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PostcardsView()),
+                  )
+                : null,
           ),
           _LearningTile(
             icon: Icons.celebration_rounded,
             colour: const Color(0xFFE6F3F1),
-            title: 'Seasonal stories and side quests',
-            subtitle: 'Gentle cultural adventures with no expiring pressure',
+            title: 'Seasonal stories',
+            subtitle: 'Gentle cultural adventures',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SeasonalStoriesView()),
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(15),
-              child: Text(
-                'JLPT labels organise study coverage. They are not official vocabulary or grammar lists, and LinguaTomo does not issue JLPT, CEFR or ILR certification.',
-              ),
             ),
           ),
         ],
@@ -151,7 +162,7 @@ class _LearningTile extends StatelessWidget {
   final Color colour;
   final String title;
   final String subtitle;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final String? badge;
 
   @override
@@ -200,7 +211,7 @@ class _LearningTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded),
+            if (onTap != null) const Icon(Icons.chevron_right_rounded),
           ],
         ),
       ),

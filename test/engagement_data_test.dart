@@ -4,7 +4,7 @@ import 'package:linguatomo/data/festival_calendar_data.dart';
 
 void main() {
   test('achievement catalogue is large, unique and reward-backed', () {
-    expect(achievements.length, greaterThanOrEqualTo(45));
+    expect(achievements.length, greaterThanOrEqualTo(55));
     expect(
       achievements.map((item) => item.id).toSet().length,
       achievements.length,
@@ -12,7 +12,7 @@ void main() {
     expect(achievements.every((item) => item.reward.trim().isNotEmpty), isTrue);
     expect(
       achievements.where((item) => item.secret).length,
-      greaterThanOrEqualTo(5),
+      greaterThanOrEqualTo(6),
     );
     expect(
       achievements.map((item) => item.rewardType).toSet(),
@@ -23,11 +23,20 @@ void main() {
       achievements
           .where((item) => item.rewardType == AchievementRewardType.trophy)
           .length,
-      greaterThanOrEqualTo(6),
+      greaterThanOrEqualTo(7),
     );
     // Festival engagement must be able to grow through the whole year.
     expect(
       achievements.any((item) => item.id == 'four_seasons'),
+      isTrue,
+    );
+    // Word achievements must exist.
+    expect(
+      achievements.any((item) => item.id == 'first_word'),
+      isTrue,
+    );
+    expect(
+      achievements.any((item) => item.id == 'two_hundred_words'),
       isTrue,
     );
   });

@@ -216,6 +216,21 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
     await _persist();
   }
 
+  Future<void> addXp(int amount) async {
+    if (amount <= 0) return;
+    state = LearnerProgress(
+      completedMissions: state.completedMissions,
+      placedOutMissions: state.placedOutMissions,
+      completedPostcards: state.completedPostcards,
+      unlockedRewards: state.unlockedRewards,
+      skillEvidence: state.skillEvidence,
+      activityDates: {...state.activityDates, dateKey(DateTime.now())},
+      xp: state.xp + amount,
+      streakFreezes: state.streakFreezes,
+    );
+    await _persist();
+  }
+
   Future<void> _persist() async {
     await _box?.put(_key, {
       'completedMissions': state.completedMissions.toList(),

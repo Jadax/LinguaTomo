@@ -5,6 +5,7 @@ import '../models/app_models.dart';
 import 'app_state.dart';
 import 'festival_state.dart';
 import 'grammar_state.dart';
+import 'word_progress_state.dart';
 
 /// The single place where an [AchievementSnapshot] is assembled. Views must
 /// use this provider rather than rebuilding the snapshot locally, so new
@@ -15,6 +16,7 @@ final achievementSnapshotProvider = Provider<AchievementSnapshot>((ref) {
   final handwriting = ref.watch(handwritingHistoryProvider);
   final festivals = ref.watch(festivalMemoryProvider);
   final placed = ref.watch(nestDisplayProvider);
+  final wordProgress = ref.watch(wordProgressProvider);
   return AchievementSnapshot(
     missions: progress.completedMissions.length,
     postcards: progress.completedPostcards.length,
@@ -34,6 +36,13 @@ final achievementSnapshotProvider = Provider<AchievementSnapshot>((ref) {
     summerFestivals: summerFestivalCount(festivals),
     winterFestivals: winterFestivalCount(festivals),
     nestItemsPlaced: placed.length,
+    wordsLearned: wordProgress.wordsLearned,
+    wordLessonsCompleted: wordProgress.wordLessonHistory.length,
+    perfectLessons: wordProgress.perfectLessonCount,
+    wordStreak: wordProgress.wordStreak,
+    categoriesCompleted: wordProgress.categoriesCompleted,
+    tiersUnlocked: DifficultyTier.values.indexOf(wordProgress.currentTier) + 1,
+    postcardsUnlocked: wordProgress.postcardsUnlocked,
   );
 });
 

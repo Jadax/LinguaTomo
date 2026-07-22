@@ -5,6 +5,7 @@ import '../data/achievement_data.dart';
 import '../data/curriculum_data.dart';
 import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
+import '../providers/word_progress_state.dart';
 import '../theme/app_theme.dart';
 
 class PostcardsView extends ConsumerWidget {
@@ -13,6 +14,40 @@ class PostcardsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
+    final wordProgress = ref.watch(wordProgressProvider);
+    if (!wordProgress.postcardsUnlocked) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Living Postcards')),
+        body: ResponsiveContent(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('📬', style: TextStyle(fontSize: 64)),
+              const SizedBox(height: 16),
+              Text(
+                'Postcards are locked',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Learn 10 Japanese words to unlock Living Postcards.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${wordProgress.wordsLearned}/10 words learned',
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              LinearProgressIndicator(
+                value: wordProgress.wordsLearned / 10,
+                minHeight: 8,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     // Earned postcard stamps appear on every collected postcard, like ink
     // stamps in a well-travelled passport.
     final stamps = ref

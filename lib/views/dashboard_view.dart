@@ -7,22 +7,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/curriculum_data.dart';
 import '../data/achievement_data.dart';
 import '../data/festival_calendar_data.dart';
+import '../data/word_bank.dart';
 import '../models/app_models.dart';
 import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
 import '../providers/festival_state.dart';
 import '../providers/review_state.dart';
 import '../providers/grammar_state.dart';
+import '../providers/word_progress_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/leo_sprite.dart';
 import '../widgets/nest_ambience.dart';
-import 'mission_view.dart';
 import 'collection_view.dart';
 import 'postcards_view.dart';
-import 'placement_view.dart';
 import 'review_view.dart';
-import 'journey_view.dart';
 import 'seasonal_stories_view.dart';
+import 'word_lesson_view.dart';
 
 class DashboardView extends ConsumerWidget {
   const DashboardView({super.key});
@@ -31,7 +31,6 @@ class DashboardView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(progressProvider);
     final environment = ref.watch(nestEnvironmentProvider);
-    final next = ref.watch(nextMissionProvider);
     final mode = ref.watch(experienceProvider);
     final grammar = ref.watch(grammarGardenProvider);
     final dueReviews =
@@ -57,6 +56,7 @@ class DashboardView extends ConsumerWidget {
           item.unlocked(achievementSnapshot),
     );
     final placedIds = ref.watch(nestDisplayProvider);
+    final wordProgress = ref.watch(wordProgressProvider);
     final placedItems = <String>[
       for (final id in placedIds)
         if (id.startsWith('mission:'))
@@ -87,7 +87,7 @@ class DashboardView extends ConsumerWidget {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     Text(
-                      '${progress.stage.label} · ${progress.stage.cefr} · ${progress.stage.jlpt}',
+                      '${wordProgress.wordsLearned} words learned · ${wordProgress.currentTier.label}',
                     ),
                   ],
                 ),
@@ -122,131 +122,37 @@ class DashboardView extends ConsumerWidget {
             total: trophies.length,
           ),
           const SizedBox(height: 14),
+          _ContinueLearningCard(wordProgress: wordProgress),
+          const SizedBox(height: 12),
           Card(
-            color: const Color(0xFFFFF0E8),
+            margin: EdgeInsets.zero,
             child: ListTile(
-              minTileHeight: 76,
+              minTileHeight: 68,
               leading: const CircleAvatar(
-                backgroundColor: AppColors.sakura,
-                child: Icon(Icons.route_rounded, color: AppColors.persimmon),
+                backgroundColor: AppColors.bambooMist,
+                child: Icon(Icons.eco_rounded, color: AppColors.matcha),
               ),
-              title: Text(
-                'Your route • ${progress.verifiedCanDos}/${missions.length} Can-Dos',
-                style: const TextStyle(fontWeight: FontWeight.w900),
+              title: const Text(
+                'Memory Garden',
+                style: TextStyle(fontWeight: FontWeight.w900),
               ),
-              subtitle: LinearProgressIndicator(
-                value: progress.verifiedCanDos / missions.length,
-                minHeight: 8,
+              subtitle: Text(
+                dueReviews == 0
+                    ? 'Nothing due. Your memory garden is tidy.'
+                    : '$dueReviews gentle review${dueReviews == 1 ? '' : 's'} ready',
               ),
-              trailing: const Icon(Icons.arrow_forward_rounded),
+              trailing: IconButton(
+                tooltip: 'How the Memory Garden works',
+                icon: const Icon(Icons.info_outline_rounded),
+                onPressed: () => _showMemoryGardenHelp(context),
+              ),
               onTap: () => Navigator.of(
                 context,
-              ).push(MaterialPageRoute(builder: (_) => const JourneyView())),
+              ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
             ),
           ),
           const SizedBox(height: 12),
-          if (progress.completedMissions.isEmpty &&
-              progress.placedOutMissions.isEmpty) ...[
-            Card(
-              color: AppColors.bambooMist,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const PlacementView()),
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Icon(Icons.explore_rounded, color: AppColors.matcha),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Already know some Japanese?',
-                              style: TextStyle(fontWeight: FontWeight.w900),
-                            ),
-                            Text('Take a gentle, untimed placement check.'),
-                          ],
-                        ),
-                      ),
-                      Icon(Icons.arrow_forward_rounded),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Card(
-              margin: EdgeInsets.zero,
-              child: ListTile(
-                minTileHeight: 68,
-                leading: const CircleAvatar(
-                  backgroundColor: AppColors.bambooMist,
-                  child: Icon(Icons.eco_rounded, color: AppColors.matcha),
-                ),
-                title: const Text(
-                  'Memory Garden',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: Text(
-                  dueReviews == 0
-                      ? 'Nothing due. Your garden is tidy.'
-                      : '$dueReviews FSRS review${dueReviews == 1 ? '' : 's'} ready',
-                ),
-                trailing: const Icon(Icons.arrow_forward_rounded),
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
-              ),
-            ),
-            const SizedBox(height: 12),
-            const _SeasonalEventCard(),
-            const SizedBox(height: 12),
-          ],
-          if (progress.completedMissions.isNotEmpty ||
-              progress.placedOutMissions.isNotEmpty) ...[
-            Card(
-              margin: EdgeInsets.zero,
-              child: ListTile(
-                minTileHeight: 68,
-                leading: const CircleAvatar(
-                  backgroundColor: AppColors.bambooMist,
-                  child: Icon(Icons.eco_rounded, color: AppColors.matcha),
-                ),
-                title: const Text(
-                  'Memory Garden',
-                  style: TextStyle(fontWeight: FontWeight.w900),
-                ),
-                subtitle: Text(
-                  dueReviews == 0
-                      ? 'Nothing due. Your memory garden is tidy.'
-                      : '$dueReviews gentle review${dueReviews == 1 ? '' : 's'} ready',
-                ),
-                trailing: IconButton(
-                  tooltip: 'How the Memory Garden works',
-                  icon: const Icon(Icons.info_outline_rounded),
-                  onPressed: () => _showMemoryGardenHelp(context),
-                ),
-                onTap: () => Navigator.of(
-                  context,
-                ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
-              ),
-            ),
-            const SizedBox(height: 12),
-            const _SeasonalEventCard(),
-            const SizedBox(height: 12),
-          ],
-          if (next != null)
-            _NextMissionCard(
-              mission: next,
-              isFirst: progress.completedMissions.isEmpty &&
-                  progress.placedOutMissions.isEmpty,
-            )
-          else
-            const _JourneyCompleteCard(),
+          const _SeasonalEventCard(),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -264,12 +170,19 @@ class DashboardView extends ConsumerWidget {
                 child: _ActionCard(
                   icon: Icons.mark_email_unread_rounded,
                   title: 'Postcard',
-                  subtitle:
-                      '${progress.completedPostcards.length}/${postcards.length} collected',
-                  color: AppColors.bambooMist,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const PostcardsView()),
-                  ),
+                  subtitle: wordProgress.postcardsUnlocked
+                      ? '${progress.completedPostcards.length}/${postcards.length} collected'
+                      : 'Learn 10 words to unlock',
+                  color: wordProgress.postcardsUnlocked
+                      ? AppColors.bambooMist
+                      : AppColors.bambooMist.withValues(alpha: .5),
+                  onTap: wordProgress.postcardsUnlocked
+                      ? () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PostcardsView(),
+                          ),
+                        )
+                      : null,
                 ),
               ),
             ],
@@ -287,16 +200,16 @@ class DashboardView extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _Evidence(
+                    value: '${wordProgress.wordsLearned}',
+                    label: 'Words',
+                  ),
+                  _Evidence(
                     value: '${progress.verifiedCanDos}',
                     label: 'Can-Dos',
                   ),
                   _Evidence(
                     value: '${progress.unlockedRewards.length}',
                     label: 'Nest items',
-                  ),
-                  _Evidence(
-                    value: '${progress.streakFreezes}',
-                    label: 'Freezes',
                   ),
                 ],
               ),
@@ -661,80 +574,80 @@ class _SeasonalEventCardState extends ConsumerState<_SeasonalEventCard> {
   }
 }
 
-class _NextMissionCard extends StatelessWidget {
-  const _NextMissionCard({required this.mission, this.isFirst = false});
-  final Mission mission;
-  final bool isFirst;
+class _ContinueLearningCard extends StatelessWidget {
+  const _ContinueLearningCard({required this.wordProgress});
+  final WordProgress wordProgress;
+
   @override
-  Widget build(BuildContext context) => Card(
-    margin: EdgeInsets.zero,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => MissionView(mission: mission))),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: AppColors.persimmon,
-                borderRadius: BorderRadius.circular(18),
+  Widget build(BuildContext context) {
+    final tierProgress = wordProgress.tierProgress(wordProgress.currentTier);
+    final tierTotal = wordsForTier(wordProgress.currentTier).length;
+    return Card(
+      color: const Color(0xFFFFF0E8),
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const WordLessonView())),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.persimmon,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  wordProgress.currentTier == DifficultyTier.starter
+                      ? '📖'
+                      : wordProgress.currentTier == DifficultyTier.elementary
+                          ? '📚'
+                          : wordProgress.currentTier == DifficultyTier.intermediate
+                              ? '🎓'
+                              : wordProgress.currentTier == DifficultyTier.advanced
+                                  ? '🌟'
+                                  : '🏆',
+                  style: const TextStyle(fontSize: 28),
+                ),
               ),
-              alignment: Alignment.center,
-              child: Text(
-                mission.rewardEmoji,
-                style: const TextStyle(fontSize: 28),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isFirst ? 'START HERE · YOUR FIRST CAN-DO' : 'NEXT CAN-DO',
-                    style: const TextStyle(
-                      color: AppColors.persimmon,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'CONTINUE LEARNING',
+                      style: TextStyle(
+                        color: AppColors.persimmon,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                      ),
                     ),
-                  ),
-                  Text(
-                    mission.title,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Text(
-                    mission.canDo,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                    Text(
+                      '${wordProgress.currentTier.label} tier · $tierProgress/$tierTotal words',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    LinearProgressIndicator(
+                      value: tierTotal > 0 ? tierProgress / tierTotal : 0,
+                      minHeight: 6,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Icon(Icons.arrow_forward_rounded),
-          ],
+              const Icon(Icons.arrow_forward_rounded),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
-class _JourneyCompleteCard extends StatelessWidget {
-  const _JourneyCompleteCard();
-  @override
-  Widget build(BuildContext context) => const Card(
-    child: Padding(
-      padding: EdgeInsets.all(20),
-      child: Text(
-        'You completed every available mission. Leo is celebrating your full route!',
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _ActionCard extends StatelessWidget {
@@ -749,7 +662,7 @@ class _ActionCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   @override
   Widget build(BuildContext context) => Card(
     color: color,

@@ -27,13 +27,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(find.text('Welcome home'), findsOneWidget);
-    expect(find.text('START HERE · YOUR FIRST CAN-DO'), findsOneWidget);
-    expect(find.text('Meet the characters'), findsNothing);
+    expect(find.text('CONTINUE LEARNING'), findsOneWidget);
+    expect(find.textContaining('0 words learned'), findsOneWidget);
 
     await tester.tap(find.text('Learn'));
     await tester.pumpAndSettle();
 
     expect(find.text('Your learning library'), findsOneWidget);
-    expect(find.text('Grammar course atlas'), findsOneWidget);
+    expect(find.text('Start a word lesson'), findsWidgets);
   });
 }

@@ -23,6 +23,13 @@ class AchievementSnapshot {
     this.summerFestivals = 0,
     this.winterFestivals = 0,
     this.nestItemsPlaced = 0,
+    this.wordsLearned = 0,
+    this.wordLessonsCompleted = 0,
+    this.perfectLessons = 0,
+    this.wordStreak = 0,
+    this.categoriesCompleted = 0,
+    this.tiersUnlocked = 1,
+    this.postcardsUnlocked = false,
   });
 
   final int missions;
@@ -50,6 +57,27 @@ class AchievementSnapshot {
 
   /// Memory objects currently placed inside the Nest.
   final int nestItemsPlaced;
+
+  /// Total unique words learned through word lessons.
+  final int wordsLearned;
+
+  /// Total word lessons completed.
+  final int wordLessonsCompleted;
+
+  /// Lessons completed with 100% score.
+  final int perfectLessons;
+
+  /// Current word-learning streak in days.
+  final int wordStreak;
+
+  /// Number of word categories fully completed.
+  final int categoriesCompleted;
+
+  /// Number of difficulty tiers unlocked (1-5).
+  final int tiersUnlocked;
+
+  /// Whether postcards are unlocked (10+ words learned).
+  final bool postcardsUnlocked;
 }
 
 class AchievementDefinition {
@@ -683,9 +711,119 @@ final achievements = <AchievementDefinition>[
     emoji: '🎐',
     requirement: 'Experience 3 summer festival windows.',
     rewardType: AchievementRewardType.leoReaction,
-    reward: 'Leo’s yukata dance',
+    reward: "Leo's yukata dance",
     progress: (s) => s.summerFestivals,
     target: 3,
+  ),
+  AchievementDefinition(
+    id: 'first_word',
+    title: 'First Word',
+    emoji: '📖',
+    requirement: 'Learn your first Japanese word.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Tiny book',
+    progress: (s) => s.wordsLearned,
+    target: 1,
+  ),
+  AchievementDefinition(
+    id: 'ten_words',
+    title: 'Ten Words',
+    emoji: '📚',
+    requirement: 'Learn 10 Japanese words.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Word cards',
+    progress: (s) => s.wordsLearned,
+    target: 10,
+  ),
+  AchievementDefinition(
+    id: 'fifty_words',
+    title: 'Halfway There',
+    emoji: '🌟',
+    requirement: 'Learn 50 Japanese words.',
+    rewardType: AchievementRewardType.profileStyle,
+    reward: 'Learner title',
+    progress: (s) => s.wordsLearned,
+    target: 50,
+  ),
+  AchievementDefinition(
+    id: 'hundred_words',
+    title: 'Century Learner',
+    emoji: '💎',
+    requirement: 'Learn 100 Japanese words.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Bookshelf',
+    progress: (s) => s.wordsLearned,
+    target: 100,
+  ),
+  AchievementDefinition(
+    id: 'two_hundred_words',
+    title: 'Word Master',
+    emoji: '🏆',
+    requirement: 'Learn all 200 Japanese words.',
+    rewardType: AchievementRewardType.trophy,
+    reward: 'Dictionary trophy',
+    progress: (s) => s.wordsLearned,
+    target: 200,
+  ),
+  AchievementDefinition(
+    id: 'starter_complete',
+    title: 'Starter Set',
+    emoji: '🟢',
+    requirement: 'Complete all 40 Starter words.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Starter badge',
+    progress: (s) => s.tiersUnlocked >= 2 ? 1 : 0,
+    target: 1,
+  ),
+  AchievementDefinition(
+    id: 'word_lesson_10',
+    title: 'Lesson Regular',
+    emoji: '📝',
+    requirement: 'Complete 10 word lessons.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Study lamp',
+    progress: (s) => s.wordLessonsCompleted,
+    target: 10,
+  ),
+  AchievementDefinition(
+    id: 'word_lesson_50',
+    title: 'Dedicated Learner',
+    emoji: '📖',
+    requirement: 'Complete 50 word lessons.',
+    rewardType: AchievementRewardType.profileStyle,
+    reward: 'Word Scholar title',
+    progress: (s) => s.wordLessonsCompleted,
+    target: 50,
+  ),
+  AchievementDefinition(
+    id: 'perfect_lesson',
+    title: 'Perfect Score',
+    emoji: '💯',
+    requirement: 'Complete a word lesson with 100%.',
+    rewardType: AchievementRewardType.leoReaction,
+    reward: "Leo's proud nod",
+    progress: (s) => s.perfectLessons,
+    target: 1,
+  ),
+  AchievementDefinition(
+    id: 'five_categories',
+    title: 'Well Rounded',
+    emoji: '🌈',
+    requirement: 'Complete all words in 5 categories.',
+    rewardType: AchievementRewardType.profileStyle,
+    reward: 'Explorer title',
+    progress: (s) => s.categoriesCompleted,
+    target: 5,
+  ),
+  AchievementDefinition(
+    id: 'postcards_unlock',
+    title: 'Postbox Key',
+    emoji: '📬',
+    requirement: 'Unlock Living Postcards by learning 10 words.',
+    rewardType: AchievementRewardType.nestItem,
+    reward: 'Postbox key',
+    progress: (s) => s.postcardsUnlocked ? 1 : 0,
+    target: 1,
   ),
   AchievementDefinition(
     id: 'secret_purr',
