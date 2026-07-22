@@ -2,17 +2,17 @@
 
 ## Public testing address
 
-Every push to `main` is built and deployed by
-`.github/workflows/pages.yml` to:
+The private source repository builds a deployment-only website for:
 
-<https://jadax.github.io/LinguaTomo/>
+<https://jadax.github.io/LinguaTomo-Web/>
 
-GitHub Pages is a good free, stable choice for this Flutter static client. It
-also keeps preview hosting beside the source repository. Supabase remains the
-optional account and progress-sync backend.
+`Jadax/LinguaTomo-Web` contains compiled Web output only. The Dart source,
+tests, SQL and development history stay private in `Jadax/LinguaTomo`.
+GitHub Pages is therefore free without exposing the maintainable source.
 
-The repository's Settings > Pages source must be set to **GitHub Actions** once.
-The workflow then handles later releases automatically.
+The deployment repository's Pages source is its `main` branch root. The private
+workflow produces a reviewed build artefact. Automatic cross-repository push
+uses a write deploy key restricted to `Jadax/LinguaTomo-Web`.
 
 ## Memorable production address
 
@@ -26,7 +26,8 @@ After purchase:
 2. Add GitHub's requested DNS records at the registrar.
 3. Enable **Enforce HTTPS** after DNS verification.
 4. Add the final Web URL to Supabase Auth's allowed redirect URLs.
-5. Keep the `jadax.github.io` address as a testing and fallback origin.
+5. Keep the `jadax.github.io/LinguaTomo-Web` address as a testing and fallback
+   origin.
 
 ## Public configuration
 

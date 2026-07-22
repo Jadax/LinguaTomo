@@ -1,4 +1,4 @@
-name: Publish Web
+name: Prepare Web Release
 
 on:
   push:
@@ -7,11 +7,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: github-pages
+  group: web-release
   cancel-in-progress: true
 
 jobs:
@@ -19,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Check out repository
+      - name: Check out private source
         uses: actions/checkout@v6
       - name: Install Flutter
         uses: subosito/flutter-action@v2.23.0
@@ -29,26 +27,15 @@ jobs:
           cache: true
       - name: Resolve dependencies
         run: flutter pub get
-      - name: Build Web release
+      - name: Build deployment-only website
         run: >-
           flutter build web --release --no-wasm-dry-run
-          --base-href "/LinguaTomo/"
+          --base-href "/LinguaTomo-Web/"
           --dart-define=SUPABASE_URL=https://lfoczkivkesxxmuowebm.supabase.co
           --dart-define=SUPABASE_PUBLISHABLE_KEY=sb_publishable_NGm5Y-8u5SwycozyfhyYjw_keRVTpka
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Upload Web artefact
-        uses: actions/upload-pages-artifact@v4
+      - name: Upload compiled website
+        uses: actions/upload-artifact@v7
         with:
+          name: linguatomo-web
           path: build/web
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          retention-days: 14

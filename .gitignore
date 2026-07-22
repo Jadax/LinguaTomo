@@ -54,3 +54,4 @@ app.*.map.json
 assets/branding/leo-reference.jpg
 **/*service-role*
 **/*service_role*
+.deploy_key*

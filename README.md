@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.5.0, build 7**
+**Version 1.5.1, build 8**
 
 | Area | Available now |
 |---|---|
@@ -112,8 +112,9 @@ flutter pub get
 flutter run -d chrome
 ```
 
-The public test build deploys from `main` to
-<https://jadax.github.io/LinguaTomo/> through GitHub Actions.
+The private source builds a deployment-only website published at
+<https://jadax.github.io/LinguaTomo-Web/>. The public repository contains
+compiled Web output only, never the Dart source or development history.
 
 Android:
 
