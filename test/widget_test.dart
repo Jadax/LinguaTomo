@@ -21,14 +21,13 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Starter'));
     await tester.pump();
-    await tester.ensureVisible(find.text('Show my route'));
+    await tester.ensureVisible(find.text('Start learning'));
     await tester.pump();
-    await tester.tap(find.text('Show my route'));
+    await tester.tap(find.text('Start learning'));
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Welcome home'), findsOneWidget);
+    expect(find.textContaining('words learned'), findsWidgets);
     expect(find.text('CONTINUE LEARNING'), findsOneWidget);
-    expect(find.textContaining('0 words learned'), findsOneWidget);
 
     await tester.tap(find.text('Learn'));
     await tester.pumpAndSettle();

@@ -30,12 +30,17 @@ class WordLessonView extends ConsumerStatefulWidget {
 class _WordLessonViewState extends ConsumerState<WordLessonView> {
   late final List<Word> _words;
   var _currentIndex = 0;
+  var _phase = _LessonPhase.introduce;
   var _correctCount = 0;
   var _answered = false;
   var _selectedOption = -1;
   late List<String> _options;
   final _speech = SpeechService();
   final _rng = math.Random();
+
+  // Two steps per word: introduce + quiz. Total steps = words.length * 2.
+  int get _totalSteps => _words.length * 2;
+  int get _currentStep => _currentIndex * 2 + (_phase == _LessonPhase.quiz ? 1 : 0);
 
   @override
   void initState() {
@@ -50,7 +55,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     } else {
       _words = ref.read(wordProgressProvider.notifier).generateLesson();
     }
-    _prepareQuestion();
+    _prepareQuiz();
   }
 
   List<Word> _generateFilteredLesson({
@@ -61,13 +66,14 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
         .where((w) => w.category == category && w.tier == tier)
         .toList();
     final completed = ref.read(wordProgressProvider).completedWords;
-    final incomplete = allWords.where((w) => !completed.contains(w.id)).toList();
+    final incomplete =
+        allWords.where((w) => !completed.contains(w.id)).toList();
     if (incomplete.length >= 5) {
       incomplete.shuffle(_rng);
       return incomplete.take(5).toList();
     }
-    // If fewer than 5 incomplete, fill with already-learned for review
-    final alreadyLearned = allWords.where((w) => completed.contains(w.id)).toList();
+    final alreadyLearned =
+        allWords.where((w) => completed.contains(w.id)).toList();
     final pool = [...incomplete, ...alreadyLearned]..shuffle(_rng);
     return pool.take(5).toList();
   }
@@ -78,19 +84,21 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     super.dispose();
   }
 
-  void _prepareQuestion() {
+  void _prepareQuiz() {
     if (_currentIndex >= _words.length) return;
     final current = _words[_currentIndex];
     _answered = false;
     _selectedOption = -1;
-
     final correctAnswer = current.english;
-    final otherWords = wordBank
-        .where((w) => w.id != current.id)
-        .toList()
-      ..shuffle(_rng);
+    final otherWords =
+        wordBank.where((w) => w.id != current.id).toList()..shuffle(_rng);
     final distractors = otherWords.take(2).map((w) => w.english).toList();
     _options = [correctAnswer, ...distractors]..shuffle(_rng);
+  }
+
+  void _startQuizPhase() {
+    _speech.speakJapanese(_words[_currentIndex].japanese);
+    setState(() => _phase = _LessonPhase.quiz);
   }
 
   void _checkAnswer(int index) {
@@ -101,17 +109,16 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     });
     final current = _words[_currentIndex];
     final isCorrect = _options[index] == current.english;
-    if (isCorrect) {
-      _correctCount++;
-    }
+    if (isCorrect) _correctCount++;
     _speech.speakJapanese(current.japanese);
   }
 
   void _nextWord() {
     setState(() {
       _currentIndex++;
+      _phase = _LessonPhase.introduce;
       if (_currentIndex < _words.length) {
-        _prepareQuestion();
+        _prepareQuiz();
       }
     });
   }
@@ -124,13 +131,15 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
         );
     final xpEarned = _correctCount * 10;
     ref.read(progressProvider.notifier).addXp(xpEarned);
-    Navigator.of(context).pop(
-      LessonResult(
-        totalWords: _words.length,
-        correctCount: _correctCount,
-        xpEarned: xpEarned,
-      ),
-    );
+    if (mounted) {
+      Navigator.of(context).pop(
+        LessonResult(
+          totalWords: _words.length,
+          correctCount: _correctCount,
+          xpEarned: xpEarned,
+        ),
+      );
+    }
   }
 
   @override
@@ -138,125 +147,223 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     if (_words.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('Word Lesson')),
-        body: const Center(child: Text('No words available. Try a different tier.')),
+        body: const Center(
+          child: Text('No words available. Try a different tier.'),
+        ),
       );
     }
-    if (_currentIndex >= _words.length) {
-      return _buildResults();
-    }
-    final current = _words[_currentIndex];
-    final progress = _currentIndex / _words.length;
+    if (_currentIndex >= _words.length) return _buildResults();
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Word ${_currentIndex + 1} of ${_words.length}',
+          'Step ${_currentStep + 1} of $_totalSteps',
           style: const TextStyle(fontWeight: FontWeight.w800),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(4),
           child: LinearProgressIndicator(
-            value: progress,
+            value: _currentStep / _totalSteps,
             minHeight: 4,
             backgroundColor: AppColors.bambooMist,
           ),
         ),
       ),
-      body: ResponsiveContent(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 20),
-            Center(
-              child: GestureDetector(
-                onTap: () => _speech.speakJapanese(current.japanese),
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    color: AppColors.sakura.withValues(alpha: .3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        current.emoji,
-                        style: const TextStyle(fontSize: 48),
-                      ),
-                      const SizedBox(height: 4),
-                      const Icon(
-                        Icons.volume_up_rounded,
-                        color: AppColors.persimmon,
-                        size: 22,
-                      ),
-                    ],
-                  ),
+      body: _phase == _LessonPhase.introduce
+          ? _buildIntroduce()
+          : _buildQuiz(),
+    );
+  }
+
+  // ── INTRODUCE PHASE ────────────────────────────────────────────────
+  // Show the word with emoji, reading, meaning and audio.
+  // User taps "Got it" to confirm they've seen it.
+  Widget _buildIntroduce() {
+    final word = _words[_currentIndex];
+    return ResponsiveContent(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Spacer(flex: 2),
+          Center(
+            child: GestureDetector(
+              onTap: () => _speech.speakJapanese(word.japanese),
+              child: Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: AppColors.sakura.withValues(alpha: .25),
+                  shape: BoxShape.circle,
                 ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Text(
-                current.japanese,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(word.emoji, style: const TextStyle(fontSize: 64)),
+                    const SizedBox(height: 4),
+                    const Icon(
+                      Icons.volume_up_rounded,
+                      color: AppColors.persimmon,
+                      size: 24,
                     ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Center(
-              child: Text(
-                current.romaji,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: AppColors.muted,
-                  fontWeight: FontWeight.w500,
+                  ],
                 ),
               ),
             ),
-            const SizedBox(height: 30),
-            Text(
-              'What does this mean?',
-              style: Theme.of(context).textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            for (var i = 0; i < _options.length; i++)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _AnswerOption(
-                  text: _options[i],
-                  selected: _selectedOption == i,
-                  correct: _answered && _options[i] == current.english,
-                  wrong: _answered &&
-                      _selectedOption == i &&
-                      _options[i] != current.english,
-                  enabled: !_answered,
-                  onTap: () => _checkAnswer(i),
-                ),
-              ),
-            const Spacer(),
-            if (_answered)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: FilledButton(
-                  onPressed: _nextWord,
-                  child: Text(
-                    _currentIndex < _words.length - 1 ? 'Next word' : 'See results',
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 28),
+          Center(
+            child: Text(
+              word.japanese,
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
                   ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              word.romaji,
+              style: const TextStyle(
+                fontSize: 20,
+                color: AppColors.muted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.matcha.withValues(alpha: .12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                word.english,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.matcha,
                 ),
               ),
-          ],
-        ),
+            ),
+          ),
+          const Spacer(flex: 3),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: FilledButton(
+              onPressed: _startQuizPhase,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(56),
+              ),
+              child: const Text(
+                'Got it!',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
+  // ── QUIZ PHASE ─────────────────────────────────────────────────────
+  // Ask "What does this mean?" with 3 options.
+  Widget _buildQuiz() {
+    final word = _words[_currentIndex];
+    return ResponsiveContent(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 20),
+          Center(
+            child: GestureDetector(
+              onTap: () => _speech.speakJapanese(word.japanese),
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: AppColors.sakura.withValues(alpha: .25),
+                  shape: BoxShape.circle,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(word.emoji, style: const TextStyle(fontSize: 44)),
+                    const SizedBox(height: 2),
+                    const Icon(
+                      Icons.volume_up_rounded,
+                      color: AppColors.persimmon,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              word.japanese,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              word.romaji,
+              style: const TextStyle(
+                fontSize: 16,
+                color: AppColors.muted,
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
+          Text(
+            'What does this mean?',
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          for (var i = 0; i < _options.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _AnswerOption(
+                text: _options[i],
+                selected: _selectedOption == i,
+                correct: _answered && _options[i] == word.english,
+                wrong: _answered &&
+                    _selectedOption == i &&
+                    _options[i] != word.english,
+                enabled: !_answered,
+                onTap: () => _checkAnswer(i),
+              ),
+            ),
+          const Spacer(),
+          if (_answered)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: FilledButton(
+                onPressed: _nextWord,
+                child: Text(
+                  _currentIndex < _words.length - 1 ? 'Next word' : 'See results',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── RESULTS ────────────────────────────────────────────────────────
   Widget _buildResults() {
-    final percentage = _words.isEmpty
-        ? 0
-        : ((_correctCount / _words.length) * 100).round();
+    final percentage =
+        _words.isEmpty ? 0 : ((_correctCount / _words.length) * 100).round();
     return Scaffold(
       body: SafeArea(
         child: ResponsiveContent(
@@ -302,7 +409,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               if (percentage == 100) ...[
                 const SizedBox(height: 12),
                 const Text(
-                  '🌟 Perfect lesson!',
+                  'Perfect lesson!',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
                   textAlign: TextAlign.center,
                 ),
@@ -323,6 +430,8 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     );
   }
 }
+
+enum _LessonPhase { introduce, quiz }
 
 class _AnswerOption extends StatelessWidget {
   const _AnswerOption({
@@ -375,7 +484,8 @@ class _AnswerOption extends StatelessWidget {
                 text,
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: correct || wrong ? FontWeight.w800 : FontWeight.w600,
+                  fontWeight:
+                      correct || wrong ? FontWeight.w800 : FontWeight.w600,
                 ),
               ),
             ),
