@@ -1,7 +1,9 @@
 ﻿import '../models/app_models.dart';
 import 'word_bank_extras.dart';
+import 'words_a1.dart';
+import 'words_a2.dart';
 
-const wordBank = <Word>[
+final wordBank = <Word>[
   // ── Starter tier (80 words) ─────────────────────────────────────────────
   // Greetings (10)
   Word(id: 's_01', japanese: 'こんにちは', romaji: 'konnichiwa', english: 'Hello', category: WordCategory.greetings, tier: DifficultyTier.starter, emoji: '👋'),
@@ -452,6 +454,8 @@ const wordBank = <Word>[
   Word(id: 'x_79', japanese: '水獺', romaji: 'minotonka', english: 'Otter', category: WordCategory.animals, tier: DifficultyTier.expert, emoji: '🦦'),
   Word(id: 'x_80', japanese: '白鳥', romaji: 'hakuchou', english: 'Swan', category: WordCategory.animals, tier: DifficultyTier.expert, emoji: '🦢'),
   ...wordBankExtras,
+  ...a1WordSections.expand((s) => s.words),
+  ...a2WordSections.expand((s) => s.words),
 ];
 
 List<Word> wordsForTier(DifficultyTier tier) =>
@@ -619,6 +623,13 @@ List<Word> wordsForTierInOrder(DifficultyTier tier) {
   final order = _lessonPath[tier];
   if (order == null) return wordsForTier(tier);
   final byId = {for (final w in wordBank) w.id: w};
-  return [for (final id in order) if (byId[id] != null) byId[id]!];
+  final ordered = [for (final id in order) if (byId[id] != null) byId[id]!];
+  // Append tier words not yet placed in the path (alphabetically by id)
+  final orderedIds = ordered.map((w) => w.id).toSet();
+  final extras = wordsForTier(tier)
+      .where((w) => !orderedIds.contains(w.id))
+      .toList()
+    ..sort((a, b) => a.id.compareTo(b.id));
+  return [...ordered, ...extras];
 }
 

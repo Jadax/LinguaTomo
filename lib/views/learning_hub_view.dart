@@ -13,6 +13,7 @@ import 'journey_view.dart';
 import 'kana_grid_view.dart';
 import 'postcards_view.dart';
 import 'seasonal_stories_view.dart';
+import 'cefr_guide_view.dart';
 import 'word_lesson_view.dart';
 
 class LearningHubView extends ConsumerWidget {
@@ -92,6 +93,15 @@ class LearningHubView extends ConsumerWidget {
             subtitle: 'Word tiers and Can-Do missions',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const JourneyView()),
+            ),
+          ),
+          _LearningTile(
+            icon: Icons.map_rounded,
+            colour: const Color(0xFFE3F2FD),
+            title: 'CEFR / JLPT levels explained',
+            subtitle: 'What each level covers in your journey',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CefrGuideView()),
             ),
           ),
           _LearningTile(
