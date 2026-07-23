@@ -127,7 +127,7 @@ class _TierHeader extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '$completed/$total words',
+                    '$completed/$total words · ~${_jlptLabel(tier)}',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -432,3 +432,11 @@ class _NodeLabel extends StatelessWidget {
     );
   }
 }
+
+String _jlptLabel(DifficultyTier tier) => switch (tier) {
+  DifficultyTier.starter => 'Pre-N5 / Pre-A1',
+  DifficultyTier.elementary => 'N5 / A1',
+  DifficultyTier.intermediate => 'N4 / A2',
+  DifficultyTier.advanced => 'N3 / B1',
+  DifficultyTier.expert => 'N2 / B2',
+};

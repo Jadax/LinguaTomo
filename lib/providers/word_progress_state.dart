@@ -58,6 +58,19 @@ class WordProgress {
 
   bool get postcardsUnlocked => wordsLearned >= 10;
 
+  int get availablePostcardCount {
+    if (wordsLearned < 10) return 0;
+    if (wordsLearned < 20) return 2;
+    if (wordsLearned < 30) return 5;
+    if (wordsLearned < 50) return 9;
+    if (wordsLearned < 75) return 15;
+    if (wordsLearned < 100) return 23;
+    return 30;
+  }
+
+  bool get memoryGardenUnlocked =>
+      wordsLearned >= 5 || wordLessonHistory.isNotEmpty;
+
   DifficultyTier get highestUnlockedTier {
     final levels = DifficultyTier.values;
     for (var i = levels.length - 1; i >= 0; i--) {

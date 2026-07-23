@@ -149,33 +149,56 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 12),
           _LevelPickerCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
-          Card(
-            margin: EdgeInsets.zero,
-            child: ListTile(
-              minTileHeight: 68,
-              leading: const CircleAvatar(
-                backgroundColor: AppColors.bambooMist,
-                child: Icon(Icons.eco_rounded, color: AppColors.matcha),
+          if (wordProgress.memoryGardenUnlocked) ...[
+            Card(
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                minTileHeight: 68,
+                leading: const CircleAvatar(
+                  backgroundColor: AppColors.bambooMist,
+                  child: Icon(Icons.eco_rounded, color: AppColors.matcha),
+                ),
+                title: const Text(
+                  'Memory Garden',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                subtitle: Text(
+                  dueReviews == 0
+                      ? 'Nothing due. Your memory garden is tidy.'
+                      : '$dueReviews gentle review${dueReviews == 1 ? '' : 's'} ready',
+                ),
+                trailing: IconButton(
+                  tooltip: 'How the Memory Garden works',
+                  icon: const Icon(Icons.info_outline_rounded),
+                  onPressed: () => _showMemoryGardenHelp(context),
+                ),
+                onTap: () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
               ),
-              title: const Text(
-                'Memory Garden',
-                style: TextStyle(fontWeight: FontWeight.w900),
-              ),
-              subtitle: Text(
-                dueReviews == 0
-                    ? 'Nothing due. Your memory garden is tidy.'
-                    : '$dueReviews gentle review${dueReviews == 1 ? '' : 's'} ready',
-              ),
-              trailing: IconButton(
-                tooltip: 'How the Memory Garden works',
-                icon: const Icon(Icons.info_outline_rounded),
-                onPressed: () => _showMemoryGardenHelp(context),
-              ),
-              onTap: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
             ),
-          ),
+          ] else ...[
+            Card(
+              margin: EdgeInsets.zero,
+              color: AppColors.bambooMist.withValues(alpha: .4),
+              child: const ListTile(
+                minTileHeight: 68,
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.bambooMist,
+                  child: Icon(Icons.lock_rounded, color: AppColors.muted),
+                ),
+                title: Text(
+                  'Memory Garden',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                subtitle: Text(
+                  'Unlocks after 5 words learned',
+                  style: TextStyle(fontSize: 12, color: AppColors.muted),
+                ),
+                enabled: false,
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           if (wordProgress.wordsLearned >= 20) ...[
             const _SeasonalEventCard(),

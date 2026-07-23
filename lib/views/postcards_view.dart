@@ -70,7 +70,7 @@ class PostcardsView extends ConsumerWidget {
               'Three words, one useful phrase, and a cultural detail. Nothing expires.',
             ),
             const SizedBox(height: 16),
-            for (var index = 0; index < postcards.length; index++)
+            for (var index = 0; index < wordProgress.availablePostcardCount; index++)
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: _Postcard(
@@ -84,6 +84,30 @@ class PostcardsView extends ConsumerWidget {
                       .completePostcard(postcards[index].id),
                 ),
               ),
+            if (wordProgress.availablePostcardCount < postcards.length) ...[
+              const SizedBox(height: 8),
+              Card(
+                color: AppColors.bambooMist.withValues(alpha: .3),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Row(
+                    children: [
+                      const Text('🔒', style: TextStyle(fontSize: 28)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '${postcards.length - wordProgress.availablePostcardCount} more postcards await! Keep learning words to unlock them.',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const Card(
               color: AppColors.bambooMist,
               child: Padding(

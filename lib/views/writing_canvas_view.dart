@@ -120,7 +120,8 @@ final _practiceCharacters = CharacterSet.values
 enum _LibraryScope { today, myLevel, all }
 
 class WritingCanvasView extends ConsumerStatefulWidget {
-  const WritingCanvasView({super.key});
+  const WritingCanvasView({super.key, this.initialCharacter});
+  final String? initialCharacter;
 
   @override
   ConsumerState<WritingCanvasView> createState() => _WritingCanvasViewState();
@@ -131,6 +132,17 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
   _LibraryScope _scope = _LibraryScope.today;
   final List<List<Offset>> _strokes = [];
   int? _score;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialCharacter != null) {
+      final match = _practiceCharacters
+          .where((c) => c.symbol == widget.initialCharacter)
+          .firstOrNull;
+      if (match != null) _character = match;
+    }
+  }
 
   void _startStroke(Offset point, Size size) {
     setState(() {

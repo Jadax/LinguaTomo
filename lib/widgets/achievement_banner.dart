@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
 
@@ -8,6 +9,7 @@ class AchievementBanner {
     required String emoji,
     Duration duration = const Duration(seconds: 4),
   }) {
+    HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

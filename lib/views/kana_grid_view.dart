@@ -6,6 +6,7 @@ import '../data/character_data.dart';
 import '../models/character_entry.dart';
 import '../services/speech_service.dart';
 import '../theme/app_theme.dart';
+import '../views/writing_canvas_view.dart';
 
 @immutable
 class GridFilterState {
@@ -314,6 +315,24 @@ class _CharacterDetails extends StatelessWidget {
               child: Text(
                 'Pitch accent belongs to whole words and can vary by word and region. LinguaTomo teaches it with verified word audio, never as an invented property of an isolated character.',
               ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => WritingCanvasView(
+                    initialCharacter: entry.symbol,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.draw_rounded),
+            label: const Text('Practise writing'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(48),
             ),
           ),
           if (entry.examples.isNotEmpty) ...[
