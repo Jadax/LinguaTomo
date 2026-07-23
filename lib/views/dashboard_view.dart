@@ -1103,6 +1103,7 @@ class _ContinueLearningCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       constraints: const BoxConstraints(maxWidth: 600),
       builder: (ctx) => SafeArea(
         child: Padding(
@@ -1111,19 +1112,19 @@ class _ContinueLearningCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Choose a theme', style: Theme.of(ctx).textTheme.headlineSmall),
+              Text('Choose a theme', style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 2),
-              Text('Pick what you want to learn about today.',
-                  style: const TextStyle(color: AppColors.muted)),
-              const SizedBox(height: 14),
+              const Text('Pick what you want to learn today.',
+                  style: TextStyle(fontSize: 13, color: AppColors.muted)),
+              const SizedBox(height: 12),
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 1.7,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 2.4,
                 ),
                 itemCount: WordCategory.values.length,
                 itemBuilder: (ctx, i) {
@@ -1135,8 +1136,9 @@ class _ContinueLearningCard extends StatelessWidget {
                   final pct = tot > 0 ? done / tot : 0.0;
                   return Card(
                     color: _colours[i % _colours.length],
+                    margin: EdgeInsets.zero,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                       onTap: () {
                         Navigator.pop(ctx);
                         Navigator.of(context).push(MaterialPageRoute(
@@ -1147,26 +1149,33 @@ class _ContinueLearningCard extends StatelessWidget {
                         ));
                       },
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        child: Row(
                           children: [
-                            Text(cat.emoji, style: const TextStyle(fontSize: 32)),
-                            const SizedBox(height: 4),
-                            Text(cat.label, textAlign: TextAlign.center,
-                                maxLines: 2, overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, height: 1.15)),
-                            const SizedBox(height: 4),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: pct, minHeight: 6,
-                                valueColor: const AlwaysStoppedAnimation(AppColors.matcha),
-                                backgroundColor: const Color(0xFFE0E0E0),
+                            Text(cat.emoji, style: const TextStyle(fontSize: 28)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(cat.label,
+                                      maxLines: 2, overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, height: 1.15)),
+                                  const SizedBox(height: 4),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(3),
+                                    child: LinearProgressIndicator(
+                                      value: pct, minHeight: 5,
+                                      valueColor: const AlwaysStoppedAnimation(AppColors.matcha),
+                                      backgroundColor: const Color(0xFFE0E0E0),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text('$done of $tot', style: const TextStyle(fontSize: 10, color: AppColors.muted)),
+                            const SizedBox(width: 4),
+                            Text('$done', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.matcha)),
                           ],
                         ),
                       ),
