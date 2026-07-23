@@ -1037,84 +1037,155 @@ class _ContinueLearningCard extends StatelessWidget {
     return Card(
       color: const Color(0xFFFFF0E8),
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.persimmon,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    wordProgress.currentTier == DifficultyTier.starter
-                        ? '📖'
-                        : wordProgress.currentTier == DifficultyTier.elementary
-                            ? '📚'
-                            : wordProgress.currentTier == DifficultyTier.intermediate
-                                ? '🎓'
-                                : wordProgress.currentTier == DifficultyTier.advanced
-                                    ? '🌟'
-                                    : '🏆',
-                    style: const TextStyle(fontSize: 28),
-                  ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => _showThemePicker(context, wordProgress),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.persimmon,
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Text(
-                            'PICK A THEME',
-                            style: TextStyle(
-                              color: AppColors.persimmon,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            '${wordProgress.currentTier.label} tier',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: AppColors.muted,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        '$tierProgress of $tierTotal words learned',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 6),
-                      LinearProgressIndicator(
-                        value: tierTotal > 0 ? tierProgress / tierTotal : 0,
-                        minHeight: 6,
-                      ),
-                    ],
-                  ),
+                alignment: Alignment.center,
+                child: Text(
+                  wordProgress.currentTier == DifficultyTier.starter
+                      ? '📖'
+                      : wordProgress.currentTier == DifficultyTier.elementary
+                          ? '📚'
+                          : wordProgress.currentTier == DifficultyTier.intermediate
+                              ? '🎓'
+                              : wordProgress.currentTier == DifficultyTier.advanced
+                                  ? '🌟'
+                                  : '🏆',
+                  style: const TextStyle(fontSize: 28),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Choose a topic below to start your next lesson.',
-              style: TextStyle(fontSize: 12, color: AppColors.muted),
-            ),
-          ],
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'PICK A THEME',
+                      style: TextStyle(
+                        color: AppColors.persimmon,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    Text(
+                      '$tierProgress of $tierTotal words learned',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 6),
+                    LinearProgressIndicator(
+                      value: tierTotal > 0 ? tierProgress / tierTotal : 0,
+                      minHeight: 6,
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_rounded),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  void _showThemePicker(BuildContext context, WordProgress wp) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      constraints: const BoxConstraints(maxWidth: 600),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Choose a theme', style: Theme.of(ctx).textTheme.headlineSmall),
+              const SizedBox(height: 2),
+              Text('Pick what you want to learn about today.',
+                  style: const TextStyle(color: AppColors.muted)),
+              const SizedBox(height: 14),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 1.7,
+                ),
+                itemCount: WordCategory.values.length,
+                itemBuilder: (ctx, i) {
+                  final cat = WordCategory.values[i];
+                  final done = wp.categoryProgress(cat, wp.currentTier);
+                  final tot = wordBank
+                      .where((w) => w.category == cat && w.tier == wp.currentTier)
+                      .length;
+                  final pct = tot > 0 ? done / tot : 0.0;
+                  return Card(
+                    color: _colours[i % _colours.length],
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (_) => WordLessonView(
+                            filterCategory: cat,
+                            filterTier: wp.currentTier,
+                          ),
+                        ));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(cat.emoji, style: const TextStyle(fontSize: 32)),
+                            const SizedBox(height: 4),
+                            Text(cat.label, textAlign: TextAlign.center,
+                                maxLines: 2, overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, height: 1.15)),
+                            const SizedBox(height: 4),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(3),
+                              child: LinearProgressIndicator(
+                                value: pct, minHeight: 6,
+                                valueColor: const AlwaysStoppedAnimation(AppColors.matcha),
+                                backgroundColor: const Color(0xFFE0E0E0),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text('$done of $tot', style: const TextStyle(fontSize: 10, color: AppColors.muted)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  static const _colours = [
+    Color(0xFFFFF0E8), Color(0xFFF0F4FF), Color(0xFFE8F5E9),
+    Color(0xFFFFF3E0), Color(0xFFF3E5F5), Color(0xFFFFFDE7),
+    Color(0xFFE0F7FA), Color(0xFFFFE0E0),
+  ];
 }
 
 class _ActionCard extends StatelessWidget {
