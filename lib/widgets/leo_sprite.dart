@@ -173,7 +173,17 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                   aspectRatio: 1.7,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .72),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFFD6ECFF), // sky blue
+                          Color(0xFFE8F4FF), // light sky
+                          Color(0xFFF0F8E8), // pale green
+                          Color(0xFFE8F0D8), // soft sage
+                        ],
+                        stops: [0.0, 0.45, 0.75, 1.0],
+                      ),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: AnimatedBuilder(
@@ -191,7 +201,89 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                                 ? (bounds.maxWidth - 166)
                                 : 12 + t * (bounds.maxWidth - 166);
                             return Stack(
+                              clipBehavior: Clip.none,
                               children: [
+                                // Sun
+                                const Positioned(
+                                  top: 10,
+                                  left: 18,
+                                  child: Text('☀️', style: TextStyle(fontSize: 28)),
+                                ),
+                                // Clouds
+                                Positioned(
+                                  top: 8,
+                                  right: 24 + 12 * math.sin(phase * math.pi * 2),
+                                  child: Text(
+                                    '☁️',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      color: Colors.white.withValues(alpha: .8),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 28,
+                                  left: bounds.maxWidth * 0.45 + 8 * math.cos(phase * math.pi),
+                                  child: Text(
+                                    '☁️',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white.withValues(alpha: .6),
+                                    ),
+                                  ),
+                                ),
+                                // Grass strip
+                                Positioned(
+                                  bottom: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: 36,
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                      bottom: Radius.circular(30),
+                                    ),
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Color(0xFF90C67C),
+                                            Color(0xFF6BAF5B),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Flowers on the grass
+                                const Positioned(
+                                  bottom: 10,
+                                  left: 30,
+                                  child: Text('🌸', style: TextStyle(fontSize: 14)),
+                                ),
+                                const Positioned(
+                                  bottom: 8,
+                                  left: 80,
+                                  child: Text('🌼', style: TextStyle(fontSize: 12)),
+                                ),
+                                const Positioned(
+                                  bottom: 12,
+                                  right: 60,
+                                  child: Text('🌷', style: TextStyle(fontSize: 13)),
+                                ),
+                                const Positioned(
+                                  bottom: 6,
+                                  right: 110,
+                                  child: Text('🌻', style: TextStyle(fontSize: 11)),
+                                ),
+                                // Small bush
+                                const Positioned(
+                                  bottom: 16,
+                                  left: 140,
+                                  child: Text('🌿', style: TextStyle(fontSize: 16)),
+                                ),
+                                // Leo
                                 Positioned(
                                   left: leoLeft,
                                   top:
@@ -216,6 +308,7 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                                     ),
                                   ),
                                 ),
+                                // Butterfly
                                 Positioned(
                                   left: _caught
                                       ? bounds.maxWidth - 92

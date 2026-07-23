@@ -163,7 +163,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
     final isPerfect = correctCount == wordIds.length;
     final history = [...state.wordLessonHistory, wordIds.join(',')];
     state = WordProgress(
-      completedWords: state.completedWords,
+      completedWords: {...state.completedWords, ...wordIds},
       currentTier: state.currentTier,
       wordLessonHistory: history,
       perfectLessonCount: state.perfectLessonCount + (isPerfect ? 1 : 0),
@@ -172,6 +172,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
         _dateKey(DateTime.now()),
       },
     );
+    _maybeUnlockTier();
     await _persist();
   }
 

@@ -109,7 +109,6 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   }
 
   void _startQuizPhase() {
-    _speech.speakJapanese(_words[_currentIndex].japanese);
     setState(() => _phase = _LessonPhase.quiz);
   }
 
@@ -122,7 +121,6 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final current = _words[_currentIndex];
     final isCorrect = _options[index] == current.english;
     if (isCorrect) _correctCount++;
-    _speech.speakJapanese(current.japanese);
   }
 
   void _nextWord() {
