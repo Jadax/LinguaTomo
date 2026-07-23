@@ -113,7 +113,6 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   }
 
   void _startQuizPhase() {
-    _speech.speakJapanese(_words[_currentIndex].japanese);
     setState(() => _phase = _LessonPhase.quiz);
   }
 
@@ -438,22 +437,26 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
           AnimatedOpacity(
             opacity: _answered ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 300),
-            child: Text(
-              word.japanese,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+            child: Center(
+              child: Text(
+                word.japanese,
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+              ),
             ),
           ),
           const SizedBox(height: 4),
           AnimatedOpacity(
             opacity: _answered ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 300),
-            child: Text(
-              word.romaji,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.muted,
+            child: Center(
+              child: Text(
+                word.romaji,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: AppColors.muted,
+                ),
               ),
             ),
           ),
