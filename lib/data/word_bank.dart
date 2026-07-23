@@ -8,6 +8,7 @@ import 'words_n4.dart';
 import 'words_n3.dart';
 import 'words_n2.dart';
 import 'words_themes_extra.dart';
+import 'words_n1.dart';
 
 final wordBank = <Word>[
   // ── Starter tier (80 words) ─────────────────────────────────────────────
@@ -468,6 +469,7 @@ final wordBank = <Word>[
   ...n3Words,
   ...n2Words,
   ...themeExtraWords,
+  ...n1Words,
 ];
 
 List<Word> wordsForTier(DifficultyTier tier) =>
