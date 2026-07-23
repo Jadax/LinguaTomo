@@ -41,3 +41,20 @@ const jlptDescriptions = <String, String>{
   'N2': 'Pre-advanced Japanese. ~1000 kanji, ~6000 words. Understand complex topics and conversations.',
   'N1': 'Advanced Japanese. ~2000 kanji, ~10000 words. Understand nuanced arguments and abstract texts.',
 };
+
+/// A themed word section — the building block for browsing and lessons.
+class WordThemeSection {
+  const WordThemeSection({
+    required this.theme,
+    required this.emoji,
+    required this.tier,
+    required this.cefr,
+    required this.jlpt,
+    required this.desc,
+    required this.words,
+  });
+
+  final String theme, emoji, cefr, jlpt, desc;
+  final DifficultyTier tier;
+  final List<Word> words;
+}
