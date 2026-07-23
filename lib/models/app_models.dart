@@ -322,6 +322,17 @@ class LearnerProgress {
     return count;
   }
 
+  int get level => (xp / 100).floor();
+
+  String get levelTitle => switch (level) {
+    < 5 => 'Explorer',
+    < 10 => 'Traveller',
+    < 20 => 'Scholar',
+    < 35 => 'Sage',
+    < 50 => 'Master',
+    _ => 'Grand Master',
+  };
+
   ProficiencyStage get stage {
     final count = {...completedMissions, ...placedOutMissions}.length;
     if (count >= 18) return ProficiencyStage.professional;

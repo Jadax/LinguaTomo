@@ -10,8 +10,8 @@ class CefrGuideView extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Course Levels')),
     body: ResponsiveContent(
-      child: ListView(
-        padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'What do the levels mean?',

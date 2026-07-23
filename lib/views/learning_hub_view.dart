@@ -14,6 +14,7 @@ import 'kana_grid_view.dart';
 import 'postcards_view.dart';
 import 'seasonal_stories_view.dart';
 import 'cefr_guide_view.dart';
+import 'achievement_tracker_view.dart';
 import 'word_lesson_view.dart';
 
 class LearningHubView extends ConsumerWidget {
@@ -72,14 +73,20 @@ class LearningHubView extends ConsumerWidget {
                     '${wordProgress.tierProgress(wordProgress.currentTier)}/${wordsForTier(wordProgress.currentTier).length} words in current tier',
                   ),
                   const SizedBox(height: 12),
-                  FilledButton.icon(
+                  FilledButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const WordLessonView(),
                       ),
                     ),
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: const Text('Start a word lesson'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.play_arrow_rounded),
+                        SizedBox(width: 6),
+                        Text('Start a word lesson'),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -102,6 +109,16 @@ class LearningHubView extends ConsumerWidget {
             subtitle: 'What each level covers in your journey',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const CefrGuideView()),
+            ),
+          ),
+          _LearningTile(
+            icon: Icons.emoji_events_rounded,
+            colour: const Color(0xFFFFF3E0),
+            title: 'Achievement tracker',
+            subtitle: 'See your progress and collect rewards',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => const AchievementTrackerView()),
             ),
           ),
           _LearningTile(

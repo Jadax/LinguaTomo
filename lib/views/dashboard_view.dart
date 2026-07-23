@@ -148,6 +148,8 @@ class DashboardView extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 12),
+          _ConversationCard(wordProgress: wordProgress),
+          const SizedBox(height: 12),
           _LevelPickerCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
           if (wordProgress.wordsLearned >= 10) ...[
@@ -1127,8 +1129,10 @@ class _ContinueLearningCard extends StatelessWidget {
                 Text(
                   'Words at your level. Pick what you want to learn today.',
                   style: const TextStyle(fontSize: 12, color: AppColors.muted),
-                ),
-                const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 12),
+          _CategoryBuckets(wordProgress: wordProgress),
+          const SizedBox(height: 12),
                 Flexible(
                   child: SingleChildScrollView(
                     child: Wrap(
