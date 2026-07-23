@@ -113,6 +113,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   }
 
   void _startQuizPhase() {
+    _speech.speakJapanese(_words[_currentIndex].japanese);
     setState(() => _phase = _LessonPhase.quiz);
   }
 
@@ -434,7 +435,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
             ),
           ),
           const SizedBox(height: 16),
-          Center(
+          AnimatedOpacity(
+            opacity: _answered ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 300),
             child: Text(
               word.japanese,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -443,7 +446,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
             ),
           ),
           const SizedBox(height: 4),
-          Center(
+          AnimatedOpacity(
+            opacity: _answered ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 300),
             child: Text(
               word.romaji,
               style: const TextStyle(
@@ -453,7 +458,15 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
             ),
           ),
           const SizedBox(height: 28),
-          if (_isFirstLesson) ...[
+          if (!_answered)
+            Text(
+              'Tap the speaker to listen!',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppColors.persimmon,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          if (_isFirstLesson && !_answered) ...[
             _TutorialBubble(text: 'Pick the right meaning!'),
             const SizedBox(height: 12),
           ],
