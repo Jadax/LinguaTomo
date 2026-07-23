@@ -21,6 +21,7 @@ dependencies:
   supabase_flutter: ^2.16.0
   flutter_tts: ^4.2.5
   connectivity_plus: ^7.3.0
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -41,3 +42,4 @@ flutter:
     - assets/branding/leo-face-icon.png
     - assets/branding/leo-sprites.png
     - assets/content/grammar/
+    - assets/sounds/

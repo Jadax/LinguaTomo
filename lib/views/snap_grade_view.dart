@@ -13,6 +13,7 @@ import '../providers/app_state.dart';
 import '../services/ocr_result.dart';
 import '../services/ocr_service.dart';
 import '../theme/app_theme.dart';
+import '../views/writing_canvas_view.dart';
 import '../widgets/leo_sprite.dart';
 
 final _photoTargets = CharacterSet.values
@@ -242,18 +243,40 @@ class _SnapGradeViewState extends ConsumerState<SnapGradeView> {
             ),
           ],
           const SizedBox(height: 14),
-          const Card(
+          Card(
             color: AppColors.bambooMist,
             child: Padding(
-              padding: EdgeInsets.all(15),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.fact_check_outlined, color: AppColors.matcha),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Photo evidence can assess recognition and page balance. It cannot prove stroke order, pressure, or rhythm. Use Live Writing for those technique checks.',
+                  const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.fact_check_outlined,
+                          color: AppColors.matcha),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Photo evidence can assess recognition and page balance. It cannot prove stroke order, pressure, or rhythm.',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => WritingCanvasView(
+                          initialCharacter: _target,
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(Icons.draw_rounded, size: 18),
+                    label: const Text('Open Writing Canvas'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.matcha,
+                      side: const BorderSide(color: AppColors.matcha),
                     ),
                   ),
                 ],

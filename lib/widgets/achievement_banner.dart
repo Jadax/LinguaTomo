@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/sound_service.dart';
 import '../theme/app_theme.dart';
 
 class AchievementBanner {
@@ -10,6 +11,7 @@ class AchievementBanner {
     Duration duration = const Duration(seconds: 4),
   }) {
     HapticFeedback.lightImpact();
+    SoundService().playAchievement();
     ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

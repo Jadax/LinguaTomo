@@ -8,6 +8,7 @@ import '../data/curriculum_data.dart';
 import '../data/achievement_data.dart';
 import '../data/festival_calendar_data.dart';
 import '../data/word_bank.dart';
+import '../data/conversation_data.dart';
 import '../models/app_models.dart';
 import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
@@ -287,6 +288,70 @@ class DashboardView extends ConsumerWidget {
   );
 }
 
+class _ConversationCard extends StatelessWidget {
+  const _ConversationCard({required this.wordProgress});
+  final WordProgress wordProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final tier = wordProgress.currentTier;
+    final available = conversationPairs
+        .where((c) => c.tier.index <= tier.index)
+        .toList();
+    if (available.isEmpty) return const SizedBox.shrink();
+    final pair = available[DateTime.now().day % available.length];
+    return Card(
+      color: const Color(0xFFF3E5F5),
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text('💬', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'DAILY CONVERSATION',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1,
+                      color: Color(0xFF7B1FA2),
+                    ),
+                  ),
+                ),
+                Text(
+                  tier.label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.muted,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              pair.question,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              pair.answer,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.muted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 abstract final class AppNavigation {
   static ValueChanged<int>? goTo;
 }
@@ -392,8 +457,10 @@ class _LevelPickerCard extends ConsumerWidget {
                 ),
                 const Text(
                   'This changes which words you practise. You can switch at any time.',
-                ),
-                const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 12),
+          _ConversationCard(wordProgress: wordProgress),
+          const SizedBox(height: 12),
                 for (final tier in DifficultyTier.values)
                   Card(
                     margin: const EdgeInsets.only(bottom: 8),
