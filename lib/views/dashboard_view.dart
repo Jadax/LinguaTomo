@@ -150,6 +150,8 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 12),
           _LevelPickerCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
+          _NextCanDoCard(),
+          const SizedBox(height: 12),
           if (wordProgress.memoryGardenUnlocked) ...[
             Card(
               margin: EdgeInsets.zero,
@@ -288,6 +290,67 @@ class DashboardView extends ConsumerWidget {
   );
 }
 
+class _NextCanDoCard extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mission = ref.watch(nextMissionProvider);
+    if (mission == null) return const SizedBox.shrink();
+    return Card(
+      color: const Color(0xFFE8F5E9),
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const ReviewView()),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              const Text('🎯', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'NEXT CAN-DO',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                        color: Color(0xFF2E7D32),
+                      ),
+                    ),
+                    Text(
+                      mission.title,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Text(
+                      mission.phrase,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.muted,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 16, color: AppColors.muted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ConversationCard extends StatelessWidget {
   const _ConversationCard({required this.wordProgress});
   final WordProgress wordProgress;
@@ -337,12 +400,28 @@ class _ConversationCard extends StatelessWidget {
               pair.question,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
-            const SizedBox(height: 4),
+            Text(
+              pair.questionRomaji,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.muted,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            const SizedBox(height: 6),
             Text(
               pair.answer,
               style: const TextStyle(
                 fontSize: 15,
                 color: AppColors.muted,
+              ),
+            ),
+            Text(
+              pair.answerRomaji,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.muted,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ],
