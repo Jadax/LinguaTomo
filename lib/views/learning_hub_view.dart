@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/curriculum_data.dart';
@@ -34,7 +34,7 @@ class LearningHubView extends ConsumerWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            '${wordProgress.wordsLearned}/400 words · ${wordProgress.currentTier.label} tier',
+            '${wordProgress.wordsLearned}/500 words · ${wordProgress.currentTier.label} tier',
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 14),

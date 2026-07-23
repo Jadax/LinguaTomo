@@ -1,4 +1,4 @@
-enum AchievementRewardType {
+﻿enum AchievementRewardType {
   nestItem,
   leoReaction,
   postcardStamp,
@@ -763,7 +763,7 @@ final achievements = <AchievementDefinition>[
     rewardType: AchievementRewardType.trophy,
     reward: 'Dictionary trophy',
     progress: (s) => s.wordsLearned,
-    target: 400,
+    target: 500,
   ),
   AchievementDefinition(
     id: 'starter_complete',

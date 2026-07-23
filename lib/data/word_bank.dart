@@ -1,4 +1,5 @@
 ﻿import '../models/app_models.dart';
+import 'word_bank_extras.dart';
 
 const wordBank = <Word>[
   // ── Starter tier (80 words) ─────────────────────────────────────────────
@@ -450,6 +451,7 @@ const wordBank = <Word>[
   Word(id: 'x_78', japanese: '貂', romaji: 'ten', english: 'Sable', category: WordCategory.animals, tier: DifficultyTier.expert, emoji: '🦦'),
   Word(id: 'x_79', japanese: '水獺', romaji: 'minotonka', english: 'Otter', category: WordCategory.animals, tier: DifficultyTier.expert, emoji: '🦦'),
   Word(id: 'x_80', japanese: '白鳥', romaji: 'hakuchou', english: 'Swan', category: WordCategory.animals, tier: DifficultyTier.expert, emoji: '🦢'),
+  ...wordBankExtras,
 ];
 
 List<Word> wordsForTier(DifficultyTier tier) =>
@@ -465,6 +467,9 @@ int totalWordsForTier(DifficultyTier tier) =>
 /// Categories are mixed so the user learns the most useful words immediately.
 const _lessonPath = <DifficultyTier, List<String>>{
   DifficultyTier.starter: [
+    // expanded vocabulary
+    's_81', 's_82', 's_83', 's_84', 's_85', 's_86', 's_87', 's_88', 's_89', 's_90',
+    's_91', 's_92', 's_93', 's_94', 's_95', 's_96', 's_97', 's_98', 's_99', 's_100',
     // 1-character essentials (greetings, nature, people, food, places)
     's_04', 's_32', 's_11', 's_71', 's_72',
     's_61', 's_62', 's_63', 's_64', 's_65',
@@ -492,6 +497,8 @@ const _lessonPath = <DifficultyTier, List<String>>{
     's_20', 's_08',
   ],
   DifficultyTier.elementary: [
+    'e_81', 'e_82', 'e_83', 'e_84', 'e_85', 'e_86', 'e_87', 'e_88', 'e_89', 'e_90',
+    'e_91', 'e_92', 'e_93', 'e_94', 'e_95', 'e_96', 'e_97', 'e_98', 'e_99', 'e_100',
     // short greetings and essentials
     'e_01', 'e_02', 'e_03', 'e_05', 'e_20',
     // short nouns (home, people, food)
@@ -519,6 +526,8 @@ const _lessonPath = <DifficultyTier, List<String>>{
     'e_07', 'e_08',
   ],
   DifficultyTier.intermediate: [
+    'i_81', 'i_82', 'i_83', 'i_84', 'i_85', 'i_86', 'i_87', 'i_88', 'i_89', 'i_90',
+    'i_91', 'i_92', 'i_93', 'i_94', 'i_95', 'i_96', 'i_97', 'i_98', 'i_99', 'i_100',
     // common polite expressions
     'i_01', 'i_02', 'i_03', 'i_04', 'i_05',
     // everyday cultural items
@@ -546,6 +555,8 @@ const _lessonPath = <DifficultyTier, List<String>>{
     'i_36', 'i_37', 'i_38', 'i_39', 'i_40',
   ],
   DifficultyTier.advanced: [
+    'a_81', 'a_82', 'a_83', 'a_84', 'a_85', 'a_86', 'a_87', 'a_88', 'a_89', 'a_90',
+    'a_91', 'a_92', 'a_93', 'a_94', 'a_95', 'a_96', 'a_97', 'a_98', 'a_99', 'a_100',
     // common formal expressions
     'a_01', 'a_02', 'a_03', 'a_04', 'a_05',
     // everyday formal nouns
@@ -573,6 +584,8 @@ const _lessonPath = <DifficultyTier, List<String>>{
     'a_59', 'a_60',
   ],
   DifficultyTier.expert: [
+    'x_81', 'x_82', 'x_83', 'x_84', 'x_85', 'x_86', 'x_87', 'x_88', 'x_89', 'x_90',
+    'x_91', 'x_92', 'x_93', 'x_94', 'x_95', 'x_96', 'x_97', 'x_98', 'x_99', 'x_100',
     // common keigo and formal expressions
     'x_01', 'x_02', 'x_03', 'x_04', 'x_05',
     // cultural activities

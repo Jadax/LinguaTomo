@@ -353,6 +353,79 @@ class _NextCanDoCard extends ConsumerWidget {
   }
 }
 
+class _CategoryBuckets extends StatelessWidget {
+  const _CategoryBuckets({required this.wordProgress});
+  final WordProgress wordProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 94,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: WordCategory.values.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          final cat = WordCategory.values[index];
+          final completed =
+              wordProgress.categoryProgress(cat, wordProgress.currentTier);
+          final total = wordBank
+              .where((w) =>
+                  w.category == cat && w.tier == wordProgress.currentTier)
+              .length;
+          return SizedBox(
+            width: 100,
+            child: Card(
+              color: Colors.white,
+              margin: EdgeInsets.zero,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => WordLessonView(
+                      filterCategory: cat,
+                      filterTier: wordProgress.currentTier,
+                    ),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(cat.emoji, style: const TextStyle(fontSize: 26)),
+                      const SizedBox(height: 4),
+                      Text(
+                        cat.label,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$completed/$total',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class _ConversationCard extends StatelessWidget {
   const _ConversationCard({required this.wordProgress});
   final WordProgress wordProgress;
@@ -539,6 +612,8 @@ class _LevelPickerCard extends ConsumerWidget {
                 const Text(
                   'This changes which words you practise. You can switch at any time.',
           ),
+          const SizedBox(height: 12),
+          _CategoryBuckets(wordProgress: wordProgress),
           const SizedBox(height: 12),
           _ConversationCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
