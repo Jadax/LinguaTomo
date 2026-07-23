@@ -1,4 +1,4 @@
-import '../models/app_models.dart';
+﻿import '../models/app_models.dart';
 
 const wordBank = <Word>[
   // ── Starter tier (80 words) ─────────────────────────────────────────────
@@ -48,7 +48,7 @@ const wordBank = <Word>[
   Word(id: 's_40', japanese: '野菜', romaji: 'yasai', english: 'Vegetable', category: WordCategory.food, tier: DifficultyTier.starter, emoji: '🥬'),
   // Activities (10)
   Word(id: 's_41', japanese: '歩く', romaji: 'aruku', english: 'Walk', category: WordCategory.activities, tier: DifficultyTier.starter, emoji: '🚶'),
-  Word(id: 's_42', japanese: '食べる', romaji: 'taberu', english: 'Eat', category: WordCategory.activities, tier: DifficultyTier.starter, emoji: '🍽️'),
+  Word(id: 's_42', japanese: '食べる', romaji: 'taberu', english: 'Eat', category: WordCategory.activities, tier: DifficultyTier.starter, emoji: '⛅'),
   Word(id: 's_43', japanese: '飲む', romaji: 'nomu', english: 'Drink', category: WordCategory.activities, tier: DifficultyTier.starter, emoji: '🥤'),
   Word(id: 's_44', japanese: '走る', romaji: 'hashiru', english: 'Run', category: WordCategory.activities, tier: DifficultyTier.starter, emoji: '🏃'),
   Word(id: 's_45', japanese: '見る', romaji: 'miru', english: 'See', category: WordCategory.activities, tier: DifficultyTier.starter, emoji: '👁️'),
@@ -64,7 +64,7 @@ const wordBank = <Word>[
   Word(id: 's_54', japanese: '道', romaji: 'michi', english: 'Road', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '🛤️'),
   Word(id: 's_55', japanese: '病院', romaji: 'byouin', english: 'Hospital', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '🏥'),
   Word(id: 's_56', japanese: '電車', romaji: 'densha', english: 'Train', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '🚃'),
-  Word(id: 's_57', japanese: '車', romaji: 'kuruma', english: 'Car', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '🚗'),
+  Word(id: 's_57', japanese: '車', romaji: 'kuruma', english: 'Car', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '🌪️'),
   Word(id: 's_58', japanese: '図書館', romaji: 'toshokan', english: 'Library', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '📚'),
   Word(id: 's_59', japanese: '空港', romaji: 'kuukou', english: 'Airport', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '✈️'),
   Word(id: 's_60', japanese: '公園', romaji: 'kouen', english: 'Park', category: WordCategory.places, tier: DifficultyTier.starter, emoji: '🌳'),
@@ -99,7 +99,7 @@ const wordBank = <Word>[
   Word(id: 'e_04', japanese: 'お元気ですか', romaji: 'ogenki desu ka', english: 'How are you?', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '😊'),
   Word(id: 'e_05', japanese: '頑張って', romaji: 'ganbatte', english: 'Good luck', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '💪'),
   Word(id: 'e_06', japanese: 'もちろんです', romaji: 'mochiron desu', english: 'Of course', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '✅'),
-  Word(id: 'e_07', japanese: 'いただきます', romaji: 'itadakimasu', english: 'Bon appetit', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '🍽️'),
+  Word(id: 'e_07', japanese: 'いただきます', romaji: 'itadakimasu', english: 'Bon appetit', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '⛅'),
   Word(id: 'e_08', japanese: 'ごちそうさま', romaji: 'gochisousama', english: 'Thanks for the meal', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '🙏'),
   Word(id: 'e_09', japanese: 'わかりました', romaji: 'wakarimashita', english: 'I understand', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '💡'),
   Word(id: 'e_10', japanese: '気をつけて', romaji: 'ki wo tsukete', english: 'Take care', category: WordCategory.greetings, tier: DifficultyTier.elementary, emoji: '💛'),
@@ -153,7 +153,7 @@ const wordBank = <Word>[
   Word(id: 'e_53', japanese: '橋', romaji: 'hashi', english: 'Bridge', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '🌉'),
   Word(id: 'e_54', japanese: '港', romaji: 'minato', english: 'Harbour', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '⛵'),
   Word(id: 'e_55', japanese: 'ビル', romaji: 'biru', english: 'Building', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '🏢'),
-  Word(id: 'e_56', japanese: 'レストラン', romaji: 'resutoran', english: 'Restaurant', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '🍽️'),
+  Word(id: 'e_56', japanese: 'レストラン', romaji: 'resutoran', english: 'Restaurant', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '⛅'),
   Word(id: 'e_57', japanese: 'ホテル', romaji: 'hoteru', english: 'Hotel', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '🏨'),
   Word(id: 'e_58', japanese: '銀行', romaji: 'ginkou', english: 'Bank', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '🏦'),
   Word(id: 'e_59', japanese: '郵便局', romaji: 'yuubinkyoku', english: 'Post office', category: WordCategory.places, tier: DifficultyTier.elementary, emoji: '📮'),
@@ -199,7 +199,7 @@ const wordBank = <Word>[
   Word(id: 'i_13', japanese: '縁側', romaji: 'engawa', english: 'Veranda', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '🏡'),
   Word(id: 'i_14', japanese: '仏壇', romaji: 'butsudan', english: 'Buddhist altar', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '🙏'),
   Word(id: 'i_15', japanese: '板張り', romaji: 'itabari', english: 'Wood flooring', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '🪵'),
-  Word(id: 'i_16', japanese: '図架', romaji: 'zuka', english: 'Shelf', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '📦'),
+  Word(id: 'i_16', japanese: '図架', romaji: 'zuka', english: 'Shelf', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '💧'),
   Word(id: 'i_17', japanese: 'こたつ', romaji: 'kotatsu', english: 'Heated table', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '🪵'),
   Word(id: 'i_18', japanese: '障子', romaji: 'shouji', english: 'Paper sliding door', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '🚪'),
   Word(id: 'i_19', japanese: '押入れ', romaji: 'oshiire', english: 'Closet', category: WordCategory.home, tier: DifficultyTier.intermediate, emoji: '🚪'),
@@ -251,14 +251,14 @@ const wordBank = <Word>[
   // Nature (10)
   Word(id: 'i_61', japanese: '季節', romaji: 'kisetsu', english: 'Season', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🗓️'),
   Word(id: 'i_62', japanese: '環境', romaji: 'kankyou', english: 'Environment', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🌍'),
-  Word(id: 'i_63', japanese: '統計', romaji: 'toukei', english: 'Statistics', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '📊'),
-  Word(id: 'i_64', japanese: '食物', romaji: 'shokumotsu', english: 'Food (category)', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🍽️'),
-  Word(id: 'i_65', japanese: '物品', romaji: 'bukken', english: 'Property', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '📦'),
-  Word(id: 'i_66', japanese: '流行', romaji: 'ryuukou', english: 'Trend', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '📈'),
-  Word(id: 'i_67', japanese: '電話', romaji: 'denwa', english: 'Telephone', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '📞'),
-  Word(id: 'i_68', japanese: '情報', romaji: 'jouhou', english: 'Information', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '📋'),
-  Word(id: 'i_69', japanese: '消防', romaji: 'shoubou', english: 'Fire brigade', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🚒'),
-  Word(id: 'i_70', japanese: '交通', romaji: 'koutsuu', english: 'Traffic', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🚗'),
+  Word(id: 'i_63', japanese: '気候', romaji: 'kikou', english: 'Climate', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🌡️'),
+  Word(id: 'i_64', japanese: '天候', romaji: 'tenkou', english: 'Weather', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '⛅'),
+  Word(id: 'i_65', japanese: '滝', romaji: 'taki', english: 'Waterfall', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '💧'),
+  Word(id: 'i_66', japanese: '虹', romaji: 'niji', english: 'Rainbow', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🌈'),
+  Word(id: 'i_67', japanese: '洞窟', romaji: 'doukutsu', english: 'Cave', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🕳️'),
+  Word(id: 'i_68', japanese: '草原', romaji: 'sougen', english: 'Grassland', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🌾'),
+  Word(id: 'i_69', japanese: '雷', romaji: 'kaminari', english: 'Thunder', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '⚡'),
+  Word(id: 'i_70', japanese: '嵐', romaji: 'arashi', english: 'Storm', category: WordCategory.nature, tier: DifficultyTier.intermediate, emoji: '🌪️'),
   // Animals (10)
   Word(id: 'i_71', japanese: '蝶', romaji: 'chou', english: 'Butterfly', category: WordCategory.animals, tier: DifficultyTier.intermediate, emoji: '🦋'),
   Word(id: 'i_72', japanese: '蜂', romaji: 'hachi', english: 'Bee', category: WordCategory.animals, tier: DifficultyTier.intermediate, emoji: '🐝'),
@@ -286,8 +286,8 @@ const wordBank = <Word>[
   // Home (10)
   Word(id: 'a_11', japanese: '風呂場', romaji: 'furoba', english: 'Bathhouse', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '♨️'),
   Word(id: 'a_12', japanese: '客間', romaji: 'kyakuma', english: 'Guest room', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '🏠'),
-  Word(id: 'a_13', japanese: '物置', romaji: 'monooki', english: 'Storage room', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '📦'),
-  Word(id: 'a_14', japanese: '食堂', romaji: 'shokudou', english: 'Dining room', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '🍽️'),
+  Word(id: 'a_13', japanese: '物置', romaji: 'monooki', english: 'Storage room', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '💧'),
+  Word(id: 'a_14', japanese: '食堂', romaji: 'shokudou', english: 'Dining room', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '⛅'),
   Word(id: 'a_15', japanese: '居間', romaji: 'ima', english: 'Living room', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '🛋️'),
   Word(id: 'a_16', japanese: '仏間', romaji: 'butsuma', english: 'Buddhist room', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '🙏'),
   Word(id: 'a_17', japanese: '土間', romaji: 'doma', english: 'Earthen floor', category: WordCategory.home, tier: DifficultyTier.advanced, emoji: '🏠'),
@@ -608,3 +608,4 @@ List<Word> wordsForTierInOrder(DifficultyTier tier) {
   final byId = {for (final w in wordBank) w.id: w};
   return [for (final id in order) if (byId[id] != null) byId[id]!];
 }
+

@@ -170,97 +170,123 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                 AspectRatio(
-                  aspectRatio: 2.2,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(30),
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, _) {
-                        final phase = _controller.value;
-                        final journey = phase < .5
-                            ? phase * 2
-                            : (1 - phase) * 2;
-                        final t = Curves.easeInOut.transform(journey);
-                        final chasing = t > .76;
-                        return LayoutBuilder(
-                          builder: (context, bounds) {
-                            final leoLeft = _caught
-                                ? (bounds.maxWidth - 160)
-                                : 8 + t * (bounds.maxWidth - 160);
-                            final grassHeight = 30.0;
-                            final leoSize = 120.0;
-                            final leoGroundTop =
-                                bounds.maxHeight - grassHeight - leoSize + 4;
-                            return Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                // Background scene
-                                Positioned.fill(
-                                  child: CustomPaint(
-                                    painter: _LoadingScenePainter(
-                                      phase: phase,
-                                      bounds: bounds,
+                  aspectRatio: 2.0,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(_loadingEnv.asset),
+                        fit: BoxFit.cover,
+                      ),
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0x33000000),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        // Vignette overlay (same as nest)
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(28),
+                              gradient: const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Color(0x08000000),
+                                  Colors.transparent,
+                                  Color(0x30000000),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Animated Leo + butterfly
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, _) {
+                            final phase = _controller.value;
+                            final journey = phase < .5
+                                ? phase * 2
+                                : (1 - phase) * 2;
+                            final t = Curves.easeInOut.transform(journey);
+                            final chasing = t > .76;
+                            return LayoutBuilder(
+                              builder: (context, bounds) {
+                                final leoSize = 110.0;
+                                final groundY = bounds.maxHeight - leoSize - 18;
+                                final leoLeft = _caught
+                                    ? (bounds.maxWidth - leoSize - 44)
+                                    : 8 + t * (bounds.maxWidth - leoSize - 44);
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    // Leo
+                                    Positioned(
+                                      left: leoLeft,
+                                      top: _caught
+                                          ? groundY - 6
+                                          : chasing
+                                              ? groundY -
+                                                  24 +
+                                                  8 *
+                                                      math
+                                                          .sin(
+                                                            phase * math.pi * 4,
+                                                          )
+                                                          .abs()
+                                              : groundY +
+                                                  3 *
+                                                      math
+                                                          .sin(
+                                                            phase * math.pi * 4,
+                                                          )
+                                                          .abs(),
+                                      child: Transform.flip(
+                                        flipX: !_caught && phase >= .5,
+                                        child: LeoSprite(
+                                          pose: _caught
+                                              ? LeoPose.celebrate
+                                              : chasing
+                                                  ? LeoPose.butterfly
+                                                  : (_walkFrame
+                                                        ? LeoPose.walkA
+                                                        : LeoPose.walkB),
+                                          size: leoSize,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                // Leo
-                                Positioned(
-                                  left: leoLeft,
-                                  top: _caught
-                                      ? leoGroundTop - 8
-                                      : chasing
-                                          ? leoGroundTop -
-                                              28 +
-                                              8 *
+                                    // Butterfly
+                                    Positioned(
+                                      left: _caught
+                                          ? bounds.maxWidth - 72
+                                          : 52 + t * (bounds.maxWidth - 100),
+                                      top: _caught
+                                          ? groundY - 46
+                                          : groundY -
+                                              26 +
+                                              14 *
                                                   math
                                                       .sin(
-                                                        phase * math.pi * 4,
-                                                      )
-                                                      .abs()
-                                          : leoGroundTop +
-                                              3 *
-                                                  math
-                                                      .sin(
-                                                        phase * math.pi * 4,
+                                                        phase * math.pi * 2,
                                                       )
                                                       .abs(),
-                                  child: Transform.flip(
-                                    flipX: !_caught && phase >= .5,
-                                    child: LeoSprite(
-                                      pose: _caught
-                                          ? LeoPose.celebrate
-                                          : chasing
-                                          ? LeoPose.butterfly
-                                          : (_walkFrame
-                                                ? LeoPose.walkA
-                                                : LeoPose.walkB),
-                                      size: leoSize,
+                                      child: const Text(
+                                        '🦋',
+                                        style: TextStyle(fontSize: 24),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                // Butterfly
-                                Positioned(
-                                  left: _caught
-                                      ? bounds.maxWidth - 80
-                                      : 60 + t * (bounds.maxWidth - 110),
-                                  top: _caught
-                                      ? leoGroundTop - 50
-                                      : leoGroundTop -
-                                          30 +
-                                          14 *
-                                              math
-                                                  .sin(phase * math.pi * 2)
-                                                  .abs(),
-                                  child: const Text(
-                                    '🦋',
-                                    style: TextStyle(fontSize: 26),
-                                  ),
-                                ),
-                              ],
+                                  ],
+                                );
+                              },
                             );
                           },
-                        );
-                      },
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -339,157 +365,4 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
   );
 }
 
-class _LoadingScenePainter extends CustomPainter {
-  _LoadingScenePainter({required this.phase, required this.bounds});
-
-  final double phase;
-  final BoxConstraints bounds;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final grassHeight = 30.0;
-
-    // Sky gradient
-    final skyPaint = Paint()
-      ..shader = ui.Gradient.linear(
-        Offset(0, 0),
-        Offset(0, size.height - grassHeight),
-        [
-          const Color(0xFFB8DAF0),
-          const Color(0xFFD6ECFF),
-          const Color(0xFFE8F4FF),
-          const Color(0xFFF0F8E8),
-        ],
-        [0.0, 0.3, 0.6, 1.0],
-      );
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height - grassHeight),
-      skyPaint,
-    );
-
-    // Sun
-    final sunCenter = Offset(36, 28);
-    final sunGlowPaint = Paint()
-      ..color = const Color(0xFFFFF3C4).withValues(alpha: .35);
-    canvas.drawCircle(sunCenter, 26, sunGlowPaint);
-    final sunPaint = Paint()..color = const Color(0xFFFFD93D);
-    canvas.drawCircle(sunCenter, 16, sunPaint);
-    // Sun rays
-    final rayPaint = Paint()
-      ..color = const Color(0xFFFFD93D).withValues(alpha: .5)
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-    for (var i = 0; i < 8; i++) {
-      final angle = i * math.pi / 4 + phase * 0.3;
-      canvas.drawLine(
-        sunCenter + Offset(20 * math.cos(angle), 20 * math.sin(angle)),
-        sunCenter + Offset(28 * math.cos(angle), 28 * math.sin(angle)),
-        rayPaint,
-      );
-    }
-
-    // Clouds
-    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: .7);
-    final cloudPaintFaint = Paint()..color = Colors.white.withValues(alpha: .45);
-    final drift1 = 8 * math.sin(phase * math.pi * 2);
-    final drift2 = 6 * math.cos(phase * math.pi * 1.5);
-    // Cloud 1
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.58 + drift1, 22),
-        width: 48,
-        height: 18,
-      ),
-      cloudPaint,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.58 + 14 + drift1, 17),
-        width: 30,
-        height: 16,
-      ),
-      cloudPaint,
-    );
-    // Cloud 2
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(size.width * 0.82 + drift2, 34),
-        width: 36,
-        height: 14,
-      ),
-      cloudPaintFaint,
-    );
-
-    // Grass
-    final grassTop = size.height - grassHeight;
-    final grassPaint = Paint()..color = const Color(0xFF7BBF66);
-    canvas.drawRect(
-      Rect.fromLTWH(0, grassTop, size.width, grassHeight),
-      grassPaint,
-    );
-    // Grass texture bumps
-    final bumpPaint = Paint()..color = const Color(0xFF6BAF5B);
-    final darkBumpPaint = Paint()..color = const Color(0xFF5A9E4A);
-    for (var x = 0.0; x < size.width; x += 10) {
-      final h = 4.0 + 2.0 * math.sin(x * 0.15);
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, grassTop), width: 10, height: h),
-        bumpPaint,
-      );
-    }
-    for (var x = 5.0; x < size.width; x += 14) {
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(x, grassTop + 4), width: 7, height: 3),
-        darkBumpPaint,
-      );
-    }
-    // Grass edge highlight
-    final grassEdgePaint = Paint()..color = const Color(0xFF90C67C);
-    canvas.drawRect(
-      Rect.fromLTWH(0, grassTop, size.width, 3),
-      grassEdgePaint,
-    );
-
-    // Flowers
-    _drawFlower(canvas, Offset(26, grassTop + 14), const Color(0xFFFFB7C5), 4);
-    _drawFlower(canvas, Offset(72, grassTop + 16), const Color(0xFFFFE066), 3.5);
-    _drawFlower(canvas, Offset(130, grassTop + 12), const Color(0xFFFF8A80), 3);
-    _drawFlower(canvas, Offset(size.width - 55, grassTop + 14), const Color(0xFFFFB7C5), 3.5);
-    _drawFlower(canvas, Offset(size.width - 100, grassTop + 16), const Color(0xFFFFE066), 3);
-    _drawFlower(canvas, Offset(size.width - 145, grassTop + 13), const Color(0xFFCE93D8), 3.5);
-
-    // Small bush
-    final bushPaint = Paint()..color = const Color(0xFF5A9E4A);
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(size.width * 0.32, grassTop - 2), width: 22, height: 12),
-      bushPaint,
-    );
-    final bushPaint2 = Paint()..color = const Color(0xFF6BAF5B);
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(size.width * 0.32 + 8, grassTop - 4), width: 16, height: 10),
-      bushPaint2,
-    );
-  }
-
-  void _drawFlower(Canvas canvas, Offset center, Color petalColor, double size) {
-    // Stem
-    final stemPaint = Paint()..color = const Color(0xFF4CAF50)..strokeWidth = 1.5;
-    canvas.drawLine(center, center + Offset(0, 6), stemPaint);
-    // Petals
-    final petalPaint = Paint()..color = petalColor;
-    for (var i = 0; i < 5; i++) {
-      final angle = i * math.pi * 2 / 5;
-      canvas.drawCircle(
-        center + Offset(size * 0.6 * math.cos(angle), size * 0.6 * math.sin(angle)),
-        size * 0.45,
-        petalPaint,
-      );
-    }
-    // Centre
-    canvas.drawCircle(center, size * 0.3, Paint()..color = const Color(0xFFFFEB3B));
-  }
-
-  @override
-  bool shouldRepaint(covariant _LoadingScenePainter old) =>
-      phase != old.phase || bounds != old.bounds;
-}
+final _loadingEnv = NestEnvironment.springVeranda;

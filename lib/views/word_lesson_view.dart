@@ -9,6 +9,7 @@ import '../providers/app_state.dart';
 import '../providers/word_progress_state.dart';
 import '../services/speech_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/achievement_banner.dart';
 import '../widgets/leo_sprite.dart';
 
 class WordLessonView extends ConsumerStatefulWidget {
@@ -35,6 +36,8 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   var _answered = false;
   var _selectedOption = -1;
   late List<String> _options;
+  late List<bool> _answerResults;
+  var _isRetry = false;
   final _speech = SpeechService();
   final _rng = math.Random();
   late final bool _showIntro;
@@ -67,6 +70,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     } else {
       _phase = _LessonPhase.introduce;
     }
+    _answerResults = List.filled(_words.length, false);
     _prepareQuiz();
   }
 
@@ -121,6 +125,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final current = _words[_currentIndex];
     final isCorrect = _options[index] == current.english;
     if (isCorrect) _correctCount++;
+    _answerResults[_currentIndex] = isCorrect;
   }
 
   void _nextWord() {
@@ -133,6 +138,24 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     });
   }
 
+  void _retryFailed() {
+    final retryWords = <Word>[];
+    for (var i = 0; i < _words.length; i++) {
+      if (!_answerResults[i]) retryWords.add(_words[i]);
+    }
+    setState(() {
+      _words = retryWords;
+      _currentIndex = 0;
+      _correctCount = 0;
+      _answered = false;
+      _selectedOption = -1;
+      _answerResults = List.filled(retryWords.length, false);
+      _isRetry = true;
+      _phase = _LessonPhase.introduce;
+      _prepareQuiz();
+    });
+  }
+
   void _finish() {
     final wordIds = _words.map((w) => w.id).toList();
     ref.read(wordProgressProvider.notifier).completeLesson(
@@ -142,6 +165,13 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final xpEarned = _correctCount * 10;
     ref.read(progressProvider.notifier).addXp(xpEarned);
     if (mounted) {
+      AchievementBanner.show(
+        context,
+        title: _correctCount == _words.length
+            ? 'Perfect! +$xpEarned XP'
+            : 'Well done! +$xpEarned XP',
+        emoji: _correctCount == _words.length ? '\u{1F4AF}' : '\u{2B50}',
+      );
       Navigator.of(context).pop(
         LessonResult(
           totalWords: _words.length,
@@ -462,6 +492,13 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   Widget _buildResults() {
     final percentage =
         _words.isEmpty ? 0 : ((_correctCount / _words.length) * 100).round();
+    final passed = _isRetry || _correctCount >= 3;
+    final failedWords = <Word>[];
+    if (!passed) {
+      for (var i = 0; i < _words.length; i++) {
+        if (!_answerResults[i]) failedWords.add(_words[i]);
+      }
+    }
     return Scaffold(
       body: SafeArea(
         child: ResponsiveContent(
@@ -471,55 +508,93 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               const Spacer(),
               Center(
                 child: LeoSprite(
-                  pose: percentage >= 80
-                      ? LeoPose.celebrate
-                      : percentage >= 50
-                          ? LeoPose.smile
-                          : LeoPose.meow,
+                  pose: passed
+                      ? (percentage >= 80 ? LeoPose.celebrate : LeoPose.smile)
+                      : LeoPose.meow,
                   size: 160,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                percentage >= 80
-                    ? 'Brilliant!'
-                    : percentage >= 50
-                        ? 'Good work!'
-                        : 'Keep practising!',
+                passed
+                    ? (percentage >= 80
+                        ? 'Brilliant!'
+                        : percentage >= 50
+                            ? 'Good work!'
+                            : 'Well done!')
+                    : 'Keep going!',
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
-              Text(
-                '$_correctCount of ${_words.length} correct',
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                '$_correctCount × 10 XP = ${_correctCount * 10} XP',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.persimmon,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (percentage == 100) ...[
-                const SizedBox(height: 12),
-                const Text(
-                  'Perfect lesson!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              if (!passed) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Let\'s try the tricky ones again!',
+                  style: Theme.of(context).textTheme.titleMedium,
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  '${_correctCount} of ${_words.length} correct',
+                  style: const TextStyle(fontSize: 15, color: AppColors.muted),
+                  textAlign: TextAlign.center,
+                ),
+              ] else ...[
+                const SizedBox(height: 8),
+                Text(
+                  '$_correctCount of ${_words.length} correct',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$_correctCount × 10 XP = ${_correctCount * 10} XP',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.persimmon,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (percentage == 100) ...[
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Perfect lesson!',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ],
               const Spacer(),
-              FilledButton(
-                onPressed: _finish,
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+              if (!passed) ...[
+                FilledButton(
+                  onPressed: _retryFailed,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
+                  child: const Text(
+                    'Try again',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
-              ),
+              ] else ...[
+                FilledButton(
+                  onPressed: _finish,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
             ],
           ),
