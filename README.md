@@ -24,23 +24,27 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.10.0, build 13**
+**Version 1.14.6, build 26**
 
 | Area | Available now |
 |---|---|
-| Progression | Starter to Expert entry choice, placement check, 18 practical Can-Do missions |
-| Grammar | 828 searchable lessons across N5 to N1 study references |
-| Memory | FSRS scheduling for phrases and grammar patterns |
-| Characters | Hiragana, katakana and an introductory kanji studio with KanjiVG diagrams |
-| Writing | 104 kana and introductory kanji targets, daily and level sets, touch canvas, plus paper-photo OCR grading on Android and iOS |
-| Culture | 30 Living Postcards, 24 seasonal story side quests and a 30-event Japanese festival calendar that remembers the festivals you experience |
-| Motivation | Interactive tabby Leo, six selectable Nests with seasonal weather, 69 achievements with real rewards (Nest items, Leo reactions, postcard stamps, profile styles and a trophy shelf), streaks and stress-free streak freezes |
+| Vocabulary | ~1,780 words across Starter to Expert, 31 themed sections, 10+ CEFR/JLPT data files |
+| Progression | 5 difficulty tiers, XP levels with titles (Explorer → Grand Master), streaks |
+| Quiz | Listen-first mode with audio auto-play, 3/5 gate, wrong-word retry |
+| Dashboard | Continue Learning card, Daily Conversation with audio, level picker |
+| Learning hub | CEFR/JLPT guide, achievement tracker (85 achievements), grammar explorer |
+| Characters | Hiragana, katakana and introductory kanji studio with KanjiVG diagrams |
+| Writing | Kana and introductory kanji targets, daily and level sets, touch canvas |
+| Culture | Living Postcards, seasonal story side quests, Japanese festival calendar |
+| Nest | CustomPainter scene with Leo, trophy shelf, nest item placement |
+| Motivation | Achievement banner, streaks, postcard collection |
 | Accessibility | Visual Explorer, Standard and Comfort experiences |
-| Cloud | Optional Supabase PKCE account, progress synchronisation, nickname and opt-in achievement board that refreshes quietly as you learn |
+| Cloud | Optional Supabase PKCE account and progress synchronisation |
 
 The application does not yet contain native-speaker recordings, complete
 systematic kanji coverage, graded readers, speech recognition or full mock
-examinations. These are tracked explicitly in [the roadmap](docs/ROADMAP.md).
+examinations. Achievement sound effects need `.mp3` assets. These are tracked
+in [the roadmap](docs/ROADMAP.md).
 
 ## Learning model
 

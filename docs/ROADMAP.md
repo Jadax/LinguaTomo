@@ -4,6 +4,8 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
+## Current version: 1.14.6 (build 26)
+
 ## Product teaching model
 
 LinguaTomo is the in-app instructor from beginner through advanced study. There
@@ -11,38 +13,84 @@ will be no instructor marketplace, booked tutoring or implied access to native
 speakers. The course should stand alone for committed self-study and also fit
 alongside lessons delivered by a learner's own external teacher.
 
+---
+
 ## P0: launch-critical depth
 
+### Completed
+
 1. **Complete kana course**
-   - 46 basic hiragana and 46 basic katakana, then marks and combinations
-   - recognition, recall, audio and writing tasks
-   - undo for accidental answers
-2. **Systematic kanji foundation**
-   - licensed KANJIDIC/JMdict data
-   - components, stroke count, vocabulary families and honest mnemonics
-   - N5 to N1 filters described as community estimates where appropriate
-3. **Vocabulary foundation**
-   - frequency and situation-based order
-   - at least 1,500 high-utility words before expansion to a full dictionary
-   - FSRS, context sentences and input-script detection
-4. **Real lesson engine**
-   - dialogue, explanation, controlled practice, production and review
-   - reversible answers and saved lesson position
-5. **Native audio pipeline**
-   - contributor consent, licence and speaker metadata
-   - normal and slow playback
-   - device TTS retained as an offline fallback
+   - 46 basic hiragana and 46 basic katakana with recognition and recall tasks
+   - Writing canvas with stroke-order guidance
+   - Undo for accidental answers
+2. **Vocabulary foundation**
+   - ~1,780 words across 10+ CEFR-aligned data files
+   - Starter through Expert tiers with frequency-based ordering
+   - FSRS spaced repetition with context sentences
+   - Per-category theme lessons via `theme_registry.dart` (31 themed sections)
+   - Listen-first quiz mode with audio auto-play
+   - Quiz gate: 3/5 to pass; wrong words auto-retry; always pass on retry
+3. **Dashboard and progression**
+   - Cozy pixel-art loading scene with Leo the cat
+   - Continue Learning card opens bottom-sheet theme picker
+   - Daily Conversation card with audio playback (tappable dialog)
+   - Level picker (tier radio list)
+   - CEFR/JLPT guide accessible from learning hub
+   - XP levels with titles (Explorer → Grand Master)
+   - Streak tracking and stat pills
+4. **Nest and rewards**
+   - CustomPainter Nest scene with Leo sprite poses
+   - Trophy shelf and achievement banner on lesson completion
+   - Achievement tracker with 85 achievements, progress bars, secret hiding
+   - Nest item placement and collection
+5. **Platform**
+   - Responsive: portrait-first mobile, centred 600 px on wide screens
+   - British English throughout
+   - Web build via GitHub Pages (`Jadax/LinguaTomo-Web`)
+   - Hive local persistence; optional Supabase cloud sync
+   - Version visible in-app and in commit messages
+
+### Remaining
+
+1. **Systematic kanji foundation**
+   - Licensed KANJIDIC/JMdict data
+   - Components, stroke count, vocabulary families, mnemonics
+   - N5 to N1 filters
+2. **Native audio pipeline**
+   - Contributor consent, licence and speaker metadata
+   - Normal and slow playback from recordings
+   - Device TTS retained as offline fallback
+   - Achievement sound effects (needs `.mp3` assets)
 
 ## P1: comprehension and output
+
+### Completed (partial)
+
+- Graded vocabulary lessons by category and tier
+- Listen-first quiz with romaji support
+- Postcard collection unlocked at 10 words
+
+### Remaining
 
 1. Graded readers from N5 to N1 with furigana toggle and dictionary lookup.
 2. Listening stories with timed text highlighting.
 3. Shadowing, recording and forgiving speech-recognition feedback.
-4. FSI-style situation packs containing several branching dialogues each.
+4. FSI-style situation packs with branching dialogues.
 5. Progress analytics for words, grammar, kanji, reviews and handwriting.
 6. Full checkpoint assessments and original mock examinations.
 
 ## P2: retention and delight
+
+### Completed (partial)
+
+- Leo sprite with basic poses (idle, happy, sleeping)
+- Nest scene with cottage, pond, fence, flowers, trees
+- Achievement system with reward types
+- Postcard collection
+- Festival calendar with seasonal content
+- Haptic feedback on achievement unlock
+
+### Remaining
 
 1. Expand Leo with restrained animation states: greet, listen, think, cheer,
    reassure, nap and celebrate.

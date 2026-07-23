@@ -17,23 +17,23 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 | Responsive visual QA | Overflow, clipping and navigation regressions |
 | Secret scan | Prevent credentials or signing material entering Git |
 
-## Current automated tests
+## Current automated tests (16 tests, as of v1.14.6)
 
-- Guided start choice waits for the loading chase finale, then reaches the Nest and Learning Library.
+- Widget test: LinguaTomo opens loading screen, user picks level, enters app (7 variants).
 - Grammar repository loads exactly 828 records with expected N-level counts.
 - Every bundled grammar point contains at least one example.
-- Both basic syllabaries contain 46 distinct characters.
+- Both basic syllabaries contain 46 distinct characters with no fabricated pitch data.
 - Missions preserve stage order, valid prerequisites and usable answer keys.
 - Postcards contain complete Japanese study sets without broken characters.
-- The 69-achievement catalogue has unique IDs, progression, real rewards and at least six trophies.
-- The cultural calendar covers every month with vocabulary and a reward.
+- Achievement catalogue has unique IDs, progression, real rewards and trophies.
+- Cultural calendar covers every month with vocabulary and a reward.
+- Word bank contains ≥600 words with ≥80 per tier, ≥30 per category.
 
 ## Release verification
 
-Version 1.6.0, build 9 is the last fully verified release. For the 1.8.0,
-build 11 candidate, Dart static analysis reports no issues, all tests pass and
-the Web release builds locally. The GitHub Web, Android and unsigned iOS gates
-must pass before 1.8.0 is described as stable.
+Version 1.14.6, build 26: Dart static analysis reports no app-code warnings,
+all 16 tests pass, and the Web release builds locally. GitHub Pages deployment
+is automated via CI push to `Jadax/LinguaTomo-Web`.
 
 The next stability tests should cover Hive restoration, FSRS persistence,
 placement boundaries, cloud-disabled account screens and OCR service fallbacks.

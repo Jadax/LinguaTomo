@@ -127,8 +127,6 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 14),
           _ContinueLearningCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
-          _CategoryBuckets(wordProgress: wordProgress),
-          const SizedBox(height: 12),
           if (!wordProgress.postcardsUnlocked) ...[
             const SizedBox(height: 6),
             Padding(
@@ -355,110 +353,6 @@ class _NextCanDoCard extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _CategoryBuckets extends StatelessWidget {
-  const _CategoryBuckets({required this.wordProgress});
-  final WordProgress wordProgress;
-
-  static const _colours = [
-    Color(0xFFFFF0E8), // persimmon tint
-    Color(0xFFF0F4FF), // blue tint
-    Color(0xFFE8F5E9), // green tint
-    Color(0xFFFFF3E0), // amber tint
-    Color(0xFFF3E5F5), // purple tint
-    Color(0xFFFFFDE7), // yellow tint
-    Color(0xFFE0F7FA), // cyan tint
-    Color(0xFFFFE0E0), // pink tint
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final cats = WordCategory.values;
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 1.55,
-      ),
-      itemCount: cats.length,
-      itemBuilder: (context, index) {
-        final cat = cats[index];
-        final completed =
-            wordProgress.categoryProgress(cat, wordProgress.currentTier);
-        final total = wordBank
-            .where((w) =>
-                w.category == cat && w.tier == wordProgress.currentTier)
-            .length;
-        final pct = total > 0 ? completed / total : 0.0;
-        final colour = _colours[index % _colours.length];
-        return Card(
-          color: colour,
-          margin: EdgeInsets.zero,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => WordLessonView(
-                  filterCategory: cat,
-                  filterTier: wordProgress.currentTier,
-                ),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(cat.emoji, style: const TextStyle(fontSize: 34)),
-                  const SizedBox(height: 6),
-                  Text(
-                    cat.label,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      height: 1.15,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: pct,
-                      minHeight: 8,
-                      backgroundColor: colour.withValues(alpha: .6),
-                      valueColor: const AlwaysStoppedAnimation(
-                        AppColors.matcha,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$completed of $total words',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: AppColors.muted,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
