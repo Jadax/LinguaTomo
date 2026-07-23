@@ -150,8 +150,10 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 12),
           _LevelPickerCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
-          _NextCanDoCard(),
-          const SizedBox(height: 12),
+          if (wordProgress.wordsLearned >= 10) ...[
+            _NextCanDoCard(),
+            const SizedBox(height: 12),
+          ],
           if (wordProgress.memoryGardenUnlocked) ...[
             Card(
               margin: EdgeInsets.zero,
@@ -613,20 +615,14 @@ class _NestRoomState extends State<_NestRoom> {
   @override
   void initState() {
     super.initState();
-    // Once the learner has earned a Leo reaction, Leo occasionally shows a
-    // little burst of personality while resting in the Nest.
-    _reactionTimer = Timer.periodic(const Duration(seconds: 24), (_) {
-      if (!mounted ||
-          !widget.reactionsUnlocked ||
-          widget.reduceMotion ||
-          _walking) {
-        return;
-      }
+    // Leo shows little personality bursts every so often.
+    _reactionTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (!mounted || widget.reduceMotion || _walking) return;
       setState(() {
         _reaction = _reactionPoses[_reactionIndex % _reactionPoses.length];
         _reactionIndex++;
       });
-      Timer(const Duration(milliseconds: 1500), () {
+      Timer(const Duration(milliseconds: 2000), () {
         if (mounted) setState(() => _reaction = null);
       });
     });
@@ -645,19 +641,27 @@ class _NestRoomState extends State<_NestRoom> {
       setState(() => _atChair = !_atChair);
       return;
     }
+    // Brief greeting before walking
     setState(() {
-      _walking = true;
-      _step = !_step;
-      _atChair = !_atChair;
-      _reaction = null;
+      _reaction = LeoPose.smile;
+      _walking = false;
     });
-    _timer = Timer.periodic(const Duration(milliseconds: 180), (timer) {
-      if (!mounted || timer.tick >= 5) {
-        timer.cancel();
-        if (mounted) setState(() => _walking = false);
-        return;
-      }
-      setState(() => _step = !_step);
+    Timer(const Duration(milliseconds: 600), () {
+      if (!mounted) return;
+      setState(() {
+        _reaction = null;
+        _walking = true;
+        _step = !_step;
+        _atChair = !_atChair;
+      });
+      _timer = Timer.periodic(const Duration(milliseconds: 180), (timer) {
+        if (!mounted || timer.tick >= 5) {
+          timer.cancel();
+          if (mounted) setState(() => _walking = false);
+          return;
+        }
+        setState(() => _step = !_step);
+      });
     });
   }
 
@@ -747,14 +751,23 @@ class _NestRoomState extends State<_NestRoom> {
                     : const Alignment(-.62, .58),
                 child: GestureDetector(
                   onTap: _moveLeo,
-                  child: LeoSprite(
-                    pose: _walking
-                        ? (_step ? LeoPose.walkA : LeoPose.walkB)
-                        : (_reaction ??
-                              (_atChair ? LeoPose.sit : LeoPose.idle)),
-                    size: _atChair ? 158 : 142,
-                    semanticLabel:
-                        'Leo. Tap him to walk between the fireside and his chair.',
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 1.0, end: _reaction != null ? 1.08 : 1.0),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.elasticOut,
+                    builder: (context, value, child) => Transform.scale(
+                      scale: value,
+                      child: child,
+                    ),
+                    child: LeoSprite(
+                      pose: _walking
+                          ? (_step ? LeoPose.walkA : LeoPose.walkB)
+                          : (_reaction ??
+                                (_atChair ? LeoPose.sit : LeoPose.idle)),
+                      size: _atChair ? 158 : 142,
+                      semanticLabel:
+                          'Leo. Tap him to walk between the fireside and his chair.',
+                    ),
                   ),
                 ),
               ),

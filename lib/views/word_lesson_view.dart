@@ -480,6 +480,36 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
           const Spacer(),
           if (_answered)
             Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LeoSprite(
+                    pose: _answerResults[_currentIndex]
+                        ? LeoPose.smile
+                        : LeoPose.meow,
+                    size: 44,
+                    semanticLabel:
+                        _answerResults[_currentIndex]
+                            ? 'Leo is happy with your answer'
+                            : 'Leo encourages you to try again',
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _answerResults[_currentIndex] ? 'Yes!' : 'Almost!',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: _answerResults[_currentIndex]
+                          ? AppColors.matcha
+                          : AppColors.persimmon,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (_answered)
+            Padding(
               padding: const EdgeInsets.only(bottom: 24),
               child: FilledButton(
                 onPressed: _nextWord,
