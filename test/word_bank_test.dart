@@ -58,4 +58,15 @@ void main() {
       isTrue,
     );
   });
+
+  test('lesson path covers all 80 words per tier in order', () {
+    final allIds = wordBank.map((w) => w.id).toSet();
+    for (final tier in DifficultyTier.values) {
+      final ordered = wordsForTierInOrder(tier);
+      expect(ordered.length, 80, reason: '${tier.label} path must have 80 words');
+      final ids = ordered.map((w) => w.id).toSet();
+      expect(ids.length, 80, reason: '${tier.label} path has duplicate IDs');
+      expect(ids.every(allIds.contains), isTrue, reason: '${tier.label} path has unknown IDs');
+    }
+  });
 }

@@ -100,11 +100,13 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
           ? LeoLoadingScreen(
               reduceMotion: mode == ExperienceMode.comfort,
               ready: _ready,
-              onTierSelected: (tier) async {
+              onTierSelected: (tier) {
                 _loadingTier = tier;
-                final box = Hive.box<dynamic>(StorageKeys.userData);
-                await box.put('level_prefs_v1', tier.name);
-                await box.put(
+                final box = Hive.isBoxOpen(StorageKeys.userData)
+                    ? Hive.box<dynamic>(StorageKeys.userData)
+                    : null;
+                box?.put('level_prefs_v1', tier.name);
+                box?.put(
                   'word_progress_v1',
                   {
                     'completedWords': <String>[],
@@ -115,11 +117,13 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
                   },
                 );
               },
-              onFinished: () async {
+              onFinished: () {
                 if (!mounted) return;
                 if (_loadingTier != null) {
-                  final box = Hive.box<dynamic>(StorageKeys.userData);
-                  await box.put(
+                  final box = Hive.isBoxOpen(StorageKeys.userData)
+                      ? Hive.box<dynamic>(StorageKeys.userData)
+                      : null;
+                  box?.put(
                     'learner_profile_v1',
                     {
                       'start': _loadingTier!.name,

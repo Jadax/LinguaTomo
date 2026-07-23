@@ -460,3 +460,151 @@ List<Word> wordsForCategory(WordCategory category) =>
 
 int totalWordsForTier(DifficultyTier tier) =>
     wordBank.where((w) => w.tier == tier).length;
+
+/// Canonical lesson order per tier — easiest words first, hardest last.
+/// Categories are mixed so the user learns the most useful words immediately.
+const _lessonPath = <DifficultyTier, List<String>>{
+  DifficultyTier.starter: [
+    // 1-character essentials (greetings, nature, people, food, places)
+    's_04', 's_32', 's_11', 's_71', 's_72',
+    's_61', 's_62', 's_63', 's_64', 's_65',
+    's_70', 's_52', 's_53', 's_54', 's_57',
+    's_23', 's_21', 's_22', 's_26', 's_27',
+    's_76', 's_77', 's_73', 's_74', 's_78',
+    's_79', 's_80', 's_33', 's_34', 's_35',
+    's_37',
+    // short common words
+    's_36', 's_31', 's_01', 's_02', 's_03',
+    's_09', 's_10', 's_39', 's_38', 's_40',
+    // essential verbs
+    's_42', 's_43', 's_45', 's_41', 's_44',
+    // moderate nouns
+    's_75', 's_24', 's_25', 's_30',
+    's_13', 's_16', 's_14', 's_12', 's_15',
+    's_17', 's_18', 's_19',
+    's_51', 's_60', 's_55', 's_56', 's_59', 's_58',
+    // less essential verbs
+    's_46', 's_47', 's_48', 's_49', 's_50',
+    // nature words
+    's_66', 's_67', 's_68', 's_69',
+    // longer greetings and complex nouns
+    's_05', 's_06', 's_07', 's_28', 's_29',
+    's_20', 's_08',
+  ],
+  DifficultyTier.elementary: [
+    // short greetings and essentials
+    'e_01', 'e_02', 'e_03', 'e_05', 'e_20',
+    // short nouns (home, people, food)
+    'e_12', 'e_11', 'e_22', 'e_21', 'e_14',
+    'e_26', 'e_36', 'e_38', 'e_39', 'e_40',
+    // common daily words
+    'e_04', 'e_06', 'e_09', 'e_15', 'e_10',
+    'e_23', 'e_24', 'e_25', 'e_30', 'e_29',
+    // everyday activities
+    'e_41', 'e_42', 'e_44', 'e_43', 'e_45',
+    'e_48', 'e_49', 'e_50', 'e_46', 'e_47',
+    // moderate nouns
+    'e_16', 'e_17', 'e_13', 'e_18', 'e_19',
+    'e_27', 'e_28', 'e_31', 'e_32', 'e_33',
+    'e_34', 'e_35', 'e_37',
+    // places
+    'e_52', 'e_51', 'e_53', 'e_55', 'e_56',
+    'e_57', 'e_58', 'e_54', 'e_59', 'e_60',
+    // nature and animals
+    'e_61', 'e_62', 'e_63', 'e_64', 'e_65',
+    'e_71', 'e_72', 'e_73', 'e_74', 'e_75',
+    'e_66', 'e_67', 'e_68', 'e_69', 'e_70',
+    'e_76', 'e_77', 'e_78', 'e_79', 'e_80',
+    // longer expressions
+    'e_07', 'e_08',
+  ],
+  DifficultyTier.intermediate: [
+    // common polite expressions
+    'i_01', 'i_02', 'i_03', 'i_04', 'i_05',
+    // everyday cultural items
+    'i_31', 'i_32', 'i_33', 'i_34', 'i_35',
+    'i_41', 'i_42', 'i_43', 'i_44', 'i_45',
+    // moderate social words
+    'i_21', 'i_22', 'i_23', 'i_24', 'i_25',
+    'i_26', 'i_27', 'i_28',
+    // home and places
+    'i_11', 'i_12', 'i_13', 'i_14', 'i_15',
+    'i_16', 'i_17', 'i_18', 'i_19', 'i_20',
+    'i_51', 'i_52', 'i_53', 'i_54', 'i_55',
+    'i_56', 'i_57', 'i_58', 'i_59', 'i_60',
+    // nature and animals
+    'i_61', 'i_62', 'i_63', 'i_64', 'i_65',
+    'i_71', 'i_72', 'i_73', 'i_74', 'i_75',
+    'i_66', 'i_67', 'i_68', 'i_69', 'i_70',
+    'i_76', 'i_77', 'i_78', 'i_79', 'i_80',
+    // formal/polite greetings
+    'i_06', 'i_07', 'i_08', 'i_09', 'i_10',
+    'i_29', 'i_30',
+    // activities
+    'i_46', 'i_47', 'i_48', 'i_49', 'i_50',
+    // food
+    'i_36', 'i_37', 'i_38', 'i_39', 'i_40',
+  ],
+  DifficultyTier.advanced: [
+    // common formal expressions
+    'a_01', 'a_02', 'a_03', 'a_04', 'a_05',
+    // everyday formal nouns
+    'a_31', 'a_32', 'a_33', 'a_34', 'a_35',
+    'a_36', 'a_37', 'a_38', 'a_39', 'a_40',
+    'a_41', 'a_42', 'a_43', 'a_44', 'a_45',
+    // home and places
+    'a_11', 'a_12', 'a_13', 'a_14', 'a_15',
+    'a_16', 'a_17', 'a_18', 'a_19', 'a_20',
+    'a_51', 'a_52', 'a_53', 'a_54', 'a_55',
+    'a_56', 'a_57', 'a_58',
+    // social and people
+    'a_21', 'a_22', 'a_23', 'a_24', 'a_25',
+    'a_26', 'a_27', 'a_28', 'a_29', 'a_30',
+    // nature
+    'a_61', 'a_62', 'a_63', 'a_64', 'a_65',
+    'a_66', 'a_67', 'a_68', 'a_69', 'a_70',
+    // animals
+    'a_71', 'a_72', 'a_73', 'a_74', 'a_75',
+    'a_76', 'a_77', 'a_78', 'a_79', 'a_80',
+    // activities
+    'a_46', 'a_47', 'a_48', 'a_49', 'a_50',
+    // letter-specific greetings
+    'a_06', 'a_07', 'a_08', 'a_09', 'a_10',
+    'a_59', 'a_60',
+  ],
+  DifficultyTier.expert: [
+    // common keigo and formal expressions
+    'x_01', 'x_02', 'x_03', 'x_04', 'x_05',
+    // cultural activities
+    'x_41', 'x_42', 'x_43', 'x_44', 'x_45',
+    'x_46', 'x_47', 'x_48', 'x_49', 'x_50',
+    // food and tea ceremony
+    'x_31', 'x_32', 'x_33', 'x_34', 'x_35',
+    'x_36', 'x_37', 'x_38', 'x_39', 'x_40',
+    // architecture and home
+    'x_11', 'x_12', 'x_13', 'x_14', 'x_15',
+    'x_16', 'x_17', 'x_18', 'x_19', 'x_20',
+    // social roles
+    'x_21', 'x_22', 'x_23', 'x_24', 'x_25',
+    'x_26', 'x_27', 'x_28', 'x_29', 'x_30',
+    // nature
+    'x_61', 'x_62', 'x_63', 'x_64', 'x_65',
+    'x_66', 'x_67', 'x_68', 'x_69', 'x_70',
+    // animals
+    'x_71', 'x_72', 'x_73', 'x_74', 'x_75',
+    'x_76', 'x_77', 'x_78', 'x_79', 'x_80',
+    // formal keigo
+    'x_06', 'x_07', 'x_08', 'x_09', 'x_10',
+    // places
+    'x_51', 'x_52', 'x_53', 'x_54', 'x_55',
+    'x_56', 'x_57', 'x_58', 'x_59', 'x_60',
+  ],
+};
+
+/// Returns words for [tier] in lesson path order (easiest first).
+List<Word> wordsForTierInOrder(DifficultyTier tier) {
+  final order = _lessonPath[tier];
+  if (order == null) return wordsForTier(tier);
+  final byId = {for (final w in wordBank) w.id: w};
+  return [for (final id in order) if (byId[id] != null) byId[id]!];
+}

@@ -109,7 +109,6 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   Timer? _stepTimer;
-  Timer? _finishTimer;
   var _walkFrame = false;
   var _caught = false;
   DifficultyTier? _selectedTier;
@@ -141,21 +140,17 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
   void _playFinale() {
     if (_caught) return;
     if (widget.reduceMotion) {
-      widget.onFinished();
+      setState(() => _caught = true);
       return;
     }
     _stepTimer?.cancel();
     _controller.stop();
     setState(() => _caught = true);
-    _finishTimer = Timer(const Duration(milliseconds: 750), () {
-      if (mounted) widget.onFinished();
-    });
   }
 
   @override
   void dispose() {
     _stepTimer?.cancel();
-    _finishTimer?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -255,12 +250,11 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                 const SizedBox(height: 6),
                 Text(
                   _caught
-                      ? 'Caught it! Off we go...'
+                      ? 'Pick your level to begin!'
                       : 'Leo is warming up your next Japanese adventure...',
                 ),
                 const SizedBox(height: 18),
-                if (!_caught)
-                  SizedBox(
+                SizedBox(
                     height: 280,
                     child: SingleChildScrollView(
                       child: RadioGroup<DifficultyTier>(
@@ -302,6 +296,14 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                         ),
                       ),
                     ),
+                  ),
+                const SizedBox(height: 12),
+                if (_caught)
+                  FilledButton(
+                    onPressed: _selectedTier == null
+                        ? null
+                        : () => widget.onFinished(),
+                    child: const Text('Start learning'),
                   ),
               ],
               ),

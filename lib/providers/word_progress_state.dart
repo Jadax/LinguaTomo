@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -67,7 +65,7 @@ class WordProgress {
       final completedInTier = tierWords
           .where((w) => completedWords.contains(w.id))
           .length;
-      if (completedInTier >= (tierWords.length * 0.75).ceil()) {
+      if (completedInTier >= (tierWords.length * 0.40).ceil()) {
         if (i + 1 < levels.length) return levels[i + 1];
         return levels[i];
       }
@@ -203,17 +201,15 @@ class WordProgressNotifier extends Notifier<WordProgress> {
   }
 
   List<Word> generateLesson({int wordCount = 5}) {
-    final available = state.availableWords
+    final ordered = wordsForTierInOrder(state.currentTier);
+    final uncompleted = ordered
         .where((w) => !state.completedWords.contains(w.id))
         .toList();
-    if (available.isEmpty) {
-      return state.availableWords
-        .take(wordCount)
-        .toList();
+    if (uncompleted.isNotEmpty) {
+      return uncompleted.take(wordCount).toList();
     }
-    final rng = math.Random();
-    final pool = List<Word>.from(available)..shuffle(rng);
-    return pool.take(wordCount).toList();
+    // All words in current tier done — review from path order.
+    return ordered.take(wordCount).toList();
   }
 
   Future<void> _persist() async {
