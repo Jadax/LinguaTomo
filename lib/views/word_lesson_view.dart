@@ -220,6 +220,12 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   Widget _buildIntro() {
     final tier = ref.read(wordProgressProvider).currentTier;
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: SafeArea(
         child: ResponsiveContent(
           child: Column(
