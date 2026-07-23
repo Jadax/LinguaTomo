@@ -226,6 +226,22 @@ class WordProgressNotifier extends Notifier<WordProgress> {
     return ordered.take(wordCount).toList();
   }
 
+  List<Word> generateThemedLesson(List<String> wordIds, {int wordCount = 5}) {
+    final byId = {for (final w in wordBank) w.id: w};
+    final themedWords = wordIds.map((id) => byId[id]).whereType<Word>().toList();
+    final uncompleted = themedWords
+        .where((w) => !state.completedWords.contains(w.id))
+        .toList();
+    if (uncompleted.length >= wordCount) {
+      return uncompleted.take(wordCount).toList();
+    }
+    final completed = themedWords
+        .where((w) => state.completedWords.contains(w.id))
+        .toList();
+    final pool = [...uncompleted, ...completed];
+    return pool.take(wordCount).toList();
+  }
+
   Future<void> _persist() async {
     await _box?.put(_key, {
       'completedWords': state.completedWords.toList(),
