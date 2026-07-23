@@ -476,7 +476,6 @@ class _LoadingScenePainter extends CustomPainter {
   }
 
   void _drawPixelCloud(Canvas c, double cx, double cy, double w, double h, Color color) {
-    final paint = Paint()..color = color;
     _drawRect(c, cx - w * .3, cy, w * .6, h, color);
     _drawRect(c, cx - w * .15, cy - h * .4, w * .5, h * .8, color);
     _drawRect(c, cx + w * .1, cy + h * .1, w * .35, h * .65, color);

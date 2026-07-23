@@ -541,7 +541,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${_correctCount} of ${_words.length} correct',
+                  '$_correctCount of ${_words.length} correct',
                   style: const TextStyle(fontSize: 15, color: AppColors.muted),
                   textAlign: TextAlign.center,
                 ),
