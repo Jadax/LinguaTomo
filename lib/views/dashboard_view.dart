@@ -17,6 +17,7 @@ import '../providers/review_state.dart';
 import '../providers/grammar_state.dart';
 import '../providers/word_progress_state.dart';
 import '../providers/level_prefs_state.dart';
+import '../services/speech_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/leo_sprite.dart';
 import '../widgets/nest_ambience.dart';
@@ -125,6 +126,9 @@ class DashboardView extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
           _ContinueLearningCard(wordProgress: wordProgress),
+          const SizedBox(height: 12),
+          _CategoryBuckets(wordProgress: wordProgress),
+          const SizedBox(height: 12),
           if (!wordProgress.postcardsUnlocked) ...[
             const SizedBox(height: 6),
             Padding(
@@ -463,6 +467,81 @@ class _ConversationCard extends StatelessWidget {
   const _ConversationCard({required this.wordProgress});
   final WordProgress wordProgress;
 
+  void _showConversation(BuildContext context, ConversationPair pair) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Text(pair.emoji, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            const Text('Daily conversation'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                pair.question,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              ),
+              Text(
+                pair.questionRomaji,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.muted,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                pair.answer,
+                style: const TextStyle(fontSize: 16),
+              ),
+              Text(
+                pair.answerRomaji,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.muted,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 8,
+                children: [
+                  FilledButton.icon(
+                    onPressed: () {
+                      final s = SpeechService();
+                      s.speakJapanese(pair.question);
+                    },
+                    icon: const Icon(Icons.volume_up_rounded, size: 18),
+                    label: const Text('Hear question'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      final s = SpeechService();
+                      s.speakJapanese(pair.answer);
+                    },
+                    icon: const Icon(Icons.volume_up_rounded, size: 18),
+                    label: const Text('Hear answer'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tier = wordProgress.currentTier;
@@ -474,65 +553,78 @@ class _ConversationCard extends StatelessWidget {
     return Card(
       color: const Color(0xFFF3E5F5),
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text('💬', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'DAILY CONVERSATION',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1,
-                      color: Color(0xFF7B1FA2),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => _showConversation(context, pair),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('💬', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'DAILY CONVERSATION',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1,
+                        color: Color(0xFF7B1FA2),
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  tier.label,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.muted,
+                  Text(
+                    tier.label,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.muted,
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                pair.question,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
+              Text(
+                pair.questionRomaji,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.muted,
+                  fontStyle: FontStyle.italic,
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              pair.question,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-            Text(
-              pair.questionRomaji,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.muted,
-                fontStyle: FontStyle.italic,
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              pair.answer,
-              style: const TextStyle(
-                fontSize: 15,
-                color: AppColors.muted,
+              const SizedBox(height: 6),
+              Text(
+                pair.answer,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: AppColors.muted,
+                ),
               ),
-            ),
-            Text(
-              pair.answerRomaji,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.muted,
-                fontStyle: FontStyle.italic,
+              Text(
+                pair.answerRomaji,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.muted,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              const Text(
+                'Tap to listen & practise →',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF7B1FA2),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1120,7 +1212,7 @@ class _ContinueLearningCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  wp.currentTier.label + ' themes',
+                  '${wp.currentTier.label} themes',
                   style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -1129,10 +1221,8 @@ class _ContinueLearningCard extends StatelessWidget {
                 Text(
                   'Words at your level. Pick what you want to learn today.',
                   style: const TextStyle(fontSize: 12, color: AppColors.muted),
-          ),
-          const SizedBox(height: 12),
-          _CategoryBuckets(wordProgress: wordProgress),
-          const SizedBox(height: 12),
+                ),
+                const SizedBox(height: 12),
                 Flexible(
                   child: SingleChildScrollView(
                     child: Wrap(
