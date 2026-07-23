@@ -640,14 +640,11 @@ class _LevelPickerCard extends ConsumerWidget {
                   'Choose your level',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
+                const SizedBox(height: 4),
                 const Text(
                   'This changes which words you practise. You can switch at any time.',
-          ),
-          const SizedBox(height: 12),
-          _CategoryBuckets(wordProgress: wordProgress),
-          const SizedBox(height: 12),
-          _ConversationCard(wordProgress: wordProgress),
-          const SizedBox(height: 12),
+                ),
+                const SizedBox(height: 16),
                 for (final tier in DifficultyTier.values)
                   Card(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -1100,90 +1097,132 @@ class _ContinueLearningCard extends StatelessWidget {
   }
 
   void _showThemePicker(BuildContext context, WordProgress wp) {
+    final categories = WordCategory.values.where((cat) {
+      return wordBank
+          .any((w) => w.category == cat && w.tier == wp.currentTier);
+    }).toList();
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      constraints: const BoxConstraints(maxWidth: 600),
+      constraints: const BoxConstraints(maxWidth: 500),
       builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text('Choose a theme', style: Theme.of(ctx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-              const SizedBox(height: 2),
-              const Text('Pick what you want to learn today.',
-                  style: TextStyle(fontSize: 13, color: AppColors.muted)),
-              const SizedBox(height: 12),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 2.4,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  wp.currentTier.label + ' themes',
+                  style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
                 ),
-                itemCount: WordCategory.values.length,
-                itemBuilder: (ctx, i) {
-                  final cat = WordCategory.values[i];
-                  final done = wp.categoryProgress(cat, wp.currentTier);
-                  final tot = wordBank
-                      .where((w) => w.category == cat && w.tier == wp.currentTier)
-                      .length;
-                  final pct = tot > 0 ? done / tot : 0.0;
-                  return Card(
-                    color: _colours[i % _colours.length],
-                    margin: EdgeInsets.zero,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => WordLessonView(
-                            filterCategory: cat,
-                            filterTier: wp.currentTier,
+                const SizedBox(height: 2),
+                Text(
+                  'Words at your level. Pick what you want to learn today.',
+                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (var i = 0; i < categories.length; i++)
+                          _buildThemeChip(
+                            context: ctx,
+                            cat: categories[i],
+                            colour: _colours[i % _colours.length],
+                            done: wp.categoryProgress(categories[i], wp.currentTier),
+                            total: wordBank
+                                .where((w) =>
+                                    w.category == categories[i] &&
+                                    w.tier == wp.currentTier)
+                                .length,
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => WordLessonView(
+                                  filterCategory: categories[i],
+                                  filterTier: wp.currentTier,
+                                ),
+                              ));
+                            },
                           ),
-                        ));
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        child: Row(
-                          children: [
-                            Text(cat.emoji, style: const TextStyle(fontSize: 28)),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(cat.label,
-                                      maxLines: 2, overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, height: 1.15)),
-                                  const SizedBox(height: 4),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(3),
-                                    child: LinearProgressIndicator(
-                                      value: pct, minHeight: 5,
-                                      valueColor: const AlwaysStoppedAnimation(AppColors.matcha),
-                                      backgroundColor: const Color(0xFFE0E0E0),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text('$done', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.matcha)),
-                          ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeChip({
+    required BuildContext context,
+    required WordCategory cat,
+    required Color colour,
+    required int done,
+    required int total,
+    required VoidCallback onTap,
+  }) {
+    final pct = total > 0 ? done / total : 0.0;
+    return SizedBox(
+      width: ((MediaQuery.of(context).size.width.clamp(280, 500) - 40) / 2),
+      child: Card(
+        color: colour,
+        margin: EdgeInsets.zero,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Text(cat.emoji, style: const TextStyle(fontSize: 26)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        cat.label,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
+                      const SizedBox(height: 4),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: pct,
+                          minHeight: 5,
+                          valueColor: const AlwaysStoppedAnimation(
+                            AppColors.matcha,
+                          ),
+                          backgroundColor: const Color(0xFFE0E0E0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
