@@ -1,0 +1,207 @@
+import '../models/app_models.dart';
+
+final _n2Raw = [
+  // ── Academic ───────────────────────────────────────────────────────────
+  ('n2_001', '概念', 'gainen', 'Concept / General idea', WordCategory.activities, DifficultyTier.advanced, '💡'),
+  ('n2_002', '理論', 'riron', 'Theory', WordCategory.activities, DifficultyTier.advanced, '🧠'),
+  ('n2_003', '分析', 'bunseki', 'Analysis', WordCategory.activities, DifficultyTier.advanced, '🔍'),
+  ('n2_004', '定義', 'teigi', 'Definition', WordCategory.activities, DifficultyTier.advanced, '📝'),
+  ('n2_005', '仮説', 'kasetsu', 'Hypothesis', WordCategory.activities, DifficultyTier.expert, '🔬'),
+  ('n2_006', '検証', 'kenshou', 'Verification / Validation', WordCategory.activities, DifficultyTier.expert, '✅'),
+  ('n2_007', '評価', 'hyouka', 'Evaluation / Assessment', WordCategory.activities, DifficultyTier.advanced, '⭐'),
+  ('n2_008', '比較', 'hikaku', 'Comparison', WordCategory.activities, DifficultyTier.advanced, '⚖️'),
+  ('n2_009', '分類', 'bunrui', 'Classification', WordCategory.activities, DifficultyTier.advanced, '🗂️'),
+  ('n2_010', '体系', 'taikei', 'System / Framework', WordCategory.activities, DifficultyTier.expert, '🏗️'),
+  ('n2_011', '構造', 'kouzou', 'Structure', WordCategory.activities, DifficultyTier.advanced, '🏛️'),
+  ('n2_012', '機能', 'kinou', 'Function / Feature', WordCategory.activities, DifficultyTier.advanced, '⚙️'),
+  ('n2_013', '要素', 'youso', 'Element / Factor', WordCategory.activities, DifficultyTier.advanced, '🧩'),
+  ('n2_014', '段階', 'dankai', 'Stage / Phase', WordCategory.activities, DifficultyTier.advanced, '📶'),
+  ('n2_015', '傾向', 'keikou', 'Tendency / Trend', WordCategory.activities, DifficultyTier.advanced, '📈'),
+
+  // ── Academic (extended) ────────────────────────────────────────────────
+  ('n2_016', '論理', 'ronri', 'Logic', WordCategory.activities, DifficultyTier.expert, '🧮'),
+  ('n2_017', '演繹', 'en\'eki', 'Deduction', WordCategory.activities, DifficultyTier.expert, '➡️'),
+  ('n2_018', '帰納', 'kinou', 'Induction (reasoning)', WordCategory.activities, DifficultyTier.expert, '⬅️'),
+  ('n2_019', '命題', 'meidai', 'Proposition / Thesis', WordCategory.activities, DifficultyTier.expert, '📜'),
+  ('n2_020', '定理', 'teiri', 'Theorem', WordCategory.activities, DifficultyTier.expert, '📐'),
+  ('n2_021', '公理', 'kouri', 'Axiom', WordCategory.activities, DifficultyTier.expert, '🔢'),
+  ('n2_022', '尺度', 'shakudo', 'Scale / Yardstick', WordCategory.activities, DifficultyTier.advanced, '📏'),
+  ('n2_023', '指標', 'shihyou', 'Indicator / Index', WordCategory.activities, DifficultyTier.advanced, '📊'),
+  ('n2_024', '相関', 'soukan', 'Correlation', WordCategory.activities, DifficultyTier.advanced, '🔗'),
+  ('n2_025', '因果', 'inga', 'Cause and effect', WordCategory.activities, DifficultyTier.advanced, '⛓️'),
+  ('n2_026', '普遍', 'fuhen', 'Universal / Ubiquitous', WordCategory.activities, DifficultyTier.expert, '🌐'),
+  ('n2_027', '特殊', 'tokushu', 'Particular / Special', WordCategory.activities, DifficultyTier.advanced, '🔰'),
+  ('n2_028', '抽象', 'chuushou', 'Abstract', WordCategory.activities, DifficultyTier.advanced, '🎨'),
+  ('n2_029', '具象', 'gushou', 'Concrete / Tangible', WordCategory.activities, DifficultyTier.advanced, '🧱'),
+  ('n2_030', '総合', 'sougou', 'Synthesis / Comprehensiveness', WordCategory.activities, DifficultyTier.advanced, '🔄'),
+  ('n2_031', '考察', 'kousatsu', 'Consideration / Inquiry', WordCategory.activities, DifficultyTier.advanced, '🤔'),
+  ('n2_032', '探究', 'tankyuu', 'Exploration / Investigation', WordCategory.activities, DifficultyTier.advanced, '🔎'),
+  ('n2_033', '思索', 'shisaku', 'Contemplation / Speculation', WordCategory.activities, DifficultyTier.expert, '💭'),
+  ('n2_034', '認識', 'ninshiki', 'Cognition / Recognition', WordCategory.activities, DifficultyTier.advanced, '👁️'),
+  ('n2_035', '直感', 'chokkan', 'Intuition', WordCategory.activities, DifficultyTier.advanced, '⚡'),
+
+  // ── Literary ───────────────────────────────────────────────────────────
+  ('n2_036', '表現', 'hyougen', 'Expression', WordCategory.activities, DifficultyTier.advanced, '🎭'),
+  ('n2_037', '描写', 'byousha', 'Depiction / Portrayal', WordCategory.activities, DifficultyTier.expert, '🖼️'),
+  ('n2_038', '象徴', 'shouchou', 'Symbol / Emblem', WordCategory.activities, DifficultyTier.advanced, '🔣'),
+  ('n2_039', '比喩', 'hiyu', 'Metaphor / Figure of speech', WordCategory.activities, DifficultyTier.expert, '💬'),
+  ('n2_040', '文体', 'buntai', 'Literary style', WordCategory.activities, DifficultyTier.expert, '✒️'),
+  ('n2_041', '風刺', 'fuushi', 'Satire', WordCategory.activities, DifficultyTier.expert, '🎪'),
+  ('n2_042', '叙事', 'joji', 'Narrative / Epic', WordCategory.activities, DifficultyTier.expert, '📖'),
+  ('n2_043', '叙情', 'jojou', 'Lyricism', WordCategory.activities, DifficultyTier.expert, '🎵'),
+  ('n2_044', '修辞', 'shuuji', 'Rhetoric', WordCategory.activities, DifficultyTier.expert, '🗣️'),
+  ('n2_045', '余韻', 'yoin', 'Lingering resonance', WordCategory.activities, DifficultyTier.expert, '🌊'),
+
+  // ── Literary (extended) ────────────────────────────────────────────────
+  ('n2_046', '洞察', 'dousatsu', 'Insight / Discernment', WordCategory.activities, DifficultyTier.expert, '🔮'),
+  ('n2_047', '啓発', 'keihatsu', 'Enlightenment / Edification', WordCategory.activities, DifficultyTier.expert, '🕯️'),
+  ('n2_048', '教養', 'kyouyou', 'Cultivation / Cultural refinement', WordCategory.activities, DifficultyTier.advanced, '📚'),
+  ('n2_049', '学術', 'gakujutsu', 'Academic study / Scholarship', WordCategory.activities, DifficultyTier.advanced, '🎓'),
+  ('n2_050', '倫理', 'rinri', 'Ethics', WordCategory.activities, DifficultyTier.expert, '⚖️'),
+
+  // ── Political / Formal ─────────────────────────────────────────────────
+  ('n2_051', '法案', 'houan', 'Bill (legislation)', WordCategory.activities, DifficultyTier.expert, '📋'),
+  ('n2_052', '条約', 'jouyaku', 'Treaty', WordCategory.activities, DifficultyTier.expert, '📜'),
+  ('n2_053', '宣言', 'sengen', 'Declaration', WordCategory.activities, DifficultyTier.expert, '📢'),
+  ('n2_054', '決議', 'ketsugi', 'Resolution (formal)', WordCategory.activities, DifficultyTier.expert, '🗳️'),
+  ('n2_055', '制裁', 'seisai', 'Sanctions', WordCategory.activities, DifficultyTier.expert, '🚫'),
+  ('n2_056', '外交', 'gaikou', 'Diplomacy', WordCategory.activities, DifficultyTier.advanced, '🤝'),
+  ('n2_057', '内政', 'naisei', 'Domestic affairs', WordCategory.activities, DifficultyTier.expert, '🏛️'),
+  ('n2_058', '行政', 'gyousei', 'Administration', WordCategory.activities, DifficultyTier.advanced, '🏢'),
+  ('n2_059', '司法', 'shihou', 'Judiciary', WordCategory.activities, DifficultyTier.expert, '⚖️'),
+  ('n2_060', '立法', 'rippou', 'Legislation', WordCategory.activities, DifficultyTier.expert, '📜'),
+  ('n2_061', '憲法', 'kenpou', 'Constitution', WordCategory.activities, DifficultyTier.expert, '📕'),
+  ('n2_062', '改正', 'kaisei', 'Amendment / Revision', WordCategory.activities, DifficultyTier.advanced, '✏️'),
+
+  // ── Political (extended) ───────────────────────────────────────────────
+  ('n2_063', '規範', 'kihan', 'Norm / Standard', WordCategory.activities, DifficultyTier.expert, '📏'),
+  ('n2_064', '価値', 'kachi', 'Value / Worth', WordCategory.activities, DifficultyTier.advanced, '💎'),
+  ('n2_065', '理念', 'rinen', 'Ideal / Principle', WordCategory.activities, DifficultyTier.expert, '🏁'),
+  ('n2_066', '思想', 'shisou', 'Thought / Ideology', WordCategory.activities, DifficultyTier.expert, '💭'),
+  ('n2_067', '哲学', 'tetsugaku', 'Philosophy', WordCategory.activities, DifficultyTier.expert, '🏛️'),
+  ('n2_068', '遵守', 'junshu', 'Compliance / Observance', WordCategory.activities, DifficultyTier.expert, '📋'),
+  ('n2_069', '厳格', 'genkaku', 'Strict / Rigorous', WordCategory.activities, DifficultyTier.advanced, '🔒'),
+  ('n2_070', '制度化', 'seidoka', 'Institutionalisation', WordCategory.activities, DifficultyTier.expert, '🏗️'),
+
+  // ── Economic ───────────────────────────────────────────────────────────
+  ('n2_071', '景気', 'keiki', 'Economic climate', WordCategory.activities, DifficultyTier.advanced, '📊'),
+  ('n2_072', '物価', 'bukka', 'Commodity prices', WordCategory.activities, DifficultyTier.advanced, '🏷️'),
+  ('n2_073', '為替', 'kawase', 'Foreign exchange', WordCategory.activities, DifficultyTier.expert, '💱'),
+  ('n2_074', '株価', 'kabuka', 'Stock price', WordCategory.activities, DifficultyTier.advanced, '📈'),
+  ('n2_075', '融資', 'yuushi', 'Financing / Loan', WordCategory.activities, DifficultyTier.expert, '💰'),
+  ('n2_076', '予算', 'yosan', 'Budget', WordCategory.activities, DifficultyTier.advanced, '💵'),
+  ('n2_077', '歳出', 'saishutsu', 'Annual expenditure', WordCategory.activities, DifficultyTier.expert, '🧾'),
+  ('n2_078', '税制', 'zeisei', 'Tax system', WordCategory.activities, DifficultyTier.expert, '📑'),
+  ('n2_079', '国債', 'kokusai', 'Government bonds', WordCategory.activities, DifficultyTier.expert, '🏦'),
+  ('n2_080', '財政', 'zaisei', 'Fiscal policy', WordCategory.activities, DifficultyTier.expert, '🏛️'),
+
+  // ── Economic (extended) ────────────────────────────────────────────────
+  ('n2_081', '効率', 'kouritsu', 'Efficiency', WordCategory.activities, DifficultyTier.advanced, '⚡'),
+  ('n2_082', '生産性', 'seisansei', 'Productivity', WordCategory.activities, DifficultyTier.advanced, '🏭'),
+  ('n2_083', '革新', 'kakushin', 'Innovation', WordCategory.activities, DifficultyTier.advanced, '💡'),
+  ('n2_084', '最適化', 'saitekika', 'Optimisation', WordCategory.activities, DifficultyTier.expert, '🎯'),
+  ('n2_085', '基盤', 'kiban', 'Foundation / Platform', WordCategory.activities, DifficultyTier.advanced, '🧱'),
+
+  // ── Scientific ─────────────────────────────────────────────────────────
+  ('n2_086', '実験', 'jikken', 'Experiment', WordCategory.nature, DifficultyTier.advanced, '🧪'),
+  ('n2_087', '観測', 'kansoku', 'Observation (scientific)', WordCategory.nature, DifficultyTier.advanced, '🔭'),
+  ('n2_088', '測定', 'sokutei', 'Measurement', WordCategory.nature, DifficultyTier.advanced, '📐'),
+  ('n2_089', '計算', 'keisan', 'Calculation', WordCategory.activities, DifficultyTier.advanced, '🧮'),
+  ('n2_090', '推測', 'suisoku', 'Conjecture / Inference', WordCategory.activities, DifficultyTier.advanced, '🔮'),
+  ('n2_091', '仮定', 'katei', 'Assumption', WordCategory.activities, DifficultyTier.advanced, '❓'),
+  ('n2_092', '証明', 'shoumei', 'Proof', WordCategory.activities, DifficultyTier.advanced, '✅'),
+  ('n2_093', '反証', 'hanshou', 'Refutation / Counterevidence', WordCategory.activities, DifficultyTier.expert, '❌'),
+  ('n2_094', '法則', 'housoku', 'Law / Principle', WordCategory.nature, DifficultyTier.advanced, '📏'),
+  ('n2_095', '原理', 'genri', 'Principle / Fundamental law', WordCategory.nature, DifficultyTier.advanced, '🏛️'),
+
+  // ── Scientific (extended) ─────────────────────────────────────────────
+  ('n2_096', '実証', 'jisshou', 'Empirical proof / Demonstration', WordCategory.activities, DifficultyTier.expert, '🔬'),
+  ('n2_097', '実践', 'jissen', 'Practice / Practical application', WordCategory.activities, DifficultyTier.advanced, '🔧'),
+  ('n2_098', '応用', 'ouyou', 'Application / Applied use', WordCategory.activities, DifficultyTier.advanced, '🛠️'),
+  ('n2_099', '現象', 'genshou', 'Phenomenon', WordCategory.nature, DifficultyTier.advanced, '🌌'),
+  ('n2_100', '本質', 'honshitsu', 'Essence / True nature', WordCategory.nature, DifficultyTier.expert, '💎'),
+
+  // ── Medical ────────────────────────────────────────────────────────────
+  ('n2_101', '症状', 'shoujou', 'Symptom', WordCategory.people, DifficultyTier.advanced, '🤒'),
+  ('n2_102', '診断', 'shindan', 'Diagnosis', WordCategory.people, DifficultyTier.advanced, '🩺'),
+  ('n2_103', '治療', 'chiryou', 'Treatment / Therapy', WordCategory.people, DifficultyTier.advanced, '💊'),
+  ('n2_104', '処方', 'shohou', 'Prescription', WordCategory.people, DifficultyTier.expert, '📋'),
+  ('n2_105', '予防', 'yobou', 'Prevention', WordCategory.people, DifficultyTier.advanced, '🛡️'),
+  ('n2_106', '感染', 'kansen', 'Infection', WordCategory.people, DifficultyTier.advanced, '🦠'),
+  ('n2_107', '免疫', 'men\'eki', 'Immunity', WordCategory.people, DifficultyTier.expert, '💪'),
+  ('n2_108', '手術', 'shujutsu', 'Surgery / Operation', WordCategory.people, DifficultyTier.advanced, '🏥'),
+  ('n2_109', '麻酔', 'masui', 'Anaesthesia', WordCategory.people, DifficultyTier.expert, '💉'),
+  ('n2_110', '回復', 'kaifuku', 'Recovery / Recuperation', WordCategory.people, DifficultyTier.advanced, '🩹'),
+
+  // ── Medical (extended) ────────────────────────────────────────────────
+  ('n2_111', '心理', 'shinri', 'Psychology / Mental state', WordCategory.people, DifficultyTier.advanced, '🧠'),
+  ('n2_112', '意識', 'ishiki', 'Consciousness / Awareness', WordCategory.people, DifficultyTier.advanced, '👁️'),
+  ('n2_113', '無意識', 'muishiki', 'Unconscious (subconscious)', WordCategory.people, DifficultyTier.expert, '🌙'),
+  ('n2_114', '潜在', 'senzai', 'Latent / Underlying', WordCategory.activities, DifficultyTier.expert, '🌱'),
+  ('n2_115', '顕在', 'kenzai', 'Manifest / Overt', WordCategory.activities, DifficultyTier.expert, '☀️'),
+
+  // ── Advanced Verbs ─────────────────────────────────────────────────────
+  ('n2_116', '提唱する', 'teishou suru', 'To advocate', WordCategory.activities, DifficultyTier.expert, '📢'),
+  ('n2_117', '促進する', 'sokushin suru', 'To promote / Accelerate', WordCategory.activities, DifficultyTier.expert, '🚀'),
+  ('n2_118', '抑制する', 'yokusei suru', 'To suppress / Restrain', WordCategory.activities, DifficultyTier.expert, '🛑'),
+  ('n2_119', '奨励する', 'shourei suru', 'To encourage / Incentivise', WordCategory.activities, DifficultyTier.expert, '👏'),
+  ('n2_120', '制裁する', 'seisai suru', 'To sanction', WordCategory.activities, DifficultyTier.expert, '⚡'),
+  ('n2_121', '調停する', 'choutei suru', 'To mediate / Arbitrate', WordCategory.activities, DifficultyTier.expert, '🤝'),
+  ('n2_122', '主導する', 'shudou suru', 'To lead / Take the initiative', WordCategory.activities, DifficultyTier.advanced, '🏁'),
+  ('n2_123', '遂行する', 'suikou suru', 'To execute / Carry out', WordCategory.activities, DifficultyTier.expert, '✅'),
+  ('n2_124', '継承する', 'keishou suru', 'To inherit / Succeed to', WordCategory.activities, DifficultyTier.expert, '🔄'),
+  ('n2_125', '確立する', 'kakuritsu suru', 'To establish', WordCategory.activities, DifficultyTier.advanced, '🏗️'),
+  ('n2_126', '否定する', 'hitei suru', 'To deny / Negate', WordCategory.activities, DifficultyTier.advanced, '👎'),
+  ('n2_127', '是認する', 'zenin suru', 'To approve / Endorse', WordCategory.activities, DifficultyTier.expert, '👍'),
+  ('n2_128', '棄却する', 'kikyaku suru', 'To reject / Dismiss', WordCategory.activities, DifficultyTier.expert, '🗑️'),
+  ('n2_129', '受理する', 'juri suru', 'To accept (formally)', WordCategory.activities, DifficultyTier.expert, '📥'),
+  ('n2_130', '義務付ける', 'gimuzukeru', 'To obligate / Mandate', WordCategory.activities, DifficultyTier.expert, '📌'),
+
+  // ── Advanced Verbs (extended) ─────────────────────────────────────────
+  ('n2_131', '展開する', 'tenkai suru', 'To develop / Unfold', WordCategory.activities, DifficultyTier.advanced, '📖'),
+  ('n2_132', '変革する', 'henkaku suru', 'To reform / Transform', WordCategory.activities, DifficultyTier.expert, '🔄'),
+  ('n2_133', '転換する', 'tenkan suru', 'To convert / Shift', WordCategory.activities, DifficultyTier.advanced, '🔀'),
+  ('n2_134', '整備する', 'seibi suru', 'To maintain / Service', WordCategory.activities, DifficultyTier.advanced, '🔧'),
+  ('n2_135', '充実する', 'juujitsu suru', 'To fulfil / Enrich', WordCategory.activities, DifficultyTier.advanced, '✨'),
+
+  // ── Compound Words ─────────────────────────────────────────────────────
+  ('n2_136', '知的財産', 'chiteki zaisan', 'Intellectual property', WordCategory.activities, DifficultyTier.expert, '🧠'),
+  ('n2_137', '環境保護', 'kankyou hogo', 'Environmental protection', WordCategory.nature, DifficultyTier.advanced, '🌿'),
+  ('n2_138', '少子高齢化', 'shoushi koureika', 'Ageing society with declining birthrate', WordCategory.people, DifficultyTier.expert, '👶👴'),
+  ('n2_139', '情報公開', 'jouhou koukai', 'Information disclosure', WordCategory.activities, DifficultyTier.advanced, '📢'),
+  ('n2_140', '温暖化対策', 'ondanka taisaku', 'Global warming countermeasures', WordCategory.nature, DifficultyTier.advanced, '🌡️'),
+  ('n2_141', '国際協力', 'kokusai kyouryoku', 'International cooperation', WordCategory.activities, DifficultyTier.advanced, '🌐'),
+  ('n2_142', '地域活性化', 'chiiki kasseika', 'Regional revitalisation', WordCategory.places, DifficultyTier.expert, '🏘️'),
+  ('n2_143', '生涯学習', 'shougai gakushuu', 'Lifelong learning', WordCategory.activities, DifficultyTier.advanced, '📚'),
+  ('n2_144', '多様性', 'tayousei', 'Diversity', WordCategory.people, DifficultyTier.advanced, '🌈'),
+  ('n2_145', '持続可能', 'jizoku kanou', 'Sustainable', WordCategory.nature, DifficultyTier.advanced, '♻️'),
+
+  // ── Compound / Formal (extended) ───────────────────────────────────────
+  ('n2_146', '枠組み', 'wakugumi', 'Framework / Structure', WordCategory.activities, DifficultyTier.advanced, '🪟'),
+  ('n2_147', '創出する', 'soushutsu suru', 'To create / Generate', WordCategory.activities, DifficultyTier.expert, '✨'),
+  ('n2_148', '形態', 'keitai', 'Form / Shape (abstract)', WordCategory.activities, DifficultyTier.advanced, '🔷'),
+  ('n2_149', '実体', 'jittai', 'Substance / Entity', WordCategory.activities, DifficultyTier.expert, '🧱'),
+  ('n2_150', '推移', 'suii', 'Transition / Shift over time', WordCategory.activities, DifficultyTier.advanced, '📉'),
+  ('n2_151', '動向', 'doukou', 'Trend / Movement (social)', WordCategory.activities, DifficultyTier.advanced, '📊'),
+  ('n2_152', '潮流', 'chouryuu', 'Current / Tide (of thought)', WordCategory.activities, DifficultyTier.expert, '🌊'),
+  ('n2_153', '変容', 'hen\'you', 'Transformation / Metamorphosis', WordCategory.activities, DifficultyTier.expert, '🦋'),
+  ('n2_154', '再編', 'saihen', 'Reorganisation', WordCategory.activities, DifficultyTier.expert, '🔄'),
+  ('n2_155', '向上', 'koujou', 'Improvement / Elevation', WordCategory.activities, DifficultyTier.advanced, '⬆️'),
+  ('n2_156', '徹底', 'tettei', 'Thoroughness / Completeness', WordCategory.activities, DifficultyTier.advanced, '💯'),
+  ('n2_157', '柔軟', 'juunan', 'Flexible / Adaptable', WordCategory.activities, DifficultyTier.advanced, '🎋'),
+  ('n2_158', '画期的', 'kakkiteki', 'Groundbreaking / Revolutionary', WordCategory.activities, DifficultyTier.expert, '💥'),
+  ('n2_159', '飛躍的', 'hiyakuteki', 'Dramatic / Leaping', WordCategory.activities, DifficultyTier.expert, '🚀'),
+  ('n2_160', '根本的', 'konponteki', 'Fundamental / Radical', WordCategory.activities, DifficultyTier.expert, '🌱'),
+];
+
+final n2Words = _n2Raw
+    .map((r) => Word(
+          id: r.$1,
+          japanese: r.$2,
+          romaji: r.$3,
+          english: r.$4,
+          category: r.$5,
+          tier: r.$6,
+          emoji: r.$7,
+        ))
+    .toList();
