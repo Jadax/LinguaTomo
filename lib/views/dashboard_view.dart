@@ -124,6 +124,28 @@ class DashboardView extends ConsumerWidget {
           ),
           const SizedBox(height: 14),
           _ContinueLearningCard(wordProgress: wordProgress),
+          if (!wordProgress.postcardsUnlocked) ...[
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Wrap(
+                spacing: 12,
+                children: [
+                  const Text(
+                    '💌 10 words to unlock postcards',
+                    style: TextStyle(fontSize: 12, color: AppColors.muted),
+                  ),
+                  Text(
+                    '📖 20 for stories',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.muted.withValues(alpha: .7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           _LevelPickerCard(wordProgress: wordProgress),
           const SizedBox(height: 12),

@@ -30,13 +30,15 @@ class WordLessonView extends ConsumerStatefulWidget {
 class _WordLessonViewState extends ConsumerState<WordLessonView> {
   late final List<Word> _words;
   var _currentIndex = 0;
-  var _phase = _LessonPhase.introduce;
+  var _phase = _LessonPhase.intro;
   var _correctCount = 0;
   var _answered = false;
   var _selectedOption = -1;
   late List<String> _options;
   final _speech = SpeechService();
   final _rng = math.Random();
+  late final bool _showIntro;
+  late final bool _isFirstLesson;
 
   // Two steps per word: introduce + quiz. Total steps = words.length * 2.
   int get _totalSteps => _words.length * 2;
@@ -47,13 +49,23 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     super.initState();
     if (widget.words != null) {
       _words = widget.words!;
+      _showIntro = false;
     } else if (widget.filterCategory != null && widget.filterTier != null) {
       _words = _generateFilteredLesson(
         category: widget.filterCategory!,
         tier: widget.filterTier!,
       );
+      _showIntro = false;
     } else {
       _words = ref.read(wordProgressProvider.notifier).generateLesson();
+      _showIntro = true;
+    }
+    final wp = ref.read(wordProgressProvider);
+    _isFirstLesson = wp.wordsLearned == 0;
+    if (_showIntro) {
+      _phase = _LessonPhase.intro;
+    } else {
+      _phase = _LessonPhase.introduce;
     }
     _prepareQuiz();
   }
@@ -152,6 +164,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
         ),
       );
     }
+    if (_phase == _LessonPhase.intro) return _buildIntro();
     if (_currentIndex >= _words.length) return _buildResults();
     return Scaffold(
       appBar: AppBar(
@@ -171,6 +184,85 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
       body: _phase == _LessonPhase.introduce
           ? _buildIntroduce()
           : _buildQuiz(),
+    );
+  }
+
+  // ── INTRO PHASE ──────────────────────────────────────────────────
+  // Friendly start screen before the lesson begins.
+  Widget _buildIntro() {
+    final tier = ref.read(wordProgressProvider).currentTier;
+    return Scaffold(
+      body: SafeArea(
+        child: ResponsiveContent(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Spacer(flex: 2),
+              Center(
+                child: LeoSprite(
+                  pose: _isFirstLesson ? LeoPose.celebrate : LeoPose.smile,
+                  size: 160,
+                ),
+              ),
+              const SizedBox(height: 28),
+              if (_isFirstLesson) ...[
+                Text(
+                  'Your first lesson!',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '5 ${tier.label} words coming your way!',
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Leo shows you each word, then quizzes you.\nTap the speaker to hear it aloud.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.muted,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ] else ...[
+                Text(
+                  'Next: 5 ${tier.label} words',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'See the word, learn it, then quiz.',
+                  style: TextStyle(fontSize: 15, color: AppColors.muted),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const Spacer(flex: 3),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 32),
+                child: FilledButton(
+                  onPressed: () => setState(() {
+                    _phase = _LessonPhase.introduce;
+                  }),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                  ),
+                  child: const Text(
+                    "Let's go!",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -247,6 +339,10 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               ),
             ),
           ),
+          if (_isFirstLesson) ...[
+            const SizedBox(height: 16),
+            _TutorialBubble(text: 'Tap the speaker to hear it!'),
+          ],
           const Spacer(flex: 3),
           Padding(
             padding: const EdgeInsets.only(bottom: 32),
@@ -323,6 +419,10 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
             ),
           ),
           const SizedBox(height: 28),
+          if (_isFirstLesson) ...[
+            _TutorialBubble(text: 'Pick the right meaning!'),
+            const SizedBox(height: 12),
+          ],
           Text(
             'What does this mean?',
             style: Theme.of(context).textTheme.titleMedium,
@@ -431,7 +531,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   }
 }
 
-enum _LessonPhase { introduce, quiz }
+enum _LessonPhase { intro, introduce, quiz }
 
 class _AnswerOption extends StatelessWidget {
   const _AnswerOption({
@@ -510,4 +610,43 @@ class LessonResult {
   final int totalWords;
   final int correctCount;
   final int xpEarned;
+}
+
+class _TutorialBubble extends StatelessWidget {
+  const _TutorialBubble({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 280),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7E8),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.persimmon.withValues(alpha: .2),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🐱', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.charcoal,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
