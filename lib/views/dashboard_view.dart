@@ -112,6 +112,8 @@ class DashboardView extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 14),
+          _DailyXpGoal(wordProgress: wordProgress),
+          const SizedBox(height: 10),
           _NestRoom(
             progress: progress,
             environment: environment,
@@ -1561,6 +1563,78 @@ class _GrowthPill extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// Daily XP goal tracker — motivates consistent practice.
+/// Shows progress toward a soft daily target based on word activity.
+class _DailyXpGoal extends StatelessWidget {
+  const _DailyXpGoal({required this.wordProgress});
+  final WordProgress wordProgress;
+
+  static const _dailyGoal = 50;
+
+  @override
+  Widget build(BuildContext context) {
+    final today = _dateKey(DateTime.now());
+    final isTodayActive = wordProgress.wordActivityDates.contains(today);
+    final lessonsToday = wordProgress.wordLessonHistory
+        .where((entry) => entry.split(',').isNotEmpty)
+        .length;
+    // Rough estimate: 5 words per lesson × 10 XP per word = ~50 per lesson.
+    final estimatedTodayXp = isTodayActive ? (lessonsToday * 50).clamp(0, _dailyGoal) : 0;
+    final progress = (estimatedTodayXp / _dailyGoal).clamp(0.0, 1.0);
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              Icons.flag_rounded,
+              size: 20,
+              color: progress >= 1.0 ? AppColors.matcha : AppColors.persimmon,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    progress >= 1.0
+                        ? 'Daily goal reached!'
+                        : 'Daily goal: $_dailyGoal XP',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: AppColors.bambooMist,
+                    color: progress >= 1.0 ? AppColors.matcha : AppColors.persimmon,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              '$estimatedTodayXp/$_dailyGoal',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: progress >= 1.0 ? AppColors.matcha : AppColors.muted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _dateKey(DateTime value) =>
+      '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 }
 
 class _SeasonalCard extends ConsumerWidget {

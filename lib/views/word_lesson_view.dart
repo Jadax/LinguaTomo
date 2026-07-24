@@ -42,6 +42,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   final _rng = math.Random();
   late final bool _showIntro;
   late final bool _isFirstLesson;
+  late final bool _isReverseQuiz;
 
   // Two steps per word: introduce + quiz. Total steps = words.length * 2.
   int get _totalSteps => _words.length * 2;
@@ -65,6 +66,14 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     }
     final wp = ref.read(wordProgressProvider);
     _isFirstLesson = wp.wordsLearned == 0;
+    // Reverse quiz (English prompt → pick Japanese) for intermediate+ tiers.
+    final highestTier = _words.isEmpty
+        ? DifficultyTier.starter
+        : _words.map((w) => w.tier).reduce(
+              (a, b) => a.index > b.index ? a : b,
+            );
+    _isReverseQuiz =
+        highestTier.index >= DifficultyTier.intermediate.index && !_isFirstLesson;
     if (_showIntro) {
       _phase = _LessonPhase.intro;
     } else {
@@ -105,11 +114,21 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final current = _words[_currentIndex];
     _answered = false;
     _selectedOption = -1;
-    final correctAnswer = current.english;
-    final otherWords =
-        wordBank.where((w) => w.id != current.id).toList()..shuffle(_rng);
-    final distractors = otherWords.take(2).map((w) => w.english).toList();
-    _options = [correctAnswer, ...distractors]..shuffle(_rng);
+    if (_isReverseQuiz) {
+      // Reverse: show English, pick the correct Japanese.
+      final correctAnswer = current.japanese;
+      final otherWords =
+          wordBank.where((w) => w.id != current.id).toList()..shuffle(_rng);
+      final distractors = otherWords.take(2).map((w) => w.japanese).toList();
+      _options = [correctAnswer, ...distractors]..shuffle(_rng);
+    } else {
+      // Forward: show Japanese, pick the correct English.
+      final correctAnswer = current.english;
+      final otherWords =
+          wordBank.where((w) => w.id != current.id).toList()..shuffle(_rng);
+      final distractors = otherWords.take(2).map((w) => w.english).toList();
+      _options = [correctAnswer, ...distractors]..shuffle(_rng);
+    }
   }
 
   void _startQuizPhase() {
@@ -123,7 +142,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
       _selectedOption = index;
     });
     final current = _words[_currentIndex];
-    final isCorrect = _options[index] == current.english;
+    final correctAnswer =
+        _isReverseQuiz ? current.japanese : current.english;
+    final isCorrect = _options[index] == correctAnswer;
     if (isCorrect) _correctCount++;
     _answerResults[_currentIndex] = isCorrect;
   }
@@ -418,9 +439,11 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   }
 
   // ── QUIZ PHASE ─────────────────────────────────────────────────────
-  // Ask "What does this mean?" with 3 options.
+  // Forward: show emoji + speaker, pick English meaning.
+  // Reverse: show English meaning, pick the Japanese word.
   Widget _buildQuiz() {
     final word = _words[_currentIndex];
+    if (_isReverseQuiz) return _buildReverseQuiz(word);
     return ResponsiveContent(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -507,6 +530,120 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                 wrong: _answered &&
                     _selectedOption == i &&
                     _options[i] != word.english,
+                enabled: !_answered,
+                onTap: () => _checkAnswer(i),
+              ),
+            ),
+          const Spacer(),
+          if (_answered && word.hasExample) ...[
+            _ContextSentence(
+              sentence: word.exampleSentence!,
+              translation: word.exampleTranslation!,
+              onTap: () => _speech.speakJapanese(word.exampleSentence!),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (_answered)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LeoSprite(
+                    pose: _answerResults[_currentIndex]
+                        ? LeoPose.smile
+                        : LeoPose.meow,
+                    size: 44,
+                    semanticLabel:
+                        _answerResults[_currentIndex]
+                            ? 'Leo is happy with your answer'
+                            : 'Leo encourages you to try again',
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _answerResults[_currentIndex] ? 'Yes!' : 'Almost!',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: _answerResults[_currentIndex]
+                          ? AppColors.matcha
+                          : AppColors.persimmon,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (_answered)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: FilledButton(
+                onPressed: _nextWord,
+                child: Text(
+                  _currentIndex < _words.length - 1 ? 'Next word' : 'See results',
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── REVERSE QUIZ PHASE ────────────────────────────────────────────
+  // For intermediate+: show English meaning, pick the Japanese word.
+  Widget _buildReverseQuiz(Word word) {
+    return ResponsiveContent(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 20),
+          // Show English as the prompt.
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              color: AppColors.matcha.withValues(alpha: .08),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  word.english,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.matcha,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  word.category.label,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'What is the Japanese for this?',
+            style: Theme.of(context).textTheme.titleMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 20),
+          for (var i = 0; i < _options.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _AnswerOption(
+                text: _options[i],
+                selected: _selectedOption == i,
+                correct: _answered && _options[i] == word.japanese,
+                wrong: _answered &&
+                    _selectedOption == i &&
+                    _options[i] != word.japanese,
                 enabled: !_answered,
                 onTap: () => _checkAnswer(i),
               ),
