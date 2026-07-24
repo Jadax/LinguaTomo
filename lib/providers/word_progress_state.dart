@@ -277,8 +277,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
   }
 
   List<Word> generateThemedLesson(List<String> wordIds, {int wordCount = 5}) {
-    final byId = {for (final w in wordBank) w.id: w};
-    final themedWords = wordIds.map((id) => byId[id]).whereType<Word>().toList();
+    final themedWords = wordIds.map((id) => wordBankById[id]).whereType<Word>().toList();
     final uncompleted = themedWords
         .where((w) => !state.completedWords.contains(w.id))
         .toList();

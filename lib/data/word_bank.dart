@@ -11,7 +11,7 @@ import 'words_themes_extra.dart';
 import 'words_n1.dart';
 import 'words_extra_2.dart';
 
-final wordBank = <Word>[
+final _wordBankRaw = <Word>[
   // ── Starter tier (80 words) ─────────────────────────────────────────────
   // Greetings (10)
   Word(id: 's_01', japanese: 'こんにちは', romaji: 'konnichiwa', english: 'Hello', category: WordCategory.greetings, tier: DifficultyTier.starter, emoji: '👋'),
@@ -474,6 +474,21 @@ final wordBank = <Word>[
   ...extraWords2,
 ];
 
+/// Canonical word bank with duplicates removed.
+/// Removes entries that share the same Japanese text (e.g. N5 extras that
+/// duplicate base-bank words). First occurrence wins, so base-bank IDs
+/// (s_, e_, i_, a_, x_) take precedence and FSRS progress is preserved.
+final wordBank = () {
+  final seen = <String>{};
+  return _wordBankRaw.where((w) {
+    if (!seen.add(w.id)) return false;
+    return seen.add('jp:${w.japanese}');
+  }).toList();
+}();
+
+/// O(1) lookup by word ID — avoids repeated list scans.
+final wordBankById = {for (final w in wordBank) w.id: w};
+
 List<Word> wordsForTier(DifficultyTier tier) =>
     wordBank.where((w) => w.tier == tier).toList();
 
@@ -638,7 +653,7 @@ const _lessonPath = <DifficultyTier, List<String>>{
 List<Word> wordsForTierInOrder(DifficultyTier tier) {
   final order = _lessonPath[tier];
   if (order == null) return wordsForTier(tier);
-  final byId = {for (final w in wordBank) w.id: w};
+  final byId = wordBankById;
   final ordered = [for (final id in order) if (byId[id] != null) byId[id]!];
   // Append tier words not yet placed in the path (alphabetically by id)
   final orderedIds = ordered.map((w) => w.id).toSet();
