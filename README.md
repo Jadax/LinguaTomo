@@ -24,12 +24,16 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.14.6, build 26**
+**Version 1.15.0, build 27**
 
 | Area | Available now |
 |---|---|
 | Vocabulary | ~1,780 words across Starter to Expert, 31 themed sections, 10+ CEFR/JLPT data files |
 | Progression | 5 difficulty tiers, XP levels with titles (Explorer → Grand Master), streaks |
+| Word growth | 4-stage growth system: Seed → Sprout → Bud → Bloom (tracked per word) |
+| Leo mood | Personality system: excited, proud, sleepy, curious, encouraging, playful, cozy |
+| Seasonal | Monthly season progress with active festival chips and badge target |
+| Weekly challenge | Rotating weekly quizzes with streak tracking and best scores |
 | Quiz | Listen-first mode with audio auto-play, 3/5 gate, wrong-word retry |
 | Dashboard | Continue Learning card, Daily Conversation with audio, level picker |
 | Learning hub | CEFR/JLPT guide, achievement tracker (85 achievements), grammar explorer |

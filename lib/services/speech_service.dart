@@ -1,6 +1,10 @@
 import 'package:flutter_tts/flutter_tts.dart';
 
 class SpeechService {
+  static final SpeechService _instance = SpeechService._();
+  factory SpeechService() => _instance;
+  SpeechService._();
+
   final FlutterTts _tts = FlutterTts();
   bool _prepared = false;
 

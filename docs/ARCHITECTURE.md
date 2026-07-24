@@ -77,7 +77,19 @@ until a deliberate data-retention decision is made.
 
 Stored domains: learner profile, experience mode, mission and postcard
 progress, handwriting history, FSRS phrase cards, grammar cards, word
-progress, bookmarks and sync state.
+progress (including per-word correct counts for growth stages),
+bookmarks, sync state, weekly challenge progress, and Leo mood state.
+
+## Engagement providers
+
+| Provider | File | Purpose |
+|----------|------|---------|
+| `leoMoodProvider` | `providers/leo_mood_state.dart` | Derives Leo's mood from streak, milestones, reviews, inactivity |
+| `seasonalProgressProvider` | `providers/seasonal_state.dart` | Monthly season progress, active festivals, badge target |
+| `weeklyChallengeProvider` | `providers/weekly_challenge_state.dart` | Rotating weekly challenge type, streak, best score |
+
+Dashboard cards: `_LeoMoodGreeting`, `_WordGardenSummary`, `_SeasonalCard`,
+`_WeeklyChallengeCard` in `views/dashboard_view.dart`.
 
 ## Supabase
 

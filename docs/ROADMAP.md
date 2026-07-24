@@ -4,7 +4,7 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
-## Current version: 1.14.6 (build 26)
+## Current version: 1.15.0 (build 27)
 
 ## Product teaching model
 
@@ -52,7 +52,33 @@ alongside lessons delivered by a learner's own external teacher.
 
 ### Remaining
 
-1. **Systematic kanji foundation**
+1. **Leo personality mood system**
+   - Leo reacts to learning behaviour: excited (3+ day streak), proud (milestones),
+     sleepy (2+ day gap), curious (due reviews), encouraging (low scores),
+     playful (random), cozy (default)
+   - Mood greeting card on dashboard with pose and message
+
+2. **Word growth progression**
+   - Words grow through 4 stages: Seed (0 correct) → Sprout (1-2) → Bud (3-4) → Bloom (5+)
+   - Word Garden summary card shows counts per growth stage
+   - Growth tracked per word via `wordCorrectCounts` in Hive
+
+3. **Seasonal learning cycles**
+   - Monthly seasonal progress card (Winter/Spring/Summer/Autumn)
+   - 20 active days target per month for season badge
+   - Active festival chips from `festival_calendar_data.dart`
+
+4. **Weekly challenge rhythm**
+   - Rotating weekly challenges: Vocabulary Sprint, Speed Round, Memory Test, Culture Quiz
+   - 7-day cycle with days remaining countdown
+   - Streak tracking (consecutive weeks with 70%+ score)
+   - Best score persistence
+
+5. **Stability fixes**
+   - Hive initialization error handling (memory-only fallback on failure)
+   - SpeechService singleton (prevents multiple TTS native bindings)
+
+2. **Systematic kanji foundation**
    - Licensed KANJIDIC/JMdict data
    - Components, stroke count, vocabulary families, mnemonics
    - N5 to N1 filters
@@ -92,8 +118,8 @@ alongside lessons delivered by a learner's own external teacher.
 
 ### Remaining
 
-1. Expand Leo with restrained animation states: greet, listen, think, cheer,
-   reassure, nap and celebrate.
+1. ~~Expand Leo with restrained animation states: greet, listen, think, cheer,~~
+   ~~reassure, nap and celebrate.~~ (Partially addressed via mood system)
 2. Add optional gentle sound design, haptics and reduced-motion equivalents.
 3. Expand the Nest with category collections and meaningful mastery rewards.
 4. Before-and-after handwriting cards and private shareable progress cards.

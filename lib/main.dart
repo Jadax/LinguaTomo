@@ -22,11 +22,17 @@ import 'widgets/leo_sprite.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
-  final userBox = await Hive.openBox<dynamic>(StorageKeys.userData);
-  final legacyBox = await Hive.openBox<dynamic>(StorageKeys.legacyUserData);
-  if (userBox.isEmpty && legacyBox.isNotEmpty) {
-    await userBox.putAll(legacyBox.toMap());
+  try {
+    await Hive.initFlutter();
+    final userBox = await Hive.openBox<dynamic>(StorageKeys.userData);
+    final legacyBox = await Hive.openBox<dynamic>(StorageKeys.legacyUserData);
+    if (userBox.isEmpty && legacyBox.isNotEmpty) {
+      await userBox.putAll(legacyBox.toMap());
+    }
+  } catch (e) {
+    // Hive initialisation can fail on corrupt files or unsupported platforms.
+    // The app stores null-safe fallbacks in every provider's _box getter, so
+    // learning continues in memory-only mode until the next launch.
   }
   await CloudBootstrap.initialize();
   runApp(const ProviderScope(child: LinguaTomoApp()));

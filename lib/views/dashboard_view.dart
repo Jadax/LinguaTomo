@@ -17,6 +17,9 @@ import '../providers/review_state.dart';
 import '../providers/grammar_state.dart';
 import '../providers/word_progress_state.dart';
 import '../providers/level_prefs_state.dart';
+import '../providers/leo_mood_state.dart';
+import '../providers/seasonal_state.dart';
+import '../providers/weekly_challenge_state.dart';
 import '../services/speech_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/leo_sprite.dart';
@@ -119,6 +122,8 @@ class DashboardView extends ConsumerWidget {
               context,
             ).push(MaterialPageRoute(builder: (_) => const CollectionView())),
           ),
+          const SizedBox(height: 6),
+          _LeoMoodGreeting(),
           const SizedBox(height: 10),
           _TrophyShelf(
             unlocked: unlockedTrophies,
@@ -127,6 +132,14 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 14),
           _ContinueLearningCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
+          if (wordProgress.wordsLearned > 0) ...[
+            _WordGardenSummary(wordProgress: wordProgress),
+            const SizedBox(height: 12),
+            const _SeasonalCard(),
+            const SizedBox(height: 12),
+            const _WeeklyChallengeCard(),
+            const SizedBox(height: 12),
+          ],
           if (!wordProgress.postcardsUnlocked) ...[
             const SizedBox(height: 6),
             Padding(
@@ -944,6 +957,100 @@ class _TrophyShelf extends StatelessWidget {
   );
 }
 
+class _WeeklyChallengeCard extends ConsumerWidget {
+  const _WeeklyChallengeCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final challenge = ref.watch(weeklyChallengeProvider);
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '${challenge.challengeType.emoji} Weekly Challenge',
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                const Spacer(),
+                if (challenge.completed)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.matcha.withValues(alpha: .15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Complete',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.matcha,
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    '${challenge.daysRemaining}d left',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.persimmon,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              challenge.challengeType.label,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              challenge.challengeType.description,
+              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.local_fire_department_rounded,
+                    size: 16, color: AppColors.persimmon),
+                const SizedBox(width: 4),
+                Text(
+                  '${challenge.streakWeeks} week streak',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Icon(Icons.emoji_events_rounded,
+                    size: 16, color: AppColors.persimmon),
+                const SizedBox(width: 4),
+                Text(
+                  'Best: ${challenge.bestScore}%',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SeasonalEventCard extends ConsumerStatefulWidget {
   const _SeasonalEventCard();
 
@@ -1305,4 +1412,233 @@ class _Evidence extends StatelessWidget {
       Text(label, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
     ],
   );
+}
+
+class _LeoMoodGreeting extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mood = ref.watch(leoMoodProvider);
+    final color = switch (mood) {
+      LeoMood.excited => AppColors.persimmon,
+      LeoMood.proud => AppColors.matcha,
+      LeoMood.sleepy => AppColors.muted,
+      LeoMood.curious => AppColors.teal,
+      LeoMood.playful => AppColors.persimmon,
+      LeoMood.encouraging => AppColors.matcha,
+      LeoMood.cozy => AppColors.charcoal,
+    };
+    return Card(
+      margin: EdgeInsets.zero,
+      color: color.withValues(alpha: .08),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            LeoSprite(
+              pose: switch (mood) {
+                LeoMood.excited => LeoPose.celebrate,
+                LeoMood.proud => LeoPose.celebrate,
+                LeoMood.sleepy => LeoPose.sit,
+                LeoMood.curious => LeoPose.smile,
+                LeoMood.playful => LeoPose.butterfly,
+                LeoMood.encouraging => LeoPose.smile,
+                LeoMood.cozy => LeoPose.smile,
+              },
+              size: 44,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Leo is ${mood.label.toLowerCase()}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    mood.greeting,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WordGardenSummary extends StatelessWidget {
+  const _WordGardenSummary({required this.wordProgress});
+  final WordProgress wordProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final counts = <WordGrowthStage, int>{};
+    for (final stage in WordGrowthStage.values) {
+      counts[stage] = 0;
+    }
+    for (final entry in wordProgress.wordCorrectCounts.entries) {
+      final count = entry.value;
+      final stage = count >= 5
+          ? WordGrowthStage.bloom
+          : count >= 3
+              ? WordGrowthStage.bud
+              : count >= 1
+                  ? WordGrowthStage.sprout
+                  : WordGrowthStage.seed;
+      counts[stage] = (counts[stage] ?? 0) + 1;
+    }
+    final learned = wordProgress.wordsLearned;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  'Word Garden',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                const Spacer(),
+                Text(
+                  '$learned word${learned == 1 ? '' : 's'} planted',
+                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                for (final stage in WordGrowthStage.values)
+                  _GrowthPill(
+                    emoji: stage.emoji,
+                    label: stage.label,
+                    count: counts[stage] ?? 0,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GrowthPill extends StatelessWidget {
+  const _GrowthPill({
+    required this.emoji,
+    required this.label,
+    required this.count,
+  });
+  final String emoji;
+  final String label;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(emoji, style: const TextStyle(fontSize: 24)),
+      const SizedBox(height: 4),
+      Text(
+        '$count',
+        style: const TextStyle(fontWeight: FontWeight.w900),
+      ),
+      Text(
+        label,
+        style: const TextStyle(fontSize: 11, color: AppColors.muted),
+      ),
+    ],
+  );
+}
+
+class _SeasonalCard extends ConsumerWidget {
+  const _SeasonalCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final season = ref.watch(seasonalProgressProvider);
+    final seasonEmoji = switch (season.seasonName) {
+      'Winter' => '❄️',
+      'Spring' => '🌸',
+      'Summer' => '☀️',
+      'Autumn' => '🍂',
+      _ => '🌱',
+    };
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  '$seasonEmoji ${season.seasonName} — ${season.monthName}',
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                const Spacer(),
+                if (season.completedSeason)
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    color: AppColors.persimmon,
+                    size: 22,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: season.lessonProgress,
+                minHeight: 8,
+                backgroundColor: AppColors.bambooMist,
+                color: season.completedSeason
+                    ? AppColors.persimmon
+                    : AppColors.teal,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              season.completedSeason
+                  ? 'Season complete! You earned your badge.'
+                  : '${season.lessonsCompleted}/${season.targetLessons} active days — $seasonEmoji keep going!',
+              style: const TextStyle(fontSize: 12),
+            ),
+            if (season.activeFestivals.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final festival in season.activeFestivals.take(3))
+                    Chip(
+                      avatar: Text(festival.emoji),
+                      label: Text(
+                        festival.englishName,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                    ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }

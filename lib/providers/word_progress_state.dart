@@ -10,6 +10,24 @@ const _boxName = StorageKeys.userData;
 Box<dynamic>? get _box =>
     Hive.isBoxOpen(_boxName) ? Hive.box<dynamic>(_boxName) : null;
 
+enum WordGrowthStage { seed, sprout, bud, bloom }
+
+extension WordGrowthStageX on WordGrowthStage {
+  String get label => switch (this) {
+    WordGrowthStage.seed => 'Seed',
+    WordGrowthStage.sprout => 'Sprout',
+    WordGrowthStage.bud => 'Bud',
+    WordGrowthStage.bloom => 'Bloom',
+  };
+
+  String get emoji => switch (this) {
+    WordGrowthStage.seed => '🌱',
+    WordGrowthStage.sprout => '🌿',
+    WordGrowthStage.bud => '🌸',
+    WordGrowthStage.bloom => '🌺',
+  };
+}
+
 class WordProgress {
   const WordProgress({
     this.completedWords = const {},
@@ -17,6 +35,7 @@ class WordProgress {
     this.wordLessonHistory = const [],
     this.perfectLessonCount = 0,
     this.wordActivityDates = const {},
+    this.wordCorrectCounts = const {},
   });
 
   final Set<String> completedWords;
@@ -24,6 +43,15 @@ class WordProgress {
   final List<String> wordLessonHistory;
   final int perfectLessonCount;
   final Set<String> wordActivityDates;
+  final Map<String, int> wordCorrectCounts;
+
+  WordGrowthStage growthStage(String wordId) {
+    final count = wordCorrectCounts[wordId] ?? 0;
+    if (count >= 5) return WordGrowthStage.bloom;
+    if (count >= 3) return WordGrowthStage.bud;
+    if (count >= 1) return WordGrowthStage.sprout;
+    return WordGrowthStage.seed;
+  }
 
   int get wordsLearned => completedWords.length;
 
@@ -139,6 +167,12 @@ class WordProgressNotifier extends Notifier<WordProgress> {
         activityDates.add('$item');
       }
     }
+    final counts = <String, int>{};
+    if (raw['wordCorrectCounts'] is Map) {
+      for (final entry in (raw['wordCorrectCounts'] as Map).entries) {
+        counts['${entry.key}'] = (entry.value as num).toInt();
+      }
+    }
     final storedTier = '${raw['currentTier'] ?? ''}';
     final tier = DifficultyTier.values
             .where((t) => t.name == storedTier)
@@ -150,11 +184,16 @@ class WordProgressNotifier extends Notifier<WordProgress> {
       wordLessonHistory: history,
       perfectLessonCount: (raw['perfectLessonCount'] as num?)?.toInt() ?? 0,
       wordActivityDates: activityDates,
+      wordCorrectCounts: counts,
     );
   }
 
   Future<void> completeWord(String wordId) async {
     if (state.completedWords.contains(wordId)) return;
+    final updatedCounts = {
+      ...state.wordCorrectCounts,
+      wordId: (state.wordCorrectCounts[wordId] ?? 0) + 1,
+    };
     state = WordProgress(
       completedWords: {...state.completedWords, wordId},
       currentTier: state.currentTier,
@@ -164,6 +203,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
         ...state.wordActivityDates,
         _dateKey(DateTime.now()),
       },
+      wordCorrectCounts: updatedCounts,
     );
     _maybeUnlockTier();
     await _persist();
@@ -172,9 +212,16 @@ class WordProgressNotifier extends Notifier<WordProgress> {
   Future<void> completeLesson({
     required List<String> wordIds,
     required int correctCount,
+    List<String>? correctWordIds,
   }) async {
     final isPerfect = correctCount == wordIds.length;
     final history = [...state.wordLessonHistory, wordIds.join(',')];
+    final updatedCounts = {...state.wordCorrectCounts};
+    for (final id in (correctWordIds ?? wordIds)) {
+      if (wordIds.contains(id)) {
+        updatedCounts[id] = (updatedCounts[id] ?? 0) + 1;
+      }
+    }
     state = WordProgress(
       completedWords: {...state.completedWords, ...wordIds},
       currentTier: state.currentTier,
@@ -184,6 +231,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
         ...state.wordActivityDates,
         _dateKey(DateTime.now()),
       },
+      wordCorrectCounts: updatedCounts,
     );
     _maybeUnlockTier();
     await _persist();
@@ -197,6 +245,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
       wordLessonHistory: state.wordLessonHistory,
       perfectLessonCount: state.perfectLessonCount,
       wordActivityDates: state.wordActivityDates,
+      wordCorrectCounts: state.wordCorrectCounts,
     );
     await _persist();
   }
@@ -210,6 +259,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
         wordLessonHistory: state.wordLessonHistory,
         perfectLessonCount: state.perfectLessonCount,
         wordActivityDates: state.wordActivityDates,
+        wordCorrectCounts: state.wordCorrectCounts,
       );
     }
   }
@@ -249,6 +299,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
       'wordLessonHistory': state.wordLessonHistory,
       'perfectLessonCount': state.perfectLessonCount,
       'wordActivityDates': state.wordActivityDates.toList(),
+      'wordCorrectCounts': state.wordCorrectCounts,
     });
   }
 

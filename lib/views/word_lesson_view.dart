@@ -158,9 +158,14 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
 
   void _finish() {
     final wordIds = _words.map((w) => w.id).toList();
+    final correctIds = <String>[];
+    for (var i = 0; i < _words.length; i++) {
+      if (_answerResults[i]) correctIds.add(_words[i].id);
+    }
     ref.read(wordProgressProvider.notifier).completeLesson(
           wordIds: wordIds,
           correctCount: _correctCount,
+          correctWordIds: correctIds,
         );
     final xpEarned = _correctCount * 10;
     ref.read(progressProvider.notifier).addXp(xpEarned);
