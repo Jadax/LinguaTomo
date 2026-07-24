@@ -373,6 +373,8 @@ class Word {
     required this.category,
     required this.tier,
     required this.emoji,
+    this.exampleSentence,
+    this.exampleTranslation,
   });
 
   final String id;
@@ -382,6 +384,10 @@ class Word {
   final WordCategory category;
   final DifficultyTier tier;
   final String emoji;
+  final String? exampleSentence;
+  final String? exampleTranslation;
+
+  bool get hasExample => exampleSentence != null && exampleSentence!.isNotEmpty;
 }
 
 String dateKey(DateTime value) => _dateKey(value);

@@ -167,7 +167,11 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
           correctCount: _correctCount,
           correctWordIds: correctIds,
         );
-    final xpEarned = _correctCount * 10;
+    // XP: 10 per correct + 15 bonus for perfect + streak bonus.
+    var xpEarned = _correctCount * 10;
+    if (_correctCount == _words.length) xpEarned += 15;
+    final streak = ref.read(wordProgressProvider).wordStreak;
+    if (streak >= 3) xpEarned += streak * 2;
     ref.read(progressProvider.notifier).addXp(xpEarned);
     if (mounted) {
       AchievementBanner.show(
@@ -307,7 +311,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
 
   // ── INTRODUCE PHASE ────────────────────────────────────────────────
   // Show the word with emoji, reading, meaning and audio.
-  // User taps "Got it" to confirm they've seen it.
+  // Context-first: show example sentence to teach the word in use.
   Widget _buildIntroduce() {
     final word = _words[_currentIndex];
     return ResponsiveContent(
@@ -360,6 +364,15 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               ),
             ),
           ),
+          // Context sentence — shown first for context-first learning.
+          if (word.hasExample) ...[
+            const SizedBox(height: 20),
+            _ContextSentence(
+              sentence: word.exampleSentence!,
+              translation: word.exampleTranslation!,
+              onTap: () => _speech.speakJapanese(word.exampleSentence!),
+            ),
+          ],
           const SizedBox(height: 12),
           Center(
             child: Container(
@@ -499,6 +512,14 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               ),
             ),
           const Spacer(),
+          if (_answered && word.hasExample) ...[
+            _ContextSentence(
+              sentence: word.exampleSentence!,
+              translation: word.exampleTranslation!,
+              onTap: () => _speech.speakJapanese(word.exampleSentence!),
+            ),
+            const SizedBox(height: 8),
+          ],
           if (_answered)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -605,7 +626,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '$_correctCount × 10 XP = ${_correctCount * 10} XP',
+                  _correctCount == _words.length
+                      ? '$_correctCount × 10 XP + 15 perfect = ${_correctCount * 10 + 15} XP'
+                      : '$_correctCount × 10 XP = ${_correctCount * 10} XP',
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     color: AppColors.persimmon,
@@ -775,6 +798,91 @@ class _TutorialBubble extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shows a Japanese example sentence in context with its translation.
+/// Inspired by JPDB and Migaku's context-first learning approach.
+class _ContextSentence extends StatelessWidget {
+  const _ContextSentence({
+    required this.sentence,
+    required this.translation,
+    this.onTap,
+  });
+
+  final String sentence;
+  final String translation;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F4FF),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFD0DBF0),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.auto_stories_rounded,
+                    size: 16,
+                    color: Color(0xFF5B7AB5),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'In context',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF5B7AB5).withValues(alpha: .8),
+                    ),
+                  ),
+                  if (onTap != null) ...[
+                    const Spacer(),
+                    const Icon(
+                      Icons.volume_up_rounded,
+                      size: 16,
+                      color: Color(0xFF5B7AB5),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                sentence,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.charcoal,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                translation,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.muted.withValues(alpha: .85),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -474,16 +474,215 @@ final _wordBankRaw = <Word>[
   ...extraWords2,
 ];
 
+/// Context-first example sentences for the starter and elementary tiers.
+/// Each entry maps a word ID to a natural Japanese sentence and its translation.
+final _exampleSentences = <String, ({String sentence, String translation})>{
+  // ── Starter greetings ─────────────────────────────────────────────
+  's_01': (sentence: 'こんにちは、元気ですか。', translation: 'Hello, how are you?'),
+  's_02': (sentence: '手伝ってくれてありがとう。', translation: 'Thank you for helping me.'),
+  's_03': (sentence: 'さようなら、また明日。', translation: 'Goodbye, see you tomorrow.'),
+  's_04': (sentence: 'はい、そうです。', translation: 'Yes, that is right.'),
+  's_05': (sentence: 'すみません、駅はどこですか。', translation: 'Excuse me, where is the station?'),
+  's_06': (sentence: '水をください。', translation: 'Water, please.'),
+  's_07': (sentence: 'ごめんなさい、遅れました。', translation: 'I am sorry, I was late.'),
+  's_08': (sentence: 'はじめまして、田中です。', translation: 'Nice to meet you, I am Tanaka.'),
+  's_09': (sentence: 'おやすみなさい、いい夢を見てね。', translation: 'Good night, have sweet dreams.'),
+  's_10': (sentence: 'ただいま！お帰りなさい。', translation: 'I am home! Welcome back.'),
+  // ── Starter home ──────────────────────────────────────────────────
+  's_11': (sentence: '私の家は小さいです。', translation: 'My house is small.'),
+  's_12': (sentence: '机の上に本があります。', translation: 'There is a book on the desk.'),
+  's_13': (sentence: '椅子に座ってください。', translation: 'Please sit on the chair.'),
+  's_14': (sentence: '時計が三時を指しています。', translation: 'The clock points to three o\'clock.'),
+  's_15': (sentence: 'ベッドで寝ます。', translation: 'I sleep in bed.'),
+  's_16': (sentence: 'ドアを閉めてください。', translation: 'Please close the door.'),
+  's_17': (sentence: '窓を開けてもいいですか。', translation: 'May I open the window?'),
+  's_18': (sentence: 'この部屋はきれいですね。', translation: 'This room is lovely, isn\'t it?'),
+  's_19': (sentence: 'テレビを見ながら食べます。', translation: 'I eat while watching TV.'),
+  's_20': (sentence: '冷蔵庫に牛乳があります。', translation: 'There is milk in the fridge.'),
+  // ── Starter people ────────────────────────────────────────────────
+  's_21': (sentence: '母は料理が上手です。', translation: 'My mother is good at cooking.'),
+  's_22': (sentence: '父は毎朝散歩します。', translation: 'My father walks every morning.'),
+  's_23': (sentence: '子供が公园で遊んでいます。', translation: 'The children are playing in the park.'),
+  's_24': (sentence: '友達と映画を見ました。', translation: 'I watched a movie with a friend.'),
+  's_25': (sentence: '先生は日本語を教えてください。', translation: 'Teacher, please teach me Japanese.'),
+  's_26': (sentence: '兄は大学生です。', translation: 'My older brother is a university student.'),
+  's_27': (sentence: '姉は東京に住んでいます。', translation: 'My older sister lives in Tokyo.'),
+  's_28': (sentence: 'おばあさんはお菓子を作ります。', translation: 'Grandmother makes sweets.'),
+  's_29': (sentence: 'おじいさんは歴史が好きです。', translation: 'Grandfather likes history.'),
+  's_30': (sentence: '赤ちゃんが眠くなりました。', translation: 'The baby fell asleep.'),
+  // ── Starter food ──────────────────────────────────────────────────
+  's_31': (sentence: 'ご飯を食べましょう。', translation: 'Let\'s eat rice.'),
+  's_32': (sentence: '水を飲みたいです。', translation: 'I want to drink water.'),
+  's_33': (sentence: '魚が新鮮です。', translation: 'The fish is fresh.'),
+  's_34': (sentence: '肉を焼きます。', translation: 'I grill the meat.'),
+  's_35': (sentence: 'パンを買いました。', translation: 'I bought bread.'),
+  's_36': (sentence: 'お茶をどうぞ。', translation: 'Please have some tea.'),
+  's_37': (sentence: '卵を二つください。', translation: 'Two eggs, please.'),
+  's_38': (sentence: '果物が好きです。', translation: 'I like fruit.'),
+  's_39': (sentence: '牛乳をコーヒーに入れます。', translation: 'I put milk in my coffee.'),
+  's_40': (sentence: '野菜を食べなさい。', translation: 'Eat your vegetables.'),
+  // ── Starter activities ────────────────────────────────────────────
+  's_41': (sentence: '公園を歩きます。', translation: 'I walk through the park.'),
+  's_42': (sentence: '何を食べますか。', translation: 'What shall we eat?'),
+  's_43': (sentence: 'ジュースを飲みます。', translation: 'I drink juice.'),
+  's_44': (sentence: '毎朝走ります。', translation: 'I run every morning.'),
+  's_45': (sentence: '富士山が見えます。', translation: 'I can see Mount Fuji.'),
+  's_46': (sentence: '夏に泳ぎます。', translation: 'I swim in summer.'),
+  's_47': (sentence: '本を読みます。', translation: 'I read a book.'),
+  's_48': (sentence: '音楽を聴きます。', translation: 'I listen to music.'),
+  's_49': (sentence: '手紙を書きます。', translation: 'I write a letter.'),
+  's_50': (sentence: 'カラオケで歌います。', translation: 'I sing at karaoke.'),
+  // ── Starter places ────────────────────────────────────────────────
+  's_51': (sentence: '学校に行きます。', translation: 'I go to school.'),
+  's_52': (sentence: '新しい店がオープンしました。', translation: 'A new shop opened.'),
+  's_53': (sentence: '駅まで歩きます。', translation: 'I walk to the station.'),
+  's_54': (sentence: 'この道をまっすぐ行ってください。', translation: 'Please go straight on this road.'),
+  's_55': (sentence: '病院に行きます。', translation: 'I go to the hospital.'),
+  's_56': (sentence: '電車はもう来ましたか。', translation: 'Has the train come yet?'),
+  's_57': (sentence: '車で学校に行きます。', translation: 'I go to school by car.'),
+  's_58': (sentence: '図書館で勉強します。', translation: 'I study at the library.'),
+  's_59': (sentence: '空港まで一時間です。', translation: 'It takes one hour to the airport.'),
+  's_60': (sentence: '公園で遊んでいます。', translation: 'They are playing in the park.'),
+  // ── Starter nature ────────────────────────────────────────────────
+  's_61': (sentence: '山が高いです。', translation: 'The mountain is tall.'),
+  's_62': (sentence: '川で魚を釣ります。', translation: 'I fish in the river.'),
+  's_63': (sentence: '花がきれいに咲いています。', translation: 'The flowers are blooming beautifully.'),
+  's_64': (sentence: '木の下に座ります。', translation: 'I sit under the tree.'),
+  's_65': (sentence: '今日の空は青いです。', translation: 'Today\'s sky is blue.'),
+  's_66': (sentence: '雨が降っています。', translation: 'It is raining.'),
+  's_67': (sentence: '雪が降っています。', translation: 'It is snowing.'),
+  's_68': (sentence: '風が強いです。', translation: 'The wind is strong.'),
+  's_69': (sentence: '森の中で散歩します。', translation: 'I walk through the forest.'),
+  's_70': (sentence: '海がとても広いです。', translation: 'The sea is very vast.'),
+  // ── Starter animals ───────────────────────────────────────────────
+  's_71': (sentence: '猫が好きです。', translation: 'I like cats.'),
+  's_72': (sentence: '犬と一緒に歩きます。', translation: 'I walk together with the dog.'),
+  's_73': (sentence: '鳥が空を飛んでいます。', translation: 'Birds are flying in the sky.'),
+  's_74': (sentence: '兎はかわいいです。', translation: 'Rabbits are cute.'),
+  's_75': (sentence: '金魚が水槽の中で泳いでいます。', translation: 'The goldfish is swimming in the tank.'),
+  's_76': (sentence: '牛は牧場にいます。', translation: 'The cow is on the farm.'),
+  's_77': (sentence: '馬に乗るのが好きです。', translation: 'I like riding horses.'),
+  's_78': (sentence: '鶏の卵を買いました。', translation: 'I bought chicken eggs.'),
+  's_79': (sentence: '猿がbananaを食べています。', translation: 'The monkey is eating a banana.'),
+  's_80': (sentence: '羊の毛は柔らかいです。', translation: 'Sheep\'s wool is soft.'),
+  // ── Elementary greetings ──────────────────────────────────────────
+  'e_01': (sentence: 'おはよう、今日もいい天気ですね。', translation: 'Good morning, nice weather today.'),
+  'e_02': (sentence: 'いいえ、違います。', translation: 'No, that is not right.'),
+  'e_03': (sentence: '大丈夫、心配しないで。', translation: 'It\'s okay, don\'t worry.'),
+  'e_04': (sentence: 'お元気ですか。はい、元気です。', translation: 'How are you? I am fine.'),
+  'e_05': (sentence: '試験、頑張って！', translation: 'Good luck on the exam!'),
+  'e_06': (sentence: 'もちろん、一緒に行きます。', translation: 'Of course, I\'ll go with you.'),
+  'e_07': (sentence: 'いただきます、美味しそう！', translation: 'Bon appetit, that looks delicious!'),
+  'e_08': (sentence: 'ごちそうさまでした。とても美味しかったです。', translation: 'Thank you for the meal. It was very delicious.'),
+  'e_09': (sentence: 'わかりました、すぐやります。', translation: 'I understand, I\'ll do it right away.'),
+  'e_10': (sentence: '気をつけて、また明日。', translation: 'Take care, see you tomorrow.'),
+  // ── Elementary home ───────────────────────────────────────────────
+  'e_11': (sentence: '台所で料理を作ります。', translation: 'I cook in the kitchen.'),
+  'e_12': (sentence: '庭に花を植えました。', translation: 'I planted flowers in the garden.'),
+  'e_13': (sentence: '洗濯機が故障しました。', translation: 'The washing machine broke down.'),
+  'e_14': (sentence: 'シャワーを浴びます。', translation: 'I take a shower.'),
+  'e_15': (sentence: '玄関で靴を脱ぎます。', translation: 'I take off my shoes at the entrance.'),
+  'e_16': (sentence: '階段を降ります。', translation: 'I go down the stairs.'),
+  'e_17': (sentence: 'バスルームはとても清潔です。', translation: 'The bathroom is very clean.'),
+  'e_18': (sentence: '洗濯物を干します。', translation: 'I hang the laundry to dry.'),
+  'e_19': (sentence: '部屋の掃除をしました。', translation: 'I cleaned the room.'),
+  'e_20': (sentence: '鍵を忘れました。', translation: 'I forgot my key.'),
+  // ── Elementary people ─────────────────────────────────────────────
+  'e_21': (sentence: '夫は会社で働いています。', translation: 'My husband works at a company.'),
+  'e_22': (sentence: '妻は先生です。', translation: 'My wife is a teacher.'),
+  'e_23': (sentence: '同僚とランチを食べました。', translation: 'I ate lunch with a colleague.'),
+  'e_24': (sentence: '隣の人とても優しいです。', translation: 'My neighbour is very kind.'),
+  'e_25': (sentence: '赤ちゃんが泣いています。', translation: 'The baby is crying.'),
+  'e_26': (sentence: '兄弟で遊びました。', translation: 'The siblings played together.'),
+  'e_27': (sentence: '先輩に質問しました。', translation: 'I asked my senior a question.'),
+  'e_28': (sentence: '後輩を手伝いました。', translation: 'I helped my junior colleague.'),
+  'e_29': (sentence: '仲間と一緒に頑張ります。', translation: 'I\'ll do my best with my comrades.'),
+  'e_30': (sentence: '家族で旅行します。', translation: 'I travel with my family.'),
+  // ── Elementary food ───────────────────────────────────────────────
+  'e_31': (sentence: 'サラダを食べましょう。', translation: 'Let\'s eat salad.'),
+  'e_32': (sentence: '天ぷらが大好きです。', translation: 'I love tempura.'),
+  'e_33': (sentence: 'お酒は飲めません。', translation: 'I cannot drink alcohol.'),
+  'e_34': (sentence: 'コーヒーを一杯ください。', translation: 'One cup of coffee, please.'),
+  'e_35': (sentence: 'お弁当を作りました。', translation: 'I made a lunchbox.'),
+  'e_36': (sentence: 'ケーキを食べましょう。', translation: 'Let\'s eat cake.'),
+  'e_37': (sentence: 'ジュースを冷蔵庫にしまってください。', translation: 'Please put the juice in the fridge.'),
+  'e_38': (sentence: 'バターをパンに塗ります。', translation: 'I spread butter on bread.'),
+  'e_39': (sentence: 'ラーメンを食べに行きましょう。', translation: 'Let\'s go eat ramen.'),
+  'e_40': (sentence: '寿司は新鮮だとおいしいです。', translation: 'Sushi is delicious when fresh.'),
+  // ── Elementary activities ─────────────────────────────────────────
+  'e_41': (sentence: '子供たちが公園で遊んでいます。', translation: 'The children are playing in the park.'),
+  'e_42': (sentence: '新しい本を買いました。', translation: 'I bought a new book.'),
+  'e_43': (sentence: 'このペンを使います。', translation: 'I use this pen.'),
+  'e_44': (sentence: 'バスを待っています。', translation: 'I am waiting for the bus.'),
+  'e_45': (sentence: 'ケーキを作りました。', translation: 'I made a cake.'),
+  'e_46': (sentence: '十一時に寝ます。', translation: 'I go to sleep at eleven.'),
+  'e_47': (sentence: '朝六時に起きます。', translation: 'I wake up at six in the morning.'),
+  'e_48': (sentence: '急いでください。', translation: 'Please hurry.'),
+  'e_49': (sentence: '財布を渡しました。', translation: 'I handed over the wallet.'),
+  'e_50': (sentence: '荷物を手伝ってくれてありがとう。', translation: 'Thank you for helping with the luggage.'),
+  // ── Elementary places ─────────────────────────────────────────────
+  'e_51': (sentence: '地下鉄で駅に行きます。', translation: 'I go to the station by subway.'),
+  'e_52': (sentence: '新幹線はとても速いです。', translation: 'The bullet train is very fast.'),
+  'e_53': (sentence: '橋を渡ります。', translation: 'I cross the bridge.'),
+  'e_54': (sentence: '港に船が来ました。', translation: 'A ship came to the harbour.'),
+  'e_55': (sentence: '新しいビルが建ちました。', translation: 'A new building was built.'),
+  'e_56': (sentence: 'レストランで食べましょう。', translation: 'Let\'s eat at a restaurant.'),
+  'e_57': (sentence: 'ホテルを予約しました。', translation: 'I reserved a hotel.'),
+  'e_58': (sentence: '銀行でお金をおろします。', translation: 'I withdraw money at the bank.'),
+  'e_59': (sentence: '郵便局で手紙を出しました。', translation: 'I mailed a letter at the post office.'),
+  'e_60': (sentence: '市場で新鮮な魚を買います。', translation: 'I buy fresh fish at the market.'),
+  // ── Elementary nature ─────────────────────────────────────────────
+  'e_61': (sentence: '太陽が昇りました。', translation: 'The sun has risen.'),
+  'e_62': (sentence: '月がきれいですね。', translation: 'The moon is beautiful, isn\'t it?'),
+  'e_63': (sentence: '星がたくさん見えます。', translation: 'I can see many stars.'),
+  'e_64': (sentence: 'この島には美しい海があります。', translation: 'This island has beautiful seas.'),
+  'e_65': (sentence: '湖で泳ぎます。', translation: 'I swim in the lake.'),
+  'e_66': (sentence: '紅葉がとてもきれいです。', translation: 'The autumn leaves are very beautiful.'),
+  'e_67': (sentence: '桜が咲きました。', translation: 'The cherry blossoms have bloomed.'),
+  'e_68': (sentence: '台風が来ています。', translation: 'A typhoon is coming.'),
+  'e_69': (sentence: '地震が起きました。', translation: 'An earthquake happened.'),
+  'e_70': (sentence: '景色がすばらしいです。', translation: 'The scenery is wonderful.'),
+  // ── Elementary animals ────────────────────────────────────────────
+  'e_71': (sentence: '象は鼻が長いです。', translation: 'Elephants have long noses.'),
+  'e_72': (sentence: 'ライオンは動物園にいます。', translation: 'The lion is at the zoo.'),
+  'e_73': (sentence: 'パンダが竹を食べています。', translation: 'The panda is eating bamboo.'),
+  'e_74': (sentence: 'イルカが海で泳いでいます。', translation: 'Dolphins are swimming in the sea.'),
+  'e_75': (sentence: '熊が森に住んでいます。', translation: 'Bears live in the forest.'),
+  'e_76': (sentence: '虎はとても強いです。', translation: 'Tigers are very strong.'),
+  'e_77': (sentence: 'ペンギンは寒いところが好きです。', translation: 'Penguins like cold places.'),
+  'e_78': (sentence: 'キツネは夜に活動します。', translation: 'Foxes are active at night.'),
+  'e_79': (sentence: 'カメはゆっくり歩きます。', translation: 'Turtles walk slowly.'),
+  'e_80': (sentence: 'カエルが池に飛びました。', translation: 'The frog jumped into the pond.'),
+};
+
 /// Canonical word bank with duplicates removed.
 /// Removes entries that share the same Japanese text (e.g. N5 extras that
 /// duplicate base-bank words). First occurrence wins, so base-bank IDs
 /// (s_, e_, i_, a_, x_) take precedence and FSRS progress is preserved.
 final wordBank = () {
   final seen = <String>{};
-  return _wordBankRaw.where((w) {
+  final raw = _wordBankRaw.where((w) {
     if (!seen.add(w.id)) return false;
     return seen.add('jp:${w.japanese}');
   }).toList();
+  // Merge example sentences into words that have them.
+  return [
+    for (final w in raw)
+      if (_exampleSentences.containsKey(w.id))
+        Word(
+          id: w.id,
+          japanese: w.japanese,
+          romaji: w.romaji,
+          english: w.english,
+          category: w.category,
+          tier: w.tier,
+          emoji: w.emoji,
+          exampleSentence: _exampleSentences[w.id]!.sentence,
+          exampleTranslation: _exampleSentences[w.id]!.translation,
+        )
+      else
+        w,
+  ];
 }();
 
 /// O(1) lookup by word ID — avoids repeated list scans.

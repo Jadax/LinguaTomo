@@ -4,7 +4,7 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
-## Current version: 1.15.0 (build 27)
+## Current version: 1.16.0 (build 29)
 
 ## Product teaching model
 
@@ -78,6 +78,20 @@ alongside lessons delivered by a learner's own external teacher.
    - Hive initialization error handling (memory-only fallback on failure)
    - SpeechService singleton (prevents multiple TTS native bindings)
 
+6. **Context-first learning (v1.16)**
+   - 160 example sentences for starter and elementary words
+   - Words taught in context before drilling: sentence → word → meaning
+   - Context sentence shown during introduce and quiz phases
+   - XP streak bonus (consecutive-day word learning)
+   - Perfect lesson bonus (+15 XP)
+
+7. **Immersive reader (v1.16)**
+   - Paste or type Japanese text for interactive reading
+   - 6 sample texts at starter through intermediate levels
+   - Tap Japanese segments to look up words from the word bank
+   - Shows word tier, category, growth stage, and example sentence
+   - Known/new word indicators and read-aloud support
+
 2. **Systematic kanji foundation**
    - Licensed KANJIDIC/JMdict data
    - Components, stroke count, vocabulary families, mnemonics
@@ -99,6 +113,7 @@ alongside lessons delivered by a learner's own external teacher.
 ### Remaining
 
 1. Graded readers from N5 to N1 with furigana toggle and dictionary lookup.
+   (Partially addressed: immersive reader with word-bank lookup is live.)
 2. Listening stories with timed text highlighting.
 3. Shadowing, recording and forgiving speech-recognition feedback.
 4. FSI-style situation packs with branching dialogues.

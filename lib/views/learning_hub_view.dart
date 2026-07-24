@@ -16,6 +16,7 @@ import 'seasonal_stories_view.dart';
 import 'cefr_guide_view.dart';
 import 'achievement_tracker_view.dart';
 import 'word_lesson_view.dart';
+import 'immersive_reader_view.dart';
 
 class LearningHubView extends ConsumerWidget {
   const LearningHubView({super.key});
@@ -93,6 +94,15 @@ class LearningHubView extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 14),
+          _LearningTile(
+            icon: Icons.auto_stories_rounded,
+            colour: const Color(0xFFE8F0FE),
+            title: 'Immersive reader',
+            subtitle: 'Paste Japanese text, tap words to look them up',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ImmersiveReaderView()),
+            ),
+          ),
           _LearningTile(
             icon: Icons.route_rounded,
             colour: AppColors.sakura,

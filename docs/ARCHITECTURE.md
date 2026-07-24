@@ -35,7 +35,7 @@ services. Optional cloud state must not block local application startup.
 
 | File | Purpose |
 |------|---------|
-| `data/word_bank.dart` | Main word list (~1,780 words) via spread merges from 10+ files |
+| `data/word_bank.dart` | Main word list (~1,780 words) via spread merges from 10+ files; includes `_exampleSentences` map (160 context sentences for starter/elementary) |
 | `data/word_bank_extras.dart` | 100 additional starter-tier words |
 | `data/words_a1.dart` – `words_n1.dart` | CEFR and JLPT-aligned vocabulary expansions |
 | `data/words_themes_extra.dart` | Extra themed vocabulary |
@@ -79,6 +79,15 @@ Stored domains: learner profile, experience mode, mission and postcard
 progress, handwriting history, FSRS phrase cards, grammar cards, word
 progress (including per-word correct counts for growth stages),
 bookmarks, sync state, weekly challenge progress, and Leo mood state.
+
+## Context-first learning
+
+The `Word` model includes optional `exampleSentence` and `exampleTranslation`
+fields. `word_bank.dart` contains a `_exampleSentences` map (160 entries for
+starter and elementary tiers) that is merged into the word bank at load time.
+`WordLessonView` shows context sentences during the introduce and quiz phases.
+The `ImmersiveReaderView` lets users paste or type Japanese text and tap
+segments to look up words from the word bank.
 
 ## Engagement providers
 

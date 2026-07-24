@@ -1,5 +1,5 @@
 -- LinguaTomo canonical cloud schema.
--- Schema version: 1.15.0 (build 27), July 2026.
+-- Schema version: 1.16.0 (build 29), July 2026.
 -- Reapply this single file after every release. It is safe for both a fresh
 -- project and an existing LinguaTomo project. Local Hive data remains the
 -- offline source of truth. Never place service-role secrets in this file.
