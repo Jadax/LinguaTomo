@@ -37,6 +37,9 @@ final leoMoodProvider = Provider<LeoMood>((ref) {
 
   final words = wordProgress.wordsLearned;
 
+  // A new learner always receives a calm, welcoming first greeting.
+  if (words == 0) return LeoMood.cozy;
+
   // 1. Milestone pride
   if (_wordMilestones.contains(words)) return LeoMood.proud;
 
@@ -52,9 +55,7 @@ final leoMoodProvider = Provider<LeoMood>((ref) {
       : wordProgress.wordActivityDates.reduce(
           (a, b) => a.compareTo(b) > 0 ? a : b,
         );
-  final hasStartedLearning =
-      words > 0 || wordProgress.wordLessonHistory.isNotEmpty;
-  if (hasStartedLearning && lastActive != null) {
+  if (lastActive != null) {
     final lastDate = DateTime.tryParse(lastActive);
     if (lastDate != null) {
       final daysSince = DateTime.now().difference(lastDate).inDays;

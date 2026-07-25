@@ -33,7 +33,7 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 
 Version 1.17.0, build 30 passed the GitHub Web release and Native Quality
 workflows, including analysis, tests, Web, Android and unsigned iOS builds.
-Version 1.17.2, build 32 is the current candidate.
+Version 1.17.3, build 33 is the current candidate.
 
 This release adds Leo mood system, word growth progression, seasonal learning
 cycles, weekly challenges, Hive error handling, and SpeechService singleton fix.
