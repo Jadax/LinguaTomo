@@ -52,7 +52,9 @@ final leoMoodProvider = Provider<LeoMood>((ref) {
       : wordProgress.wordActivityDates.reduce(
           (a, b) => a.compareTo(b) > 0 ? a : b,
         );
-  if (lastActive != null) {
+  final hasStartedLearning =
+      words > 0 || wordProgress.wordLessonHistory.isNotEmpty;
+  if (hasStartedLearning && lastActive != null) {
     final lastDate = DateTime.tryParse(lastActive);
     if (lastDate != null) {
       final daysSince = DateTime.now().difference(lastDate).inDays;
