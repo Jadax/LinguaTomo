@@ -40,6 +40,16 @@ const _sampleTexts = <({String title, String text, DifficultyTier tier})>[
     text: '家族でご飯を食べました。母が作った料理はいつもおいしいです。ごちそうさまでした。',
     tier: DifficultyTier.intermediate,
   ),
+  (
+    title: 'At the ryokan',
+    text: '旅館に泊まりました。畳の部屋でゆっくり過ごしました。お風呂から上がると、おなじみが並んでいました。',
+    tier: DifficultyTier.advanced,
+  ),
+  (
+    title: 'A Kyoto walk',
+    text: '京都の町家を散歩しました。神社にお参りをして、お寺の庭で抹茶を飲みました。',
+    tier: DifficultyTier.advanced,
+  ),
 ];
 
 class ImmersiveReaderView extends ConsumerStatefulWidget {
@@ -56,6 +66,8 @@ class _ImmersiveReaderViewState extends ConsumerState<ImmersiveReaderView> {
   List<_Token> _tokens = [];
   bool _showingDetail = false;
   _Token? _selectedToken;
+  bool _showFurigana = false;
+  final Set<String> _savedFromReader = {};
 
   @override
   void dispose() {
@@ -126,6 +138,12 @@ class _ImmersiveReaderViewState extends ConsumerState<ImmersiveReaderView> {
       _showingDetail = false;
       _selectedToken = null;
     });
+  }
+
+  void _saveWord(Word word) {
+    if (_savedFromReader.contains(word.id)) return;
+    ref.read(wordProgressProvider.notifier).completeWord(word.id);
+    setState(() => _savedFromReader.add(word.id));
   }
 
   @override
@@ -216,6 +234,32 @@ class _ImmersiveReaderViewState extends ConsumerState<ImmersiveReaderView> {
                     ),
                   ),
                   const Spacer(),
+                  GestureDetector(
+                    onTap: () => setState(() => _showFurigana = !_showFurigana),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _showFurigana
+                            ? AppColors.sakura
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'ふりがな',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: _showFurigana
+                              ? AppColors.charcoal
+                              : AppColors.muted,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Text(
                     '${_tokens.where((t) => t.isJapanese).length} segments',
                     style: TextStyle(
@@ -255,7 +299,7 @@ class _ImmersiveReaderViewState extends ConsumerState<ImmersiveReaderView> {
                     ),
                     child: Wrap(
                       spacing: 2,
-                      runSpacing: 4,
+                      runSpacing: _showFurigana ? 2 : 4,
                       children: [
                         for (final token in _tokens)
                           GestureDetector(
@@ -277,16 +321,33 @@ class _ImmersiveReaderViewState extends ConsumerState<ImmersiveReaderView> {
                                       borderRadius: BorderRadius.circular(4),
                                     )
                                   : null,
-                              child: Text(
-                                token.text,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                  color: token.isJapanese
-                                      ? AppColors.charcoal
-                                      : AppColors.muted,
-                                  height: 1.8,
-                                ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (_showFurigana &&
+                                      token.isJapanese &&
+                                      token.lookupResult != null)
+                                    Text(
+                                      token.lookupResult!.romaji,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.muted
+                                            .withValues(alpha: .6),
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                  Text(
+                                    token.text,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w500,
+                                      color: token.isJapanese
+                                          ? AppColors.charcoal
+                                          : AppColors.muted,
+                                      height: 1.8,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -302,6 +363,8 @@ class _ImmersiveReaderViewState extends ConsumerState<ImmersiveReaderView> {
                   token: _selectedToken!,
                   wordProgress: wordProgress,
                   onDismiss: _dismissDetail,
+                  onSave: _saveWord,
+                  isSaved: _savedFromReader.contains(_selectedToken!.lookupResult?.id),
                 ),
               ],
             ],
@@ -370,11 +433,15 @@ class _WordDetailPanel extends StatelessWidget {
     required this.token,
     required this.wordProgress,
     required this.onDismiss,
+    required this.onSave,
+    required this.isSaved,
   });
 
   final _Token token;
   final WordProgress wordProgress;
   final VoidCallback onDismiss;
+  final ValueChanged<Word> onSave;
+  final bool isSaved;
 
   @override
   Widget build(BuildContext context) {
@@ -496,6 +563,32 @@ class _WordDetailPanel extends StatelessWidget {
                         color: AppColors.matcha,
                       ),
                     ],
+                    const Spacer(),
+                    if (!isKnown && !isSaved)
+                      TextButton.icon(
+                        onPressed: () => onSave(word),
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text(
+                          'Add to review',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.persimmon,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                        ),
+                      ),
+                    if (isSaved)
+                      Text(
+                        '✓ Saved',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.matcha,
+                        ),
+                      ),
                   ],
                 ),
               ] else ...[
