@@ -17,7 +17,7 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 | Responsive visual QA | Overflow, clipping and navigation regressions |
 | Secret scan | Prevent credentials or signing material entering Git |
 
-## Current automated tests (16 tests, as of v1.15.0)
+## Current automated tests
 
 - Widget test: LinguaTomo opens loading screen, user picks level, enters app (7 variants).
 - Grammar repository loads exactly 828 records with expected N-level counts.
@@ -31,9 +31,9 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 
 ## Release verification
 
-Version 1.15.0, build 27: Dart static analysis reports no app-code warnings,
-all 16 tests pass, and the Web release builds locally. GitHub Pages deployment
-is automated via CI push to `Jadax/LinguaTomo-Web`.
+Version 1.17.0, build 30 passed the GitHub Web release and Native Quality
+workflows, including analysis, tests, Web, Android and unsigned iOS builds.
+Version 1.17.1, build 31 is the current candidate.
 
 This release adds Leo mood system, word growth progression, seasonal learning
 cycles, weekly challenges, Hive error handling, and SpeechService singleton fix.

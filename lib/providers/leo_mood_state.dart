@@ -4,15 +4,7 @@ import 'app_state.dart';
 import 'word_progress_state.dart';
 import 'review_state.dart';
 
-enum LeoMood {
-  excited,
-  proud,
-  sleepy,
-  curious,
-  playful,
-  encouraging,
-  cozy,
-}
+enum LeoMood { excited, proud, sleepy, curious, playful, encouraging, cozy }
 
 extension LeoMoodX on LeoMood {
   String get label => switch (this) {
@@ -54,7 +46,7 @@ final leoMoodProvider = Provider<LeoMood>((ref) {
   // 3. Due reviews — curious
   if (reviewDeck.dueMissions.isNotEmpty) return LeoMood.curious;
 
-  // 4. Inactivity — sleepy
+  // 4. Inactivity, while a first visit remains a warm welcome.
   final lastActive = wordProgress.wordActivityDates.isEmpty
       ? null
       : wordProgress.wordActivityDates.reduce(
@@ -66,15 +58,12 @@ final leoMoodProvider = Provider<LeoMood>((ref) {
       final daysSince = DateTime.now().difference(lastDate).inDays;
       if (daysSince >= 2) return LeoMood.sleepy;
     }
-  } else if (words == 0) {
-    return LeoMood.sleepy;
   }
 
   // 5. Recent performance — encouraging if few perfects relative to lessons
   final totalLessons = wordProgress.wordLessonHistory.length;
   if (totalLessons >= 3) {
-    final perfectRatio =
-        wordProgress.perfectLessonCount / totalLessons;
+    final perfectRatio = wordProgress.perfectLessonCount / totalLessons;
     if (perfectRatio < 0.4) return LeoMood.encouraging;
   }
 
