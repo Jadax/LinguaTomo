@@ -137,6 +137,8 @@ class DashboardView extends ConsumerWidget {
           if (wordProgress.wordsLearned > 0) ...[
             _WordGardenSummary(wordProgress: wordProgress),
             const SizedBox(height: 12),
+            _WordReviewSummary(wordProgress: wordProgress),
+            const SizedBox(height: 12),
             const _SeasonalCard(),
             const SizedBox(height: 12),
             const _WeeklyChallengeCard(),
@@ -1535,6 +1537,150 @@ class _WordGardenSummary extends StatelessWidget {
       ),
     );
   }
+}
+
+class _WordReviewSummary extends StatelessWidget {
+  const _WordReviewSummary({required this.wordProgress});
+  final WordProgress wordProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final seedCount = wordProgress.wordCorrectCounts.values
+        .where((c) => c == 0)
+        .length;
+    final sproutCount = wordProgress.wordCorrectCounts.values
+        .where((c) => c == 1)
+        .length;
+    final budCount = wordProgress.wordCorrectCounts.values
+        .where((c) => c >= 2 && c < 5)
+        .length;
+    final bloomCount = wordProgress.wordCorrectCounts.values
+        .where((c) => c >= 5)
+        .length;
+    final total = wordProgress.wordsLearned;
+    if (total == 0) return const SizedBox.shrink();
+    final needsReview = seedCount + sproutCount;
+    return Card(
+      margin: EdgeInsets.zero,
+      color: needsReview > 5
+          ? const Color(0xFFFFF3E0)
+          : AppColors.bambooMist.withValues(alpha: .4),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  needsReview > 5 ? '📖 Review needed' : '✨ Word mastery',
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                const Spacer(),
+                if (needsReview > 0)
+                  Text(
+                    '$needsReview need${needsReview == 1 ? 's' : ''} review',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.persimmon,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                _MiniPill(
+                  emoji: '🌱',
+                  count: seedCount,
+                  label: 'New',
+                  color: AppColors.muted,
+                ),
+                const SizedBox(width: 10),
+                _MiniPill(
+                  emoji: '🌿',
+                  count: sproutCount,
+                  label: 'Learning',
+                  color: AppColors.persimmon,
+                ),
+                const SizedBox(width: 10),
+                _MiniPill(
+                  emoji: '🌸',
+                  count: budCount,
+                  label: 'Growing',
+                  color: AppColors.teal,
+                ),
+                const SizedBox(width: 10),
+                _MiniPill(
+                  emoji: '🌺',
+                  count: bloomCount,
+                  label: 'Mastered',
+                  color: AppColors.matcha,
+                ),
+              ],
+            ),
+            if (needsReview > 0) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ReviewView()),
+                  ),
+                  icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                  label: Text(
+                    'Review $needsReview word${needsReview == 1 ? '' : 's'}',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: AppColors.persimmon,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniPill extends StatelessWidget {
+  const _MiniPill({
+    required this.emoji,
+    required this.count,
+    required this.label,
+    required this.color,
+  });
+  final String emoji;
+  final int count;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 16)),
+        const SizedBox(height: 2),
+        Text(
+          '$count',
+          style: TextStyle(fontWeight: FontWeight.w900, color: color),
+        ),
+        Text(
+          label,
+          style: TextStyle(fontSize: 10, color: color.withValues(alpha: .8)),
+        ),
+      ],
+    ),
+  );
 }
 
 class _GrowthPill extends StatelessWidget {
