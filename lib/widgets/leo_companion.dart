@@ -5,7 +5,18 @@ import 'package:flutter/material.dart';
 
 import 'leo_sprite.dart';
 
-enum LeoMood { welcome, cheer, proud, thinking, gentle }
+enum LeoMood {
+  welcome,
+  cheer,
+  proud,
+  thinking,
+  gentle,
+  curious,
+  study,
+  sleepy,
+  affectionate,
+  stretch,
+}
 
 class LeoCompanion extends StatefulWidget {
   const LeoCompanion({
@@ -74,6 +85,11 @@ class _LeoCompanionState extends State<LeoCompanion>
     LeoMood.proud => 'Look how far you have come. I am proud of you.',
     LeoMood.thinking => 'No hurry. Try the sound, shape and meaning together.',
     LeoMood.gentle => 'Mistakes are safe here. Let us have another calm try.',
+    LeoMood.curious => 'Ooh, let us look at that together.',
+    LeoMood.study => 'I saved you a warm spot. Shall we learn one more?',
+    LeoMood.sleepy => 'A small rest counts too. Your progress is safe.',
+    LeoMood.affectionate => 'I am very glad you are here.',
+    LeoMood.stretch => 'A little stretch, then we are ready again!',
   };
 
   LeoPose get _pose => _isMeowing
@@ -84,6 +100,11 @@ class _LeoCompanionState extends State<LeoCompanion>
           LeoMood.proud => LeoPose.sit,
           LeoMood.thinking => LeoPose.butterfly,
           LeoMood.gentle => LeoPose.smile,
+          LeoMood.curious => LeoPose.curious,
+          LeoMood.study => LeoPose.read,
+          LeoMood.sleepy => LeoPose.nap,
+          LeoMood.affectionate => LeoPose.love,
+          LeoMood.stretch => LeoPose.stretch,
         };
 
   @override

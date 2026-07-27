@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../data/character_data.dart';
 import '../models/character_entry.dart';
@@ -291,19 +290,14 @@ class _CharacterDetails extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text('Stroke order', style: Theme.of(context).textTheme.titleMedium),
+          Text('Writing practice', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Card(
             child: SizedBox(
               height: 210,
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: SvgPicture.network(
-                  entry.kanjiVgUrl,
-                  semanticsLabel: '${entry.symbol} stroke order from KanjiVG',
-                  placeholderBuilder: (_) =>
-                      const Center(child: CircularProgressIndicator()),
-                ),
+                child: _StrokeOrderGuide(symbol: entry.symbol),
               ),
             ),
           ),
@@ -379,6 +373,27 @@ class _EmptyResults extends StatelessWidget {
           const Text('Try a character, romaji reading or English meaning.'),
         ],
       ),
+    ),
+  );
+}
+
+class _StrokeOrderGuide extends StatelessWidget {
+  const _StrokeOrderGuide({required this.symbol});
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: 'Writing guide for $symbol',
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(symbol, style: const TextStyle(fontSize: 82, fontWeight: FontWeight.w500)),
+        const SizedBox(height: 8),
+        const Text(
+          'Trace this shape in the writing studio. Leo will keep your practice calm and focused.',
+          textAlign: TextAlign.center,
+        ),
+      ],
     ),
   );
 }

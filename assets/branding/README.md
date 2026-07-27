@@ -12,6 +12,11 @@ image generation tool on 22 July 2026, then reviewed and resized locally. The
 original full-resolution outputs are retained in the Codex generated-images
 workspace for this build.
 
+`leo-loading-garden.png` is the app-owned high-resolution garden scene used by
+both the in-app loading experience and Android's native launch screen. It was
+created specifically for LinguaTomo on 27 July 2026; the scene intentionally
+keeps its foreground clear so Leo can move through it without obscuring detail.
+
 All Nest backgrounds reserve a quiet central or lower-floor display area. The
 application places a maximum of eight earned objects there, keeping the room
 legible on phones and preventing a collection from turning into visual clutter.

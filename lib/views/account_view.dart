@@ -337,7 +337,7 @@ class _CloudSetupCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'To enable Supabase sync, provide the public project URL and anonymous key at build time:',
+            'Cloud backup is not configured for this build.',
           ),
           const SizedBox(height: 8),
           Container(
@@ -348,7 +348,7 @@ class _CloudSetupCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: const SelectableText(
-              'flutter run --dart-define=SUPABASE_URL=https://… --dart-define=SUPABASE_PUBLISHABLE_KEY=…',
+              'Cloud backup can be added in a future private build.',
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'monospace',

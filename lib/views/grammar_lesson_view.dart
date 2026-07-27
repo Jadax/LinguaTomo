@@ -177,7 +177,7 @@ class _GrammarLessonViewState extends ConsumerState<GrammarLessonView> {
               child: Padding(
                 padding: EdgeInsets.all(14),
                 child: Text(
-                  'Source: Hanabira Japanese grammar, CC BY-SA 3.0. Community-reviewed learning material, not an official JLPT question.',
+                  'This lesson is for study and practice, not an official examination question.',
                 ),
               ),
             ),

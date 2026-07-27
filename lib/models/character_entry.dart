@@ -16,8 +16,4 @@ class CharacterEntry {
   final String meaning;
   final List<String> examples;
 
-  String get kanjiVgUrl {
-    final code = symbol.runes.first.toRadixString(16).padLeft(5, '0');
-    return 'https://raw.githubusercontent.com/KanjiVG/kanjivg/master/kanji/$code.svg';
-  }
 }

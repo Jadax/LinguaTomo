@@ -5,7 +5,6 @@ import '../data/grammar_repository.dart';
 import '../models/grammar_models.dart';
 import '../providers/grammar_state.dart';
 import '../theme/app_theme.dart';
-import 'content_sources_view.dart';
 import 'grammar_lesson_view.dart';
 
 class GrammarLibraryView extends ConsumerStatefulWidget {
@@ -27,15 +26,6 @@ class _GrammarLibraryViewState extends ConsumerState<GrammarLibraryView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Grammar Course Atlas'),
-        actions: [
-          IconButton(
-            tooltip: 'Sources and licences',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ContentSourcesView()),
-            ),
-            icon: const Icon(Icons.info_outline_rounded),
-          ),
-        ],
       ),
       body: catalogue.when(
         loading: () => const Center(child: CircularProgressIndicator()),
