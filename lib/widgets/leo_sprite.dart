@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -279,7 +278,7 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen> with SingleTickerPr
                   const SizedBox(height: 18),
                   Text('LinguaTomo', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900)),
                   const SizedBox(height: 6),
-                  Text(_caught ? 'Pick your level to begin!' : 'Leo is warming up your next Japanese adventure...', textAlign: TextAlign.center),
+                  Text(_caught ? 'Pick your level to begin!' : 'Leo is taking a gentle garden walk while we get ready...', textAlign: TextAlign.center),
                   const SizedBox(height: 16),
                   _TierPicker(selectedTier: _selectedTier, onChanged: (tier) {
                     setState(() => _selectedTier = tier);
@@ -299,7 +298,12 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen> with SingleTickerPr
 }
 
 class _LoadingGarden extends StatelessWidget {
-  const _LoadingGarden({required this.controller, required this.caught, required this.walkFrame, required this.reduceMotion});
+  const _LoadingGarden({
+    required this.controller,
+    required this.caught,
+    required this.walkFrame,
+    required this.reduceMotion,
+  });
   final AnimationController controller;
   final bool caught;
   final bool walkFrame;
@@ -313,19 +317,82 @@ class _LoadingGarden extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/branding/leo-loading-garden.png', fit: BoxFit.cover, filterQuality: FilterQuality.high),
-          const DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0x0A000000), Color(0x26000000)]))),
+          Image.asset(
+            'assets/branding/leo-loading-garden.png',
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.high,
+          ),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0x0A000000), Color(0x26000000)],
+              ),
+            ),
+          ),
           AnimatedBuilder(
             animation: controller,
             builder: (context, _) {
-              final travel = caught ? .84 : Curves.easeInOut.transform((math.sin(controller.value * math.pi) + 1) / 2);
-              final leoSize = 108.0;
+              final phase = controller.value;
+              final returnWalk = phase > .5;
+              final journey = returnWalk ? 2 - phase * 2 : phase * 2;
+              final travel = caught
+                  ? .66
+                  : Curves.easeInOutCubic.transform(journey);
+              final inspecting = !caught && phase > .38 && phase < .52;
+              final leoSize = 102.0;
               return LayoutBuilder(builder: (context, bounds) {
-                final left = 12 + travel * (bounds.maxWidth - leoSize - 30);
-                return Stack(clipBehavior: Clip.none, children: [
-                  Positioned(left: left, bottom: 10, child: Transform.flip(flipX: !caught && controller.value > .5, child: LeoSprite(pose: caught ? LeoPose.celebrate : (walkFrame ? LeoPose.walkA : LeoPose.walkB), size: leoSize))),
-                  Positioned(left: caught ? bounds.maxWidth - 54 : left + 70, bottom: caught ? 108 : 100, child: Text(caught ? '✦' : '🦋', style: const TextStyle(fontSize: 24))),
-                ]);
+                final left = 12 + travel * (bounds.maxWidth - leoSize - 26);
+                final walking = !caught && !inspecting;
+                final pose = caught
+                    ? LeoPose.sit
+                    : inspecting
+                    ? LeoPose.curious
+                    : (walkFrame ? LeoPose.walkA : LeoPose.walkB);
+                final bob = walking && !reduceMotion
+                    ? (walkFrame ? 2.0 : 0.0)
+                    : 0.0;
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned(
+                      left: left + leoSize * .19,
+                      bottom: 12,
+                      child: Container(
+                        width: leoSize * .62,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          color: const Color(0x33000000),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x22000000),
+                              blurRadius: 7,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: left,
+                      bottom: 13 + bob,
+                      child: Transform.flip(
+                        flipX: returnWalk,
+                        child: LeoSprite(
+                          pose: pose,
+                          size: leoSize,
+                          semanticLabel: inspecting
+                              ? 'Leo pauses to smell the garden flowers'
+                              : caught
+                              ? 'Leo is resting in the garden'
+                              : 'Leo is walking through the garden',
+                        ),
+                      ),
+                    ),
+                  ],
+                );
               });
             },
           ),
