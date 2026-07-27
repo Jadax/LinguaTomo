@@ -338,12 +338,17 @@ class _LoadingGarden extends StatelessWidget {
               final returnWalk = phase > .5;
               final journey = returnWalk ? 2 - phase * 2 : phase * 2;
               final travel = caught
-                  ? .66
+                  ? .78
                   : Curves.easeInOutCubic.transform(journey);
               final inspecting = !caught && phase > .38 && phase < .52;
-              final leoSize = 102.0;
+              final leoSize = 86.0;
               return LayoutBuilder(builder: (context, bounds) {
-                final left = 12 + travel * (bounds.maxWidth - leoSize - 26);
+                // The painted stepping stones travel from the lower-left
+                // foreground toward the central clearing. Keep Leo on that
+                // route rather than sliding over the flower beds.
+                final left = bounds.maxWidth * (.24 + .20 * travel) -
+                    leoSize / 2;
+                final bottom = bounds.maxHeight * (.02 + .27 * travel);
                 final walking = !caught && !inspecting;
                 final pose = caught
                     ? LeoPose.sit
@@ -358,7 +363,7 @@ class _LoadingGarden extends StatelessWidget {
                   children: [
                     Positioned(
                       left: left + leoSize * .19,
-                      bottom: 12,
+                      bottom: bottom - 1,
                       child: Container(
                         width: leoSize * .62,
                         height: 11,
@@ -377,7 +382,7 @@ class _LoadingGarden extends StatelessWidget {
                     ),
                     Positioned(
                       left: left,
-                      bottom: 13 + bob,
+                      bottom: bottom + bob,
                       child: Transform.flip(
                         flipX: returnWalk,
                         child: LeoSprite(

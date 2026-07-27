@@ -26,6 +26,8 @@ abstract final class CloudBootstrap {
 class CloudService {
   const CloudService();
 
+  static final _emailPattern = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+
   bool get isConfigured => CloudConfig.isConfigured;
 
   SupabaseClient? get _client => isConfigured && CloudBootstrap.isInitialised
@@ -42,8 +44,12 @@ class CloudService {
     if (client == null) {
       throw StateError('Cloud sync is not configured.');
     }
+    final address = email.trim().toLowerCase();
+    if (!_emailPattern.hasMatch(address)) {
+      throw ArgumentError.value(email, 'email', 'Enter a valid email address.');
+    }
     await client.auth.signInWithOtp(
-      email: email.trim(),
+      email: address,
       emailRedirectTo: kIsWeb
           ? Uri.base.resolve('.').toString()
           : 'com.astraiva.linguatomo://login-callback/',

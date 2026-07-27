@@ -27,6 +27,8 @@ class _AccountViewState extends ConsumerState<AccountView> {
   StreamSubscription<dynamic>? _authSubscription;
   bool _leaderboardOptIn = false;
   bool _savingProfile = false;
+  int _resendSeconds = 0;
+  Timer? _resendTimer;
 
   @override
   void initState() {
@@ -47,6 +49,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
   @override
   void dispose() {
     _authSubscription?.cancel();
+    _resendTimer?.cancel();
     _emailController.dispose();
     _nicknameController.dispose();
     super.dispose();
@@ -119,6 +122,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
   }
 
   Future<void> _sendLink() async {
+    if (_resendSeconds > 0) return;
     if (!_emailController.text.contains('@')) {
       setState(() => _message = 'Enter a valid email address.');
       return;
@@ -131,9 +135,13 @@ class _AccountViewState extends ConsumerState<AccountView> {
       await _cloud.sendMagicLink(_emailController.text);
       if (mounted) {
         setState(
-          () => _message = 'Check your email for a secure sign-in link.',
+          () => _message =
+              'A secure sign-in link is on its way. Check your inbox and spam folder.',
         );
+        _startResendCountdown();
       }
+    } on ArgumentError catch (error) {
+      if (mounted) setState(() => _message = error.message?.toString());
     } catch (_) {
       if (mounted) {
         setState(
@@ -144,6 +152,19 @@ class _AccountViewState extends ConsumerState<AccountView> {
     } finally {
       if (mounted) setState(() => _sending = false);
     }
+  }
+
+  void _startResendCountdown() {
+    _resendTimer?.cancel();
+    setState(() => _resendSeconds = 45);
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _resendSeconds <= 1) {
+        timer.cancel();
+        if (mounted) setState(() => _resendSeconds = 0);
+        return;
+      }
+      setState(() => _resendSeconds--);
+    });
   }
 
   @override
@@ -183,6 +204,9 @@ class _AccountViewState extends ConsumerState<AccountView> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         autofillHints: const [AutofillHints.email],
+                        textInputAction: TextInputAction.done,
+                        autocorrect: false,
+                        onSubmitted: (_) => _sendLink(),
                         decoration: const InputDecoration(
                           labelText: 'Email address',
                           prefixIcon: Icon(Icons.email_outlined),
@@ -190,11 +214,22 @@ class _AccountViewState extends ConsumerState<AccountView> {
                       ),
                       const SizedBox(height: 10),
                       FilledButton.icon(
-                        onPressed: _sending ? null : _sendLink,
+                        onPressed: _sending || _resendSeconds > 0
+                            ? null
+                            : _sendLink,
                         icon: const Icon(Icons.mark_email_read_outlined),
                         label: Text(
-                          _sending ? 'Sending…' : 'Email me a sign-in link',
+                          _sending
+                              ? 'Sending…'
+                              : _resendSeconds > 0
+                              ? 'Resend in $_resendSeconds seconds'
+                              : 'Email me a sign-in link',
                         ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'The link is valid for one sign-in. If it does not arrive after a minute, check spam, then resend it here.',
+                        style: TextStyle(color: AppColors.muted),
                       ),
                     ],
                   ),
@@ -299,7 +334,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LinguaTomo 1.17.0',
+                      'LinguaTomo 1.17.6',
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     SizedBox(height: 4),
