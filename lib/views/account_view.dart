@@ -334,7 +334,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LinguaTomo 1.17.6',
+                      'LinguaTomo 1.17.7',
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     SizedBox(height: 4),
@@ -371,9 +371,7 @@ class _CloudSetupCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Cloud backup is not configured for this build.',
-          ),
+          const Text('Cloud backup is not configured for this build.'),
           const SizedBox(height: 8),
           Container(
             width: double.infinity,

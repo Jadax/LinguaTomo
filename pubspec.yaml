@@ -1,7 +1,7 @@
 name: linguatomo
 description: LinguaTomo, a warm Japanese learning companion by Tushant Sharma and Astraiva.
 publish_to: none
-version: 1.17.6+36
+version: 1.17.7+37
 
 environment:
   sdk: ^3.12.2
@@ -10,16 +10,16 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  flutter_riverpod: ^3.3.2
+  flutter_riverpod: ^3.4.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   image_picker: ^1.2.3
   google_mlkit_text_recognition: ^0.16.0
-  share_plus: ^13.2.1
+  share_plus: ^13.3.0
   fsrs: ^2.0.1
   supabase_flutter: ^2.16.0
   flutter_tts: ^4.2.5
-  connectivity_plus: ^7.3.0
+  connectivity_plus: ^7.3.1
   audioplayers: ^6.8.1
 
 dev_dependencies:

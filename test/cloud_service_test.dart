@@ -9,4 +9,10 @@ void main() {
     expect(service.currentUser, isNull);
     expect(await service.authChanges.isEmpty, isTrue);
   });
+
+  test('email-link validation rejects malformed addresses locally', () {
+    expect(CloudService.isValidEmail('learner@example.com'), isTrue);
+    expect(CloudService.isValidEmail('learner'), isFalse);
+    expect(CloudService.isValidEmail('learner@'), isFalse);
+  });
 }

@@ -28,6 +28,9 @@ class CloudService {
 
   static final _emailPattern = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
 
+  static bool isValidEmail(String value) =>
+      _emailPattern.hasMatch(value.trim());
+
   bool get isConfigured => CloudConfig.isConfigured;
 
   SupabaseClient? get _client => isConfigured && CloudBootstrap.isInitialised
@@ -40,13 +43,13 @@ class CloudService {
       _client?.auth.onAuthStateChange ?? const Stream<AuthState>.empty();
 
   Future<void> sendMagicLink(String email) async {
+    final address = email.trim().toLowerCase();
+    if (!isValidEmail(address)) {
+      throw ArgumentError.value(email, 'email', 'Enter a valid email address.');
+    }
     final client = _client;
     if (client == null) {
       throw StateError('Cloud sync is not configured.');
-    }
-    final address = email.trim().toLowerCase();
-    if (!_emailPattern.hasMatch(address)) {
-      throw ArgumentError.value(email, 'email', 'Enter a valid email address.');
     }
     await client.auth.signInWithOtp(
       email: address,

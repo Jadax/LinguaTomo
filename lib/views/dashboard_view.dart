@@ -127,10 +127,7 @@ class DashboardView extends ConsumerWidget {
           const SizedBox(height: 6),
           _LeoMoodGreeting(),
           const SizedBox(height: 10),
-          _TrophyShelf(
-            unlocked: unlockedTrophies,
-            total: trophies.length,
-          ),
+          _TrophyShelf(unlocked: unlockedTrophies, total: trophies.length),
           const SizedBox(height: 14),
           _ContinueLearningCard(wordProgress: wordProgress),
           const SizedBox(height: 12),
@@ -238,7 +235,7 @@ class DashboardView extends ConsumerWidget {
                   title: 'Snap & Grade',
                   subtitle: 'Check paper writing',
                   color: AppColors.sakura,
-                  onTap: () => AppNavigation.goTo?.call(2),
+                  onTap: () => AppNavigation.goTo?.call(3),
                 ),
               ),
               const SizedBox(width: 10),
@@ -323,9 +320,9 @@ class _NextCanDoCard extends ConsumerWidget {
       margin: EdgeInsets.zero,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const ReviewView()),
-        ),
+        onTap: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -364,8 +361,11 @@ class _NextCanDoCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_rounded,
-                  size: 16, color: AppColors.muted),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: AppColors.muted,
+              ),
             ],
           ),
         ),
@@ -395,7 +395,10 @@ class _ConversationCard extends StatelessWidget {
             children: [
               Text(
                 pair.question,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               Text(
                 pair.questionRomaji,
@@ -406,10 +409,7 @@ class _ConversationCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                pair.answer,
-                style: const TextStyle(fontSize: 16),
-              ),
+              Text(pair.answer, style: const TextStyle(fontSize: 16)),
               Text(
                 pair.answerRomaji,
                 style: const TextStyle(
@@ -499,7 +499,10 @@ class _ConversationCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 pair.question,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               Text(
                 pair.questionRomaji,
@@ -512,10 +515,7 @@ class _ConversationCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 pair.answer,
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: AppColors.muted,
-                ),
+                style: const TextStyle(fontSize: 15, color: AppColors.muted),
               ),
               Text(
                 pair.answerRomaji,
@@ -616,10 +616,7 @@ class _LevelPickerCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(
-                Icons.swap_horiz_rounded,
-                color: AppColors.muted,
-              ),
+              const Icon(Icons.swap_horiz_rounded, color: AppColors.muted),
             ],
           ),
         ),
@@ -660,12 +657,8 @@ class _LevelPickerCard extends ConsumerWidget {
                       // ignore: deprecated_member_use
                       onChanged: (value) {
                         if (value == null) return;
-                        ref
-                            .read(levelPrefsProvider.notifier)
-                            .setLevel(value);
-                        ref
-                            .read(wordProgressProvider.notifier)
-                            .setTier(value);
+                        ref.read(levelPrefsProvider.notifier).setLevel(value);
+                        ref.read(wordProgressProvider.notifier).setTier(value);
                         Navigator.pop(context);
                       },
                       title: Text(
@@ -860,13 +853,14 @@ class _NestRoomState extends State<_NestRoom> {
                 child: GestureDetector(
                   onTap: _moveLeo,
                   child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 1.0, end: _reaction != null ? 1.08 : 1.0),
+                    tween: Tween(
+                      begin: 1.0,
+                      end: _reaction != null ? 1.08 : 1.0,
+                    ),
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.elasticOut,
-                    builder: (context, value, child) => Transform.scale(
-                      scale: value,
-                      child: child,
-                    ),
+                    builder: (context, value, child) =>
+                        Transform.scale(scale: value, child: child),
                     child: LeoSprite(
                       pose: _walking
                           ? (_step ? LeoPose.walkA : LeoPose.walkB)
@@ -983,8 +977,10 @@ class _WeeklyChallengeCard extends ConsumerWidget {
                 const Spacer(),
                 if (challenge.completed)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.matcha.withValues(alpha: .15),
                       borderRadius: BorderRadius.circular(12),
@@ -1012,10 +1008,7 @@ class _WeeklyChallengeCard extends ConsumerWidget {
             const SizedBox(height: 6),
             Text(
               challenge.challengeType.label,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-              ),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 4),
             Text(
@@ -1025,8 +1018,11 @@ class _WeeklyChallengeCard extends ConsumerWidget {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.local_fire_department_rounded,
-                    size: 16, color: AppColors.persimmon),
+                const Icon(
+                  Icons.local_fire_department_rounded,
+                  size: 16,
+                  color: AppColors.persimmon,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   '${challenge.streakWeeks} week streak',
@@ -1036,8 +1032,11 @@ class _WeeklyChallengeCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Icon(Icons.emoji_events_rounded,
-                    size: 16, color: AppColors.persimmon),
+                const Icon(
+                  Icons.emoji_events_rounded,
+                  size: 16,
+                  color: AppColors.persimmon,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   'Best: ${challenge.bestScore}%',
@@ -1067,7 +1066,9 @@ class _SeasonalEventCardState extends ConsumerState<_SeasonalEventCard> {
   void initState() {
     super.initState();
     // Quietly remember that the learner experienced today's festival windows.
-    Future.microtask(() => ref.read(festivalMemoryProvider.notifier).markToday());
+    Future.microtask(
+      () => ref.read(festivalMemoryProvider.notifier).markToday(),
+    );
   }
 
   @override
@@ -1152,12 +1153,12 @@ class _ContinueLearningCard extends StatelessWidget {
                   wordProgress.currentTier == DifficultyTier.starter
                       ? '📖'
                       : wordProgress.currentTier == DifficultyTier.elementary
-                          ? '📚'
-                          : wordProgress.currentTier == DifficultyTier.intermediate
-                              ? '🎓'
-                              : wordProgress.currentTier == DifficultyTier.advanced
-                                  ? '🌟'
-                                  : '🏆',
+                      ? '📚'
+                      : wordProgress.currentTier == DifficultyTier.intermediate
+                      ? '🎓'
+                      : wordProgress.currentTier == DifficultyTier.advanced
+                      ? '🌟'
+                      : '🏆',
                   style: const TextStyle(fontSize: 28),
                 ),
               ),
@@ -1197,8 +1198,7 @@ class _ContinueLearningCard extends StatelessWidget {
 
   void _showThemePicker(BuildContext context, WordProgress wp) {
     final categories = WordCategory.values.where((cat) {
-      return wordBank
-          .any((w) => w.category == cat && w.tier == wp.currentTier);
+      return wordBank.any((w) => w.category == cat && w.tier == wp.currentTier);
     }).toList();
     showModalBottomSheet(
       context: context,
@@ -1218,9 +1218,9 @@ class _ContinueLearningCard extends StatelessWidget {
               children: [
                 Text(
                   '${wp.currentTier.label} themes',
-                  style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                  style: Theme.of(
+                    ctx,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -1239,20 +1239,27 @@ class _ContinueLearningCard extends StatelessWidget {
                             context: ctx,
                             cat: categories[i],
                             colour: _colours[i % _colours.length],
-                            done: wp.categoryProgress(categories[i], wp.currentTier),
+                            done: wp.categoryProgress(
+                              categories[i],
+                              wp.currentTier,
+                            ),
                             total: wordBank
-                                .where((w) =>
-                                    w.category == categories[i] &&
-                                    w.tier == wp.currentTier)
+                                .where(
+                                  (w) =>
+                                      w.category == categories[i] &&
+                                      w.tier == wp.currentTier,
+                                )
                                 .length,
                             onTap: () {
                               Navigator.pop(ctx);
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => WordLessonView(
-                                  filterCategory: categories[i],
-                                  filterTier: wp.currentTier,
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => WordLessonView(
+                                    filterCategory: categories[i],
+                                    filterTier: wp.currentTier,
+                                  ),
                                 ),
-                              ));
+                              );
                             },
                           ),
                       ],
@@ -1329,9 +1336,14 @@ class _ContinueLearningCard extends StatelessWidget {
   }
 
   static const _colours = [
-    Color(0xFFFFF0E8), Color(0xFFF0F4FF), Color(0xFFE8F5E9),
-    Color(0xFFFFF3E0), Color(0xFFF3E5F5), Color(0xFFFFFDE7),
-    Color(0xFFE0F7FA), Color(0xFFFFE0E0),
+    Color(0xFFFFF0E8),
+    Color(0xFFF0F4FF),
+    Color(0xFFE8F5E9),
+    Color(0xFFFFF3E0),
+    Color(0xFFF3E5F5),
+    Color(0xFFFFFDE7),
+    Color(0xFFE0F7FA),
+    Color(0xFFFFE0E0),
   ];
 }
 
@@ -1464,10 +1476,7 @@ class _LeoMoodGreeting extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    mood.greeting,
-                    style: const TextStyle(fontSize: 13),
-                  ),
+                  Text(mood.greeting, style: const TextStyle(fontSize: 13)),
                 ],
               ),
             ),
@@ -1493,10 +1502,10 @@ class _WordGardenSummary extends StatelessWidget {
       final stage = count >= 5
           ? WordGrowthStage.bloom
           : count >= 3
-              ? WordGrowthStage.bud
-              : count >= 1
-                  ? WordGrowthStage.sprout
-                  : WordGrowthStage.seed;
+          ? WordGrowthStage.bud
+          : count >= 1
+          ? WordGrowthStage.sprout
+          : WordGrowthStage.seed;
       counts[stage] = (counts[stage] ?? 0) + 1;
     }
     final learned = wordProgress.wordsLearned;
@@ -1625,9 +1634,9 @@ class _WordReviewSummary extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ReviewView()),
-                  ),
+                  onPressed: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
                   icon: const Icon(Icons.play_arrow_rounded, size: 20),
                   label: Text(
                     'Review $needsReview word${needsReview == 1 ? '' : 's'}',
@@ -1699,14 +1708,8 @@ class _GrowthPill extends StatelessWidget {
     children: [
       Text(emoji, style: const TextStyle(fontSize: 24)),
       const SizedBox(height: 4),
-      Text(
-        '$count',
-        style: const TextStyle(fontWeight: FontWeight.w900),
-      ),
-      Text(
-        label,
-        style: const TextStyle(fontSize: 11, color: AppColors.muted),
-      ),
+      Text('$count', style: const TextStyle(fontWeight: FontWeight.w900)),
+      Text(label, style: const TextStyle(fontSize: 11, color: AppColors.muted)),
     ],
   );
 }
@@ -1727,7 +1730,9 @@ class _DailyXpGoal extends StatelessWidget {
         .where((entry) => entry.split(',').isNotEmpty)
         .length;
     // Rough estimate: 5 words per lesson × 10 XP per word = ~50 per lesson.
-    final estimatedTodayXp = isTodayActive ? (lessonsToday * 50).clamp(0, _dailyGoal) : 0;
+    final estimatedTodayXp = isTodayActive
+        ? (lessonsToday * 50).clamp(0, _dailyGoal)
+        : 0;
     final progress = (estimatedTodayXp / _dailyGoal).clamp(0.0, 1.0);
     return Card(
       margin: EdgeInsets.zero,
@@ -1759,7 +1764,9 @@ class _DailyXpGoal extends StatelessWidget {
                     value: progress,
                     minHeight: 6,
                     backgroundColor: AppColors.bambooMist,
-                    color: progress >= 1.0 ? AppColors.matcha : AppColors.persimmon,
+                    color: progress >= 1.0
+                        ? AppColors.matcha
+                        : AppColors.persimmon,
                   ),
                 ],
               ),

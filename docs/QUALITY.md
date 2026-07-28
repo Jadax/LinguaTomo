@@ -31,15 +31,16 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 
 ## Release verification
 
-Version 1.17.0, build 30 passed the GitHub Web release and Native Quality
-workflows, including analysis, tests, Web, Android and unsigned iOS builds.
-Version 1.17.3, build 33 is the current candidate.
+Version 1.17.7, build 37 passed local analysis, all 17 automated tests, a Web
+release build, and an Android App Bundle build. Store publication additionally
+requires the private Android upload key.
 
 This release adds Leo mood system, word growth progression, seasonal learning
 cycles, weekly challenges, Hive error handling, and SpeechService singleton fix.
 
 The next stability tests should cover Hive restoration, FSRS persistence,
-placement boundaries, cloud-disabled account screens and OCR service fallbacks.
+placement boundaries, magic-link delivery on both supported targets, and OCR
+service fallbacks.
 
 ## Known platform limitations
 

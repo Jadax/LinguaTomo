@@ -123,7 +123,10 @@ class _LeoPoseArt extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.center,
         children: [
-          CustomPaint(painter: _LeoSpritePainter(sheet, _frame), size: Size.square(size)),
+          CustomPaint(
+            painter: _LeoSpritePainter(sheet, _frame),
+            size: Size.square(size),
+          ),
           if (pose == LeoPose.read)
             Positioned(
               bottom: size * .11,
@@ -156,7 +159,12 @@ class _LeoSpritePainter extends CustomPainter {
       cellWidth,
       cellHeight,
     );
-    canvas.drawImageRect(sheet, source, Offset.zero & size, Paint()..filterQuality = FilterQuality.high);
+    canvas.drawImageRect(
+      sheet,
+      source,
+      Offset.zero & size,
+      Paint()..filterQuality = FilterQuality.high,
+    );
   }
 
   @override
@@ -173,12 +181,22 @@ class _LeoBadge extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      color: pose == LeoPose.love ? const Color(0xFFFFE0E4) : Colors.white.withValues(alpha: .92),
+      color: pose == LeoPose.love
+          ? const Color(0xFFFFE0E4)
+          : Colors.white.withValues(alpha: .92),
       boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 5)],
     ),
     child: Padding(
       padding: const EdgeInsets.all(5),
-      child: Text(text, style: TextStyle(color: pose == LeoPose.love ? const Color(0xFFD94F45) : const Color(0xFF2D3436), fontWeight: FontWeight.w900)),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: pose == LeoPose.love
+              ? const Color(0xFFD94F45)
+              : const Color(0xFF2D3436),
+          fontWeight: FontWeight.w900,
+        ),
+      ),
     ),
   );
 }
@@ -192,10 +210,21 @@ class _LeoProp extends StatelessWidget {
   Widget build(BuildContext context) => Transform.rotate(
     angle: -.10,
     child: DecoratedBox(
-      decoration: BoxDecoration(color: Colors.white, border: Border.all(color: colour, width: 2), borderRadius: BorderRadius.circular(4)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: colour, width: 2),
+        borderRadius: BorderRadius.circular(4),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-        child: Text(label, style: TextStyle(fontSize: 10, color: colour, fontWeight: FontWeight.w900)),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: colour,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ),
     ),
   );
@@ -219,7 +248,8 @@ class LeoLoadingScreen extends StatefulWidget {
   State<LeoLoadingScreen> createState() => _LeoLoadingScreenState();
 }
 
-class _LeoLoadingScreenState extends State<LeoLoadingScreen> with SingleTickerProviderStateMixin {
+class _LeoLoadingScreenState extends State<LeoLoadingScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   Timer? _stepTimer;
   bool _walkFrame = false;
@@ -229,7 +259,10 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 3600));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3600),
+    );
     if (widget.reduceMotion) {
       _controller.value = 1;
     } else {
@@ -274,19 +307,42 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen> with SingleTickerPr
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _LoadingGarden(controller: _controller, caught: _caught, walkFrame: _walkFrame, reduceMotion: widget.reduceMotion),
+                  _LoadingGarden(
+                    controller: _controller,
+                    caught: _caught,
+                    walkFrame: _walkFrame,
+                    reduceMotion: widget.reduceMotion,
+                  ),
                   const SizedBox(height: 18),
-                  Text('LinguaTomo', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900)),
+                  Text(
+                    'LinguaTomo',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  Text(_caught ? 'Pick your level to begin!' : 'Leo is taking a gentle garden walk while we get ready...', textAlign: TextAlign.center),
+                  Text(
+                    _caught
+                        ? 'Pick your level to begin!'
+                        : 'Leo is taking a gentle garden walk while we get ready...',
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 16),
-                  _TierPicker(selectedTier: _selectedTier, onChanged: (tier) {
-                    setState(() => _selectedTier = tier);
-                    widget.onTierSelected?.call(tier);
-                  }),
+                  _TierPicker(
+                    selectedTier: _selectedTier,
+                    onChanged: (tier) {
+                      setState(() => _selectedTier = tier);
+                      widget.onTierSelected?.call(tier);
+                    },
+                  ),
                   const SizedBox(height: 12),
                   if (_caught)
-                    FilledButton(onPressed: _selectedTier == null ? null : widget.onFinished, child: const Text('Start learning')),
+                    FilledButton(
+                      onPressed: _selectedTier == null
+                          ? null
+                          : widget.onFinished,
+                      child: const Text('Start learning'),
+                    ),
                 ],
               ),
             ),
@@ -342,63 +398,65 @@ class _LoadingGarden extends StatelessWidget {
                   : Curves.easeInOutCubic.transform(journey);
               final inspecting = !caught && phase > .38 && phase < .52;
               final leoSize = 86.0;
-              return LayoutBuilder(builder: (context, bounds) {
-                // The painted stepping stones travel from the lower-left
-                // foreground toward the central clearing. Keep Leo on that
-                // route rather than sliding over the flower beds.
-                final left = bounds.maxWidth * (.24 + .20 * travel) -
-                    leoSize / 2;
-                final bottom = bounds.maxHeight * (.02 + .27 * travel);
-                final walking = !caught && !inspecting;
-                final pose = caught
-                    ? LeoPose.sit
-                    : inspecting
-                    ? LeoPose.curious
-                    : (walkFrame ? LeoPose.walkA : LeoPose.walkB);
-                final bob = walking && !reduceMotion
-                    ? (walkFrame ? 2.0 : 0.0)
-                    : 0.0;
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned(
-                      left: left + leoSize * .19,
-                      bottom: bottom - 1,
-                      child: Container(
-                        width: leoSize * .62,
-                        height: 11,
-                        decoration: BoxDecoration(
-                          color: const Color(0x33000000),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x22000000),
-                              blurRadius: 7,
-                              spreadRadius: 2,
-                            ),
-                          ],
+              return LayoutBuilder(
+                builder: (context, bounds) {
+                  // The painted stepping stones travel from the lower-left
+                  // foreground toward the central clearing. Keep Leo on that
+                  // route rather than sliding over the flower beds.
+                  final left =
+                      bounds.maxWidth * (.24 + .20 * travel) - leoSize / 2;
+                  final bottom = bounds.maxHeight * (.02 + .27 * travel);
+                  final walking = !caught && !inspecting;
+                  final pose = caught
+                      ? LeoPose.sit
+                      : inspecting
+                      ? LeoPose.curious
+                      : (walkFrame ? LeoPose.walkA : LeoPose.walkB);
+                  final bob = walking && !reduceMotion
+                      ? (walkFrame ? 2.0 : 0.0)
+                      : 0.0;
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: left + leoSize * .19,
+                        bottom: bottom - 1,
+                        child: Container(
+                          width: leoSize * .62,
+                          height: 11,
+                          decoration: BoxDecoration(
+                            color: const Color(0x33000000),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x22000000),
+                                blurRadius: 7,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      left: left,
-                      bottom: bottom + bob,
-                      child: Transform.flip(
-                        flipX: returnWalk,
-                        child: LeoSprite(
-                          pose: pose,
-                          size: leoSize,
-                          semanticLabel: inspecting
-                              ? 'Leo pauses to smell the garden flowers'
-                              : caught
-                              ? 'Leo is resting in the garden'
-                              : 'Leo is walking through the garden',
+                      Positioned(
+                        left: left,
+                        bottom: bottom + bob,
+                        child: Transform.flip(
+                          flipX: returnWalk,
+                          child: LeoSprite(
+                            pose: pose,
+                            size: leoSize,
+                            semanticLabel: inspecting
+                                ? 'Leo pauses to smell the garden flowers'
+                                : caught
+                                ? 'Leo is resting in the garden'
+                                : 'Leo is walking through the garden',
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              });
+                    ],
+                  );
+                },
+              );
             },
           ),
         ],
@@ -415,18 +473,33 @@ class _TierPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RadioGroup<DifficultyTier>(
     groupValue: selectedTier,
-    onChanged: (value) { if (value != null) onChanged(value); },
+    onChanged: (value) {
+      if (value != null) onChanged(value);
+    },
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Choose your level', style: Theme.of(context).textTheme.titleMedium, textAlign: TextAlign.center),
+        Text(
+          'Choose your level',
+          style: Theme.of(context).textTheme.titleMedium,
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 8),
         for (final tier in DifficultyTier.values)
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
             child: Card(
-              color: selectedTier == tier ? const Color(0xFFD4EDDA) : Colors.white,
-              child: RadioListTile<DifficultyTier>(value: tier, title: Text(tier.label, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text(tier.description)),
+              color: selectedTier == tier
+                  ? const Color(0xFFD4EDDA)
+                  : Colors.white,
+              child: RadioListTile<DifficultyTier>(
+                value: tier,
+                title: Text(
+                  tier.label,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                subtitle: Text(tier.description),
+              ),
             ),
           ),
       ],

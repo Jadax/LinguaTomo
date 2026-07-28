@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,7 +34,12 @@ Future<void> main() async {
     // The app stores null-safe fallbacks in every provider's _box getter, so
     // learning continues in memory-only mode until the next launch.
   }
-  await CloudBootstrap.initialize();
+  try {
+    await CloudBootstrap.initialize();
+  } catch (_) {
+    // Account services are an optional enhancement. A transient network or
+    // platform failure must never stop a learner opening their local course.
+  }
   runApp(const ProviderScope(child: LinguaTomoApp()));
 }
 
@@ -61,7 +66,7 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
 
   /// The loading screen stays up until the app is genuinely ready: core
   /// artwork is cached, the first frames have rendered, and a short minimum
-  /// dwell has passed so Leo's butterfly chase never feels cut short.
+  /// dwell has passed so Leo's garden walk never feels cut short.
   Future<void> _prepare() async {
     final minimum = Future<void>.delayed(const Duration(milliseconds: 2400));
     final artwork = _precacheArtwork();
@@ -112,16 +117,13 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
                     ? Hive.box<dynamic>(StorageKeys.userData)
                     : null;
                 box?.put('level_prefs_v1', tier.name);
-                box?.put(
-                  'word_progress_v1',
-                  {
-                    'completedWords': <String>[],
-                    'currentTier': tier.name,
-                    'wordLessonHistory': <String>[],
-                    'perfectLessonCount': 0,
-                    'wordActivityDates': <String>[],
-                  },
-                );
+                box?.put('word_progress_v1', {
+                  'completedWords': <String>[],
+                  'currentTier': tier.name,
+                  'wordLessonHistory': <String>[],
+                  'perfectLessonCount': 0,
+                  'wordActivityDates': <String>[],
+                });
               },
               onFinished: () {
                 if (!mounted) return;
@@ -129,13 +131,10 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
                   final box = Hive.isBoxOpen(StorageKeys.userData)
                       ? Hive.box<dynamic>(StorageKeys.userData)
                       : null;
-                  box?.put(
-                    'learner_profile_v1',
-                    {
-                      'start': _loadingTier!.name,
-                      'onboardingComplete': true,
-                    },
-                  );
+                  box?.put('learner_profile_v1', {
+                    'start': _loadingTier!.name,
+                    'onboardingComplete': true,
+                  });
                 }
                 setState(() => _showLoading = false);
               },
@@ -221,8 +220,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     final pages = <Widget>[
       const DashboardView(),
       const LearningHubView(),
-      const SnapGradeView(),
       const WritingCanvasView(),
+      const SnapGradeView(),
       const PassportView(),
     ];
 
@@ -284,10 +283,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             // Hidden tabs keep their state but pause their animations, so
             // the Nest's gentle weather never drains the battery elsewhere.
             for (var index = 0; index < pages.length; index++)
-              TickerMode(
-                enabled: index == _selectedIndex,
-                child: pages[index],
-              ),
+              TickerMode(enabled: index == _selectedIndex, child: pages[index]),
           ],
         ),
       ),
@@ -306,14 +302,14 @@ class _AppShellState extends ConsumerState<AppShell> {
             label: 'Learn',
           ),
           NavigationDestination(
-            icon: Icon(Icons.camera_alt_outlined),
-            selectedIcon: Icon(Icons.camera_alt_rounded),
-            label: 'Snap',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.draw_outlined),
             selectedIcon: Icon(Icons.draw_rounded),
             label: 'Write',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.camera_alt_outlined),
+            selectedIcon: Icon(Icons.camera_alt_rounded),
+            label: 'Photo',
           ),
           NavigationDestination(
             icon: Icon(Icons.badge_outlined),

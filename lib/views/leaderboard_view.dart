@@ -120,38 +120,40 @@ class _LeaderboardViewState extends State<LeaderboardView> {
                   Card(
                     child: Column(
                       children: [
-                    for (var index = 0; index < entries.length; index++)
-                      ListTile(
-                        tileColor: entries[index].id == ownId
-                            ? AppColors.bambooMist.withValues(alpha: .45)
-                            : null,
-                        leading: CircleAvatar(
-                          backgroundColor: index < 3
-                              ? AppColors.sakura
-                              : AppColors.bambooMist,
-                          child: Text(
-                            index < 3
-                                ? ['🥇', '🥈', '🥉'][index]
-                                : '${index + 1}',
+                        for (var index = 0; index < entries.length; index++)
+                          ListTile(
+                            tileColor: entries[index].id == ownId
+                                ? AppColors.bambooMist.withValues(alpha: .45)
+                                : null,
+                            leading: CircleAvatar(
+                              backgroundColor: index < 3
+                                  ? AppColors.sakura
+                                  : AppColors.bambooMist,
+                              child: Text(
+                                index < 3
+                                    ? ['🥇', '🥈', '🥉'][index]
+                                    : '${index + 1}',
+                              ),
+                            ),
+                            title: Text(
+                              entries[index].nickname,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            subtitle: Text(
+                              entries[index].id == ownId
+                                  ? '${entries[index].achievements} achievement memories · That is you!'
+                                  : '${entries[index].achievements} achievement memories',
+                            ),
+                            trailing: Text(
+                              '${entries[index].xp} XP',
+                              style: const TextStyle(
+                                color: AppColors.matcha,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
                           ),
-                        ),
-                        title: Text(
-                          entries[index].nickname,
-                          style: const TextStyle(fontWeight: FontWeight.w900),
-                        ),
-                        subtitle: Text(
-                          entries[index].id == ownId
-                              ? '${entries[index].achievements} achievement memories · That is you!'
-                              : '${entries[index].achievements} achievement memories',
-                        ),
-                        trailing: Text(
-                          '${entries[index].xp} XP',
-                          style: const TextStyle(
-                            color: AppColors.matcha,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
                       ],
                     ),
                   ),
