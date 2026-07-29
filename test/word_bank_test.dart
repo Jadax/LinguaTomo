@@ -15,16 +15,31 @@ void main() {
   test('each tier has at least 80 words', () {
     for (final tier in DifficultyTier.values) {
       final count = wordBank.where((w) => w.tier == tier).length;
-      expect(count, greaterThanOrEqualTo(80),
-          reason: '${tier.label} should have 80+ words, has $count');
+      expect(
+        count,
+        greaterThanOrEqualTo(80),
+        reason: '${tier.label} should have 80+ words, has $count',
+      );
     }
   });
 
   test('all words have non-empty required fields', () {
     for (final word in wordBank) {
-      expect(word.japanese.isNotEmpty, isTrue, reason: '${word.id} missing japanese');
-      expect(word.romaji.isNotEmpty, isTrue, reason: '${word.id} missing romaji');
-      expect(word.english.isNotEmpty, isTrue, reason: '${word.id} missing english');
+      expect(
+        word.japanese.isNotEmpty,
+        isTrue,
+        reason: '${word.id} missing japanese',
+      );
+      expect(
+        word.romaji.isNotEmpty,
+        isTrue,
+        reason: '${word.id} missing romaji',
+      );
+      expect(
+        word.english.isNotEmpty,
+        isTrue,
+        reason: '${word.id} missing english',
+      );
       expect(word.emoji.isNotEmpty, isTrue, reason: '${word.id} missing emoji');
     }
   });
@@ -48,14 +63,25 @@ void main() {
     for (final tier in DifficultyTier.values) {
       final ordered = wordsForTierInOrder(tier);
       final ids = ordered.map((w) => w.id).toSet();
-      expect(ids.length, ordered.length,
-          reason: '${tier.label} path has duplicate IDs');
-      expect(ids.every(allIds.contains), isTrue,
-          reason: '${tier.label} path has unknown IDs');
-      // Not all tier words need to be in the ordered path,
-      // but at least the minimum must be there.
-      expect(ordered.length, greaterThanOrEqualTo(80),
-          reason: '${tier.label} path must have 80+ words, has ${ordered.length}');
+      expect(
+        ids.length,
+        ordered.length,
+        reason: '${tier.label} path has duplicate IDs',
+      );
+      expect(
+        ids.every(allIds.contains),
+        isTrue,
+        reason: '${tier.label} path has unknown IDs',
+      );
+      final expected = wordBank
+          .where((word) => word.tier == tier)
+          .map((word) => word.id)
+          .toSet();
+      expect(
+        ids,
+        expected,
+        reason: '${tier.label} path must contain every word in its tier',
+      );
     }
   });
 }

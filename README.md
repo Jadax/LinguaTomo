@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.17.7, build 37**
+**Version 1.17.8, build 38**
 
 | Area | Available now |
 |---|---|
@@ -79,8 +79,8 @@ quality gates.
 | Speech | Device Japanese text-to-speech, with a warm voice preference |
 | Optional backend | Supabase Auth, PostgreSQL, Storage and Realtime |
 
-All direct production dependencies were current when build 9 was verified on
-22 July 2026.
+Direct production dependencies are audited during every release. Patch updates
+are applied after analysis, tests and target builds confirm compatibility.
 
 ## Repository map
 

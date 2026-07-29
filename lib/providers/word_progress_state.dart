@@ -170,19 +170,22 @@ class WordProgressNotifier extends Notifier<WordProgress> {
     final counts = <String, int>{};
     if (raw['wordCorrectCounts'] is Map) {
       for (final entry in (raw['wordCorrectCounts'] as Map).entries) {
-        counts['${entry.key}'] = (entry.value as num).toInt();
+        if (entry.value is num) {
+          counts['${entry.key}'] = (entry.value as num).toInt();
+        }
       }
     }
     final storedTier = '${raw['currentTier'] ?? ''}';
-    final tier = DifficultyTier.values
-            .where((t) => t.name == storedTier)
-            .firstOrNull ??
+    final tier =
+        DifficultyTier.values.where((t) => t.name == storedTier).firstOrNull ??
         DifficultyTier.starter;
     return WordProgress(
       completedWords: completed,
       currentTier: tier,
       wordLessonHistory: history,
-      perfectLessonCount: (raw['perfectLessonCount'] as num?)?.toInt() ?? 0,
+      perfectLessonCount: raw['perfectLessonCount'] is num
+          ? (raw['perfectLessonCount'] as num).toInt()
+          : 0,
       wordActivityDates: activityDates,
       wordCorrectCounts: counts,
     );
@@ -199,10 +202,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
       currentTier: state.currentTier,
       wordLessonHistory: state.wordLessonHistory,
       perfectLessonCount: state.perfectLessonCount,
-      wordActivityDates: {
-        ...state.wordActivityDates,
-        _dateKey(DateTime.now()),
-      },
+      wordActivityDates: {...state.wordActivityDates, _dateKey(DateTime.now())},
       wordCorrectCounts: updatedCounts,
     );
     _maybeUnlockTier();
@@ -227,10 +227,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
       currentTier: state.currentTier,
       wordLessonHistory: history,
       perfectLessonCount: state.perfectLessonCount + (isPerfect ? 1 : 0),
-      wordActivityDates: {
-        ...state.wordActivityDates,
-        _dateKey(DateTime.now()),
-      },
+      wordActivityDates: {...state.wordActivityDates, _dateKey(DateTime.now())},
       wordCorrectCounts: updatedCounts,
     );
     _maybeUnlockTier();
@@ -277,7 +274,10 @@ class WordProgressNotifier extends Notifier<WordProgress> {
   }
 
   List<Word> generateThemedLesson(List<String> wordIds, {int wordCount = 5}) {
-    final themedWords = wordIds.map((id) => wordBankById[id]).whereType<Word>().toList();
+    final themedWords = wordIds
+        .map((id) => wordBankById[id])
+        .whereType<Word>()
+        .toList();
     final uncompleted = themedWords
         .where((w) => !state.completedWords.contains(w.id))
         .toList();

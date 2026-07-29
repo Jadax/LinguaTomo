@@ -28,19 +28,23 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 - Achievement catalogue has unique IDs, progression, real rewards and trophies.
 - Cultural calendar covers every month with vocabulary and a reward.
 - Word bank contains ≥600 words with ≥80 per tier, ≥30 per category.
+- Every vocabulary item appears exactly once in its tier lesson path.
+- Learner progress and placement boundaries persist through provider restarts.
+- Word growth, lesson history and FSRS ratings persist through provider restarts.
+- Expired weekly challenges roll over without losing the learner's best score.
 
 ## Release verification
 
-Version 1.17.7, build 37 passed local analysis, all 17 automated tests, a Web
-release build, and an Android App Bundle build. Store publication additionally
+Version 1.17.8, build 38 passed local analysis, all 23 automated tests, a Web
+release build, and an Android APK release build. Store publication additionally
 requires the private Android upload key.
 
-This release adds Leo mood system, word growth progression, seasonal learning
-cycles, weekly challenges, Hive error handling, and SpeechService singleton fix.
+This release fixes weekly challenge rollover, hardens malformed Hive and FSRS
+restoration, verifies placement and word-growth persistence, strengthens lesson
+path integrity, and updates Riverpod to 3.4.2.
 
-The next stability tests should cover Hive restoration, FSRS persistence,
-placement boundaries, magic-link delivery on both supported targets, and OCR
-service fallbacks.
+The next stability work should cover sync conflict and outbox recovery,
+magic-link delivery on both supported targets, and OCR service fallbacks.
 
 ## Known platform limitations
 

@@ -34,9 +34,13 @@ class ReviewDeckNotifier extends Notifier<ReviewDeck> {
     if (raw is Map) {
       for (final entry in raw.entries) {
         if (entry.value is Map) {
-          stored['${entry.key}'] = Card.fromMap(
-            Map<String, dynamic>.from(entry.value as Map),
-          );
+          try {
+            stored['${entry.key}'] = Card.fromMap(
+              Map<String, dynamic>.from(entry.value as Map),
+            );
+          } catch (_) {
+            // Ignore a malformed card and rebuild it from completed missions.
+          }
         }
       }
     }

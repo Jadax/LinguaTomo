@@ -77,37 +77,61 @@ class WeeklyChallengeNotifier extends Notifier<WeeklyChallenge> {
     if (raw is! Map) return _generateNewChallenge();
 
     final storedType = '${raw['challengeType'] ?? ''}';
-    final type = ChallengeType.values
-            .where((t) => t.name == storedType)
-            .firstOrNull ??
+    final type =
+        ChallengeType.values.where((t) => t.name == storedType).firstOrNull ??
         ChallengeType.vocabulary;
 
     final weekStartStr = '${raw['weekStart'] ?? ''}';
     final weekStart = DateTime.tryParse(weekStartStr) ?? DateTime.now();
+    final currentWeekStart = _weekStartFor(DateTime.now());
+    final storedWeekStart = _weekStartFor(weekStart);
+    final weeksElapsed =
+        currentWeekStart.difference(storedWeekStart).inDays ~/ 7;
+
+    if (weeksElapsed != 0) {
+      final previousCompleted = raw['completed'] == true;
+      final previousStreak = _storedInt(raw['streakWeeks']);
+      return _generateNewChallenge(
+        weekStart: currentWeekStart,
+        streakWeeks: weeksElapsed == 1 && previousCompleted
+            ? previousStreak
+            : 0,
+        bestScore: _storedInt(raw['bestScore']),
+      );
+    }
 
     return WeeklyChallenge(
       challengeType: type,
-      weekStart: weekStart,
+      weekStart: storedWeekStart,
       completed: raw['completed'] == true,
-      streakWeeks: (raw['streakWeeks'] as num?)?.toInt() ?? 0,
-      bestScore: (raw['bestScore'] as num?)?.toInt() ?? 0,
+      streakWeeks: _storedInt(raw['streakWeeks']),
+      bestScore: _storedInt(raw['bestScore']),
     );
   }
 
-  WeeklyChallenge _generateNewChallenge() {
-    final now = DateTime.now();
-    final weekStart = now.subtract(Duration(days: now.weekday - 1));
-    final monday = DateTime(weekStart.year, weekStart.month, weekStart.day);
+  WeeklyChallenge _generateNewChallenge({
+    DateTime? weekStart,
+    int streakWeeks = 0,
+    int bestScore = 0,
+  }) {
+    final monday = weekStart ?? _weekStartFor(DateTime.now());
     final rng = math.Random(monday.millisecondsSinceEpoch);
     final type = ChallengeType.values[rng.nextInt(ChallengeType.values.length)];
     return WeeklyChallenge(
       challengeType: type,
       weekStart: monday,
       completed: false,
-      streakWeeks: 0,
-      bestScore: 0,
+      streakWeeks: streakWeeks,
+      bestScore: bestScore,
     );
   }
+
+  DateTime _weekStartFor(DateTime value) {
+    final monday = value.subtract(Duration(days: value.weekday - 1));
+    return DateTime(monday.year, monday.month, monday.day);
+  }
+
+  int _storedInt(dynamic value) => value is num ? value.toInt() : 0;
 
   List<Word> generateChallengeWords(WordProgress wordProgress) {
     final rng = math.Random();
@@ -118,15 +142,15 @@ class WeeklyChallengeNotifier extends Notifier<WeeklyChallenge> {
       available.shuffle(rng);
       return available.take(10).toList();
     }
-    final pool = wordBank.where((w) =>
-        w.tier.index <= wordProgress.currentTier.index).toList();
+    final pool = wordBank
+        .where((w) => w.tier.index <= wordProgress.currentTier.index)
+        .toList();
     pool.shuffle(rng);
     return pool.take(10).toList();
   }
 
   Future<void> completeChallenge(int score) async {
-    final newStreak =
-        score >= 70 ? state.streakWeeks + 1 : 0;
+    final newStreak = score >= 70 ? state.streakWeeks + 1 : 0;
     state = WeeklyChallenge(
       challengeType: state.challengeType,
       weekStart: state.weekStart,

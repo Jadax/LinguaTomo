@@ -177,8 +177,8 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
           : _stringSet(raw['unlockedRewards']),
       skillEvidence: skills,
       activityDates: _stringSet(raw['activityDates']),
-      xp: (raw['xp'] as num?)?.toInt() ?? 0,
-      streakFreezes: (raw['streakFreezes'] as num?)?.toInt() ?? 2,
+      xp: _storedInt(raw['xp'], 0),
+      streakFreezes: _storedInt(raw['streakFreezes'], 2),
     );
   }
 
@@ -309,6 +309,9 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
 
 int _maxInt(int local, dynamic remote) =>
     remote is num && remote.toInt() > local ? remote.toInt() : local;
+
+int _storedInt(dynamic value, int fallback) =>
+    value is num ? value.toInt() : fallback;
 
 Set<String> _stringSet(dynamic value) =>
     value is Iterable ? value.map((item) => '$item').toSet() : <String>{};

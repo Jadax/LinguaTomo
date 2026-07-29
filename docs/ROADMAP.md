@@ -4,7 +4,7 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
-## Current version: 1.17.3 (build 33)
+## Current version: 1.17.8 (build 38)
 
 ## Product teaching model
 
@@ -50,7 +50,7 @@ alongside lessons delivered by a learner's own external teacher.
    - Hive local persistence; optional Supabase cloud sync
    - Version visible in-app and in commit messages
 
-### Remaining
+### Completed in 1.16-1.17
 
 1. **Leo personality mood system**
    - Leo reacts to learning behaviour: excited (3+ day streak), proud (milestones),
@@ -92,7 +92,9 @@ alongside lessons delivered by a learner's own external teacher.
    - Shows word tier, category, growth stage, and example sentence
    - Known/new word indicators and read-aloud support
 
-2. **Systematic kanji foundation**
+### Remaining
+
+1. **Systematic kanji foundation**
    - Licensed KANJIDIC/JMdict data
    - Components, stroke count, vocabulary families, mnemonics
    - N5 to N1 filters

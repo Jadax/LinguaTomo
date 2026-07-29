@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../config/app_info.dart';
 import '../config/cloud_config.dart';
 import '../data/achievement_data.dart';
 import '../providers/achievement_state.dart';
@@ -334,7 +335,7 @@ class _AccountViewState extends ConsumerState<AccountView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'LinguaTomo 1.17.7',
+                      AppInfo.versionLabel,
                       style: TextStyle(fontWeight: FontWeight.w900),
                     ),
                     SizedBox(height: 4),
