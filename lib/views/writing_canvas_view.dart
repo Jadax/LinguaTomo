@@ -2,9 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../config/storage_keys.dart';
+import '../config/local_store.dart';
 import '../data/character_data.dart';
 import '../models/character_entry.dart';
 import '../models/app_models.dart';
@@ -24,10 +23,7 @@ class WritingProgressNotifier extends Notifier<WritingProgress> {
 
   @override
   WritingProgress build() {
-    final box = Hive.isBoxOpen(StorageKeys.userData)
-        ? Hive.box<dynamic>(StorageKeys.userData)
-        : null;
-    final raw = box?.get(_storageKey);
+    final raw = localStore?.get(_storageKey);
     if (raw is Map) {
       return WritingProgress(
         bestScores: raw.map(
@@ -43,9 +39,7 @@ class WritingProgressNotifier extends Notifier<WritingProgress> {
     if (score <= previous) return;
     final updated = {...state.bestScores, character: score};
     state = WritingProgress(bestScores: updated);
-    if (Hive.isBoxOpen(StorageKeys.userData)) {
-      await Hive.box<dynamic>(StorageKeys.userData).put(_storageKey, updated);
-    }
+    await localStore?.put(_storageKey, updated);
   }
 }
 

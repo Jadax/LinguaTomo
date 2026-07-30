@@ -51,8 +51,16 @@ android {
             signingConfig = if (hasReleaseSigning) {
                 signingConfigs.getByName("release")
             } else {
+                logger.warn(
+                    "LinguaTomo: no android/key.properties found, so this release " +
+                        "build is signed with the debug key and cannot be published.",
+                )
                 signingConfigs.getByName("debug")
             }
+            // Without these the proguardFiles below are collected and ignored:
+            // AGP only runs R8 when minification is switched on.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

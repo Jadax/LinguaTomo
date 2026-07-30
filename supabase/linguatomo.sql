@@ -1,5 +1,5 @@
 -- LinguaTomo canonical cloud schema.
--- Schema version: 1.17.8 (build 38), July 2026.
+-- Schema version: 1.17.9 (build 39), July 2026.
 -- Reapply this single file after every release. It is safe for both a fresh
 -- project and an existing LinguaTomo project. Local Hive data remains the
 -- offline source of truth. Never place service-role secrets in this file.
@@ -68,6 +68,16 @@ create table if not exists public.learner_progress (
   constraint snapshot_is_object check (jsonb_typeof(snapshot) = 'object')
 );
 
+-- The publishable key is public by design, so any authenticated account can
+-- write its own snapshot. A learner's complete progress is a few tens of
+-- kilobytes; 256 KB leaves generous headroom while stopping one account from
+-- filling the project's storage.
+do $$ begin
+  alter table public.learner_progress add constraint snapshot_within_size_limit
+    check (pg_column_size(snapshot) <= 262144);
+exception when duplicate_object then null;
+end $$;
+
 create table if not exists public.friendships (
   id uuid primary key default gen_random_uuid(),
   requester_id uuid not null references public.profiles(id) on delete cascade,
@@ -129,6 +139,56 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
 for each row execute procedure public.handle_new_user();
+
+-- Leaderboard figures arrive from the client, which a determined learner can
+-- edit. The board is meant to be gentle, not competitive enough to be worth
+-- policing hard, so this trigger only rules out the dishonest extremes:
+-- scores never fall, they cannot climb faster than sustained real study, and
+-- the safeguarding fields are not client-writable at all.
+create or replace function public.guard_profile_update()
+returns trigger
+language plpgsql
+security definer set search_path = ''
+as $$
+declare
+  elapsed_hours numeric;
+  allowance integer;
+begin
+  -- Safeguarding fields change only through an administrative path.
+  new.account_mode := old.account_mode;
+  new.guardian_id := old.guardian_id;
+  new.id := old.id;
+  new.created_at := old.created_at;
+  new.updated_at := now();
+
+  if new.xp < old.xp then
+    new.xp := old.xp;
+  end if;
+  if new.achievement_count < old.achievement_count then
+    new.achievement_count := old.achievement_count;
+  end if;
+
+  -- The first non-zero write imports however much was earned offline before
+  -- the learner made an account. Everything after that is rate-limited.
+  if old.xp > 0 and new.xp > old.xp then
+    elapsed_hours := greatest(
+      extract(epoch from (now() - old.updated_at)) / 3600.0,
+      0.02
+    );
+    allowance := ceil(elapsed_hours * 5000)::integer;
+    if new.xp - old.xp > allowance then
+      new.xp := old.xp + allowance;
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_profile_update on public.profiles;
+create trigger on_profile_update
+before update on public.profiles
+for each row execute procedure public.guard_profile_update();
 
 create or replace function public.is_adult_profile(profile_id uuid)
 returns boolean

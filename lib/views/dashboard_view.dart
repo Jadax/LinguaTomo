@@ -1243,13 +1243,10 @@ class _ContinueLearningCard extends StatelessWidget {
                               categories[i],
                               wp.currentTier,
                             ),
-                            total: wordBank
-                                .where(
-                                  (w) =>
-                                      w.category == categories[i] &&
-                                      w.tier == wp.currentTier,
-                                )
-                                .length,
+                            total: wordsForCategoryAndTier(
+                              categories[i],
+                              wp.currentTier,
+                            ).length,
                             onTap: () {
                               Navigator.pop(ctx);
                               Navigator.of(context).push(
@@ -1724,7 +1721,7 @@ class _DailyXpGoal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = _dateKey(DateTime.now());
+    final today = dateKey(DateTime.now());
     final isTodayActive = wordProgress.wordActivityDates.contains(today);
     final lessonsToday = wordProgress.wordLessonHistory
         .where((entry) => entry.split(',').isNotEmpty)
@@ -1786,8 +1783,6 @@ class _DailyXpGoal extends StatelessWidget {
     );
   }
 
-  String _dateKey(DateTime value) =>
-      '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 }
 
 class _SeasonalCard extends ConsumerWidget {

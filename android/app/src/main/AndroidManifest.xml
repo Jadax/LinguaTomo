@@ -25,7 +25,11 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <intent-filter android:autoVerify="true">
+            <!-- Sign-in return path. android:autoVerify is deliberately absent:
+                 it only applies to http/https App Links and would be ignored
+                 here. A custom scheme can be claimed by any installed app, so
+                 the PKCE flow, not the scheme, is what protects the exchange. -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

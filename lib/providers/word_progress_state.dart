@@ -1,14 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../config/storage_keys.dart';
+import '../config/local_store.dart';
 import '../data/word_bank.dart';
 import '../models/app_models.dart';
-
-const _boxName = StorageKeys.userData;
-
-Box<dynamic>? get _box =>
-    Hive.isBoxOpen(_boxName) ? Hive.box<dynamic>(_boxName) : null;
 
 enum WordGrowthStage { seed, sprout, bud, bloom }
 
@@ -53,25 +48,46 @@ class WordProgress {
     return WordGrowthStage.seed;
   }
 
+  WordProgress copyWith({
+    Set<String>? completedWords,
+    DifficultyTier? currentTier,
+    List<String>? wordLessonHistory,
+    int? perfectLessonCount,
+    Set<String>? wordActivityDates,
+    Map<String, int>? wordCorrectCounts,
+  }) => WordProgress(
+    completedWords: completedWords ?? this.completedWords,
+    currentTier: currentTier ?? this.currentTier,
+    wordLessonHistory: wordLessonHistory ?? this.wordLessonHistory,
+    perfectLessonCount: perfectLessonCount ?? this.perfectLessonCount,
+    wordActivityDates: wordActivityDates ?? this.wordActivityDates,
+    wordCorrectCounts: wordCorrectCounts ?? this.wordCorrectCounts,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is WordProgress &&
+          setEquals(completedWords, other.completedWords) &&
+          currentTier == other.currentTier &&
+          listEquals(wordLessonHistory, other.wordLessonHistory) &&
+          perfectLessonCount == other.perfectLessonCount &&
+          setEquals(wordActivityDates, other.wordActivityDates) &&
+          mapEquals(wordCorrectCounts, other.wordCorrectCounts);
+
+  @override
+  int get hashCode => Object.hash(
+    completedWords.length,
+    currentTier,
+    wordLessonHistory.length,
+    perfectLessonCount,
+    wordActivityDates.length,
+    wordCorrectCounts.length,
+  );
+
   int get wordsLearned => completedWords.length;
 
-  int get wordStreak {
-    if (wordActivityDates.isEmpty) return 0;
-    var cursor = DateTime.now();
-    var count = 0;
-    while (wordActivityDates.contains(_dateKey(cursor))) {
-      count++;
-      cursor = cursor.subtract(const Duration(days: 1));
-    }
-    if (count == 0) {
-      cursor = DateTime.now().subtract(const Duration(days: 1));
-      while (wordActivityDates.contains(_dateKey(cursor))) {
-        count++;
-        cursor = cursor.subtract(const Duration(days: 1));
-      }
-    }
-    return count;
-  }
+  int get wordStreak => consecutiveDayStreak(wordActivityDates);
 
   int get categoriesCompleted {
     var count = 0;
@@ -131,15 +147,11 @@ class WordProgress {
     return tierWords.where((w) => completedWords.contains(w.id)).length;
   }
 
-  int categoryProgress(WordCategory category, DifficultyTier tier) {
-    return wordBank
-        .where((w) => w.category == category && w.tier == tier)
-        .where((w) => completedWords.contains(w.id))
-        .length;
-  }
-
-  String _dateKey(DateTime value) =>
-      '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
+  int categoryProgress(WordCategory category, DifficultyTier tier) =>
+      wordsForCategoryAndTier(
+        category,
+        tier,
+      ).where((w) => completedWords.contains(w.id)).length;
 }
 
 class WordProgressNotifier extends Notifier<WordProgress> {
@@ -147,7 +159,7 @@ class WordProgressNotifier extends Notifier<WordProgress> {
 
   @override
   WordProgress build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     if (raw is! Map) return const WordProgress();
     final completed = <String>{};
     if (raw['completedWords'] is Iterable) {
@@ -197,12 +209,9 @@ class WordProgressNotifier extends Notifier<WordProgress> {
       ...state.wordCorrectCounts,
       wordId: (state.wordCorrectCounts[wordId] ?? 0) + 1,
     };
-    state = WordProgress(
+    state = state.copyWith(
       completedWords: {...state.completedWords, wordId},
-      currentTier: state.currentTier,
-      wordLessonHistory: state.wordLessonHistory,
-      perfectLessonCount: state.perfectLessonCount,
-      wordActivityDates: {...state.wordActivityDates, _dateKey(DateTime.now())},
+      wordActivityDates: {...state.wordActivityDates, dateKey(DateTime.now())},
       wordCorrectCounts: updatedCounts,
     );
     _maybeUnlockTier();
@@ -222,12 +231,11 @@ class WordProgressNotifier extends Notifier<WordProgress> {
         updatedCounts[id] = (updatedCounts[id] ?? 0) + 1;
       }
     }
-    state = WordProgress(
+    state = state.copyWith(
       completedWords: {...state.completedWords, ...wordIds},
-      currentTier: state.currentTier,
       wordLessonHistory: history,
       perfectLessonCount: state.perfectLessonCount + (isPerfect ? 1 : 0),
-      wordActivityDates: {...state.wordActivityDates, _dateKey(DateTime.now())},
+      wordActivityDates: {...state.wordActivityDates, dateKey(DateTime.now())},
       wordCorrectCounts: updatedCounts,
     );
     _maybeUnlockTier();
@@ -236,28 +244,14 @@ class WordProgressNotifier extends Notifier<WordProgress> {
 
   Future<void> setTier(DifficultyTier tier) async {
     if (tier == state.currentTier) return;
-    state = WordProgress(
-      completedWords: state.completedWords,
-      currentTier: tier,
-      wordLessonHistory: state.wordLessonHistory,
-      perfectLessonCount: state.perfectLessonCount,
-      wordActivityDates: state.wordActivityDates,
-      wordCorrectCounts: state.wordCorrectCounts,
-    );
+    state = state.copyWith(currentTier: tier);
     await _persist();
   }
 
   void _maybeUnlockTier() {
     final highest = state.highestUnlockedTier;
     if (highest.index > state.currentTier.index) {
-      state = WordProgress(
-        completedWords: state.completedWords,
-        currentTier: highest,
-        wordLessonHistory: state.wordLessonHistory,
-        perfectLessonCount: state.perfectLessonCount,
-        wordActivityDates: state.wordActivityDates,
-        wordCorrectCounts: state.wordCorrectCounts,
-      );
+      state = state.copyWith(currentTier: highest);
     }
   }
 
@@ -291,8 +285,62 @@ class WordProgressNotifier extends Notifier<WordProgress> {
     return pool.take(wordCount).toList();
   }
 
+  /// Folds a downloaded snapshot into local word progress, keeping the union
+  /// of everything learned on either device. Returns `false` when the remote
+  /// adds nothing, so an unchanged snapshot is never re-persisted or re-sent.
+  Future<bool> mergeCloudSnapshot(Map<String, dynamic> remote) async {
+    final counts = {...state.wordCorrectCounts};
+    final rawCounts = remote['word_correct_counts'];
+    if (rawCounts is Map) {
+      for (final entry in rawCounts.entries) {
+        if (entry.value is num) {
+          final id = '${entry.key}';
+          final incoming = (entry.value as num).toInt();
+          if (incoming > (counts[id] ?? 0)) counts[id] = incoming;
+        }
+      }
+    }
+    final remoteHistory = _stringList(remote['word_lesson_history']);
+    final merged = state.copyWith(
+      completedWords: {
+        ...state.completedWords,
+        ..._stringList(remote['completed_words']),
+      },
+      // Lesson history is an append-only log; the longer record wins rather
+      // than concatenating and double-counting lessons already held locally.
+      wordLessonHistory: remoteHistory.length > state.wordLessonHistory.length
+          ? remoteHistory
+          : state.wordLessonHistory,
+      perfectLessonCount: remote['perfect_lesson_count'] is num
+          ? (remote['perfect_lesson_count'] as num).toInt().clamp(
+              state.perfectLessonCount,
+              1 << 30,
+            )
+          : state.perfectLessonCount,
+      wordActivityDates: {
+        ...state.wordActivityDates,
+        ..._stringList(remote['word_activity_dates']),
+      },
+      wordCorrectCounts: counts,
+    );
+    if (merged == state) return false;
+    state = merged;
+    _maybeUnlockTier();
+    await _persist();
+    return true;
+  }
+
+  Map<String, dynamic> toCloudSnapshot() => {
+    'completed_words': state.completedWords.toList(),
+    'current_tier': state.currentTier.name,
+    'word_lesson_history': state.wordLessonHistory,
+    'perfect_lesson_count': state.perfectLessonCount,
+    'word_activity_dates': state.wordActivityDates.toList(),
+    'word_correct_counts': state.wordCorrectCounts,
+  };
+
   Future<void> _persist() async {
-    await _box?.put(_key, {
+    await localStore?.put(_key, {
       'completedWords': state.completedWords.toList(),
       'currentTier': state.currentTier.name,
       'wordLessonHistory': state.wordLessonHistory,
@@ -301,10 +349,10 @@ class WordProgressNotifier extends Notifier<WordProgress> {
       'wordCorrectCounts': state.wordCorrectCounts,
     });
   }
-
-  String _dateKey(DateTime value) =>
-      '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
 }
+
+List<String> _stringList(dynamic value) =>
+    value is Iterable ? value.map((item) => '$item').toList() : const [];
 
 final wordProgressProvider =
     NotifierProvider<WordProgressNotifier, WordProgress>(

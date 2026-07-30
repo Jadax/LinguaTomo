@@ -1,12 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../config/storage_keys.dart';
+import '../config/local_store.dart';
 import '../data/festival_calendar_data.dart';
-
-Box<dynamic>? get _box => Hive.isBoxOpen(StorageKeys.userData)
-    ? Hive.box<dynamic>(StorageKeys.userData)
-    : null;
 
 /// The Japan-standard-time "today" used by every seasonal feature.
 DateTime japanToday() =>
@@ -20,7 +15,7 @@ class FestivalMemoryNotifier extends Notifier<Set<String>> {
 
   @override
   Set<String> build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     return raw is Iterable ? raw.map((item) => '$item').toSet() : <String>{};
   }
 
@@ -37,7 +32,7 @@ class FestivalMemoryNotifier extends Notifier<Set<String>> {
     final entry = '${event.id}@${today.month}';
     if (state.contains(entry)) return;
     state = {...state, entry};
-    await _box?.put(_key, state.toList());
+    await localStore?.put(_key, state.toList());
   }
 }
 

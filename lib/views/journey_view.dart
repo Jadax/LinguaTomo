@@ -164,13 +164,11 @@ class _SnakeTier extends StatelessWidget {
   Widget build(BuildContext context) {
     final categories = WordCategory.values;
     final isUnlocked = tier.index <= wordProgress.currentTier.index;
-    final tierWords = wordsForTier(tier);
 
     return Column(
       children: List.generate(categories.length, (index) {
         final category = categories[index];
-        final categoryWords =
-            tierWords.where((w) => w.category == category).toList();
+        final categoryWords = wordsForCategoryAndTier(category, tier);
         final completedCount = categoryWords
             .where((w) => wordProgress.completedWords.contains(w.id))
             .length;

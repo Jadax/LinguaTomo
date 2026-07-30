@@ -919,14 +919,39 @@ final wordBank = () {
 /// O(1) lookup by word ID — avoids repeated list scans.
 final wordBankById = {for (final w in wordBank) w.id: w};
 
-List<Word> wordsForTier(DifficultyTier tier) =>
-    wordBank.where((w) => w.tier == tier).toList();
+/// Pre-bucketed views of the bank. These are read inside `build` methods and
+/// achievement evaluation, so they are computed once at load rather than
+/// rescanning ~1,800 words on every rebuild.
+final _wordsByTier = <DifficultyTier, List<Word>>{
+  for (final tier in DifficultyTier.values)
+    tier: List.unmodifiable(wordBank.where((w) => w.tier == tier)),
+};
+
+final _wordsByCategory = <WordCategory, List<Word>>{
+  for (final category in WordCategory.values)
+    category: List.unmodifiable(wordBank.where((w) => w.category == category)),
+};
+
+final _wordsByCategoryAndTier =
+    <WordCategory, Map<DifficultyTier, List<Word>>>{
+      for (final category in WordCategory.values)
+        category: {
+          for (final tier in DifficultyTier.values)
+            tier: List.unmodifiable(
+              _wordsByCategory[category]!.where((w) => w.tier == tier),
+            ),
+        },
+    };
+
+List<Word> wordsForTier(DifficultyTier tier) => _wordsByTier[tier] ?? const [];
 
 List<Word> wordsForCategory(WordCategory category) =>
-    wordBank.where((w) => w.category == category).toList();
+    _wordsByCategory[category] ?? const [];
 
-int totalWordsForTier(DifficultyTier tier) =>
-    wordBank.where((w) => w.tier == tier).length;
+List<Word> wordsForCategoryAndTier(WordCategory category, DifficultyTier tier) =>
+    _wordsByCategoryAndTier[category]?[tier] ?? const [];
+
+int totalWordsForTier(DifficultyTier tier) => wordsForTier(tier).length;
 
 /// Canonical lesson order per tier — easiest words first, hardest last.
 /// Categories are mixed so the user learns the most useful words immediately.

@@ -1,8 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fsrs/fsrs.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../config/storage_keys.dart';
+import '../config/local_store.dart';
 import '../data/grammar_repository.dart';
 import '../models/grammar_models.dart';
 
@@ -35,15 +34,11 @@ class GrammarGarden {
 
 class GrammarGardenNotifier extends Notifier<GrammarGarden> {
   static const _key = 'grammar_garden_v1';
-  static const _boxName = StorageKeys.userData;
   final Scheduler _scheduler = Scheduler(desiredRetention: .9);
-
-  Box<dynamic>? get _box =>
-      Hive.isBoxOpen(_boxName) ? Hive.box<dynamic>(_boxName) : null;
 
   @override
   GrammarGarden build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     if (raw is! Map) return const GrammarGarden();
     final cards = <String, Card>{};
     final rawCards = raw['cards'];
@@ -103,7 +98,7 @@ class GrammarGardenNotifier extends Notifier<GrammarGarden> {
   }
 
   Future<void> _persist() async {
-    await _box?.put(_key, {
+    await localStore?.put(_key, {
       'cards': {
         for (final entry in state.cards.entries) entry.key: entry.value.toMap(),
       },

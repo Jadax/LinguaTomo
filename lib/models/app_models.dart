@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 enum ExperienceMode { visualExplorer, standard, comfort }
@@ -95,12 +96,12 @@ extension NestEnvironmentX on NestEnvironment {
   };
 
   String get asset => switch (this) {
-    NestEnvironment.fireside => 'assets/branding/nest-home-pixel.png',
-    NestEnvironment.springVeranda => 'assets/branding/nest-spring-pixel.png',
-    NestEnvironment.nightTrain => 'assets/branding/nest-journey-pixel.png',
-    NestEnvironment.snowLodge => 'assets/branding/nest-winter-pixel.png',
-    NestEnvironment.japanHome => 'assets/branding/nest-japan-pixel.png',
-    NestEnvironment.rainyLibrary => 'assets/branding/leo-nest-room.png',
+    NestEnvironment.fireside => 'assets/branding/nest-home-pixel.webp',
+    NestEnvironment.springVeranda => 'assets/branding/nest-spring-pixel.webp',
+    NestEnvironment.nightTrain => 'assets/branding/nest-journey-pixel.webp',
+    NestEnvironment.snowLodge => 'assets/branding/nest-winter-pixel.webp',
+    NestEnvironment.japanHome => 'assets/branding/nest-japan-pixel.webp',
+    NestEnvironment.rainyLibrary => 'assets/branding/leo-nest-room.webp',
   };
 }
 
@@ -302,25 +303,56 @@ class LearnerProgress {
   final int xp;
   final int streakFreezes;
 
+  LearnerProgress copyWith({
+    Set<String>? completedMissions,
+    Set<String>? placedOutMissions,
+    Set<String>? completedPostcards,
+    Set<String>? unlockedRewards,
+    Map<SkillArea, int>? skillEvidence,
+    Set<String>? activityDates,
+    int? xp,
+    int? streakFreezes,
+  }) => LearnerProgress(
+    completedMissions: completedMissions ?? this.completedMissions,
+    placedOutMissions: placedOutMissions ?? this.placedOutMissions,
+    completedPostcards: completedPostcards ?? this.completedPostcards,
+    unlockedRewards: unlockedRewards ?? this.unlockedRewards,
+    skillEvidence: skillEvidence ?? this.skillEvidence,
+    activityDates: activityDates ?? this.activityDates,
+    xp: xp ?? this.xp,
+    streakFreezes: streakFreezes ?? this.streakFreezes,
+  );
+
+  /// Value equality keeps Riverpod from rebuilding — and the cloud debounce
+  /// from re-syncing — when a merge or restore produces identical progress.
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LearnerProgress &&
+          setEquals(completedMissions, other.completedMissions) &&
+          setEquals(placedOutMissions, other.placedOutMissions) &&
+          setEquals(completedPostcards, other.completedPostcards) &&
+          setEquals(unlockedRewards, other.unlockedRewards) &&
+          mapEquals(skillEvidence, other.skillEvidence) &&
+          setEquals(activityDates, other.activityDates) &&
+          xp == other.xp &&
+          streakFreezes == other.streakFreezes;
+
+  @override
+  int get hashCode => Object.hash(
+    completedMissions.length,
+    placedOutMissions.length,
+    completedPostcards.length,
+    unlockedRewards.length,
+    skillEvidence.length,
+    activityDates.length,
+    xp,
+    streakFreezes,
+  );
+
   int get verifiedCanDos => completedMissions.length;
 
-  int get streak {
-    if (activityDates.isEmpty) return 0;
-    var cursor = DateTime.now();
-    var count = 0;
-    while (activityDates.contains(_dateKey(cursor))) {
-      count++;
-      cursor = cursor.subtract(const Duration(days: 1));
-    }
-    if (count == 0) {
-      cursor = DateTime.now().subtract(const Duration(days: 1));
-      while (activityDates.contains(_dateKey(cursor))) {
-        count++;
-        cursor = cursor.subtract(const Duration(days: 1));
-      }
-    }
-    return count;
-  }
+  int get streak => consecutiveDayStreak(activityDates);
 
   int get level => (xp / 100).floor();
 
@@ -361,6 +393,21 @@ class HandwritingRecord {
   final int balance;
   final DateTime createdAt;
   final String evidenceMode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HandwritingRecord &&
+          character == other.character &&
+          score == other.score &&
+          accuracy == other.accuracy &&
+          balance == other.balance &&
+          createdAt == other.createdAt &&
+          evidenceMode == other.evidenceMode;
+
+  @override
+  int get hashCode =>
+      Object.hash(character, score, accuracy, balance, createdAt, evidenceMode);
 }
 
 @immutable
@@ -390,7 +437,30 @@ class Word {
   bool get hasExample => exampleSentence != null && exampleSentence!.isNotEmpty;
 }
 
-String dateKey(DateTime value) => _dateKey(value);
-
-String _dateKey(DateTime value) =>
+/// The canonical `YYYY-MM-DD` key for a local calendar day. Every streak,
+/// activity set and daily goal in the app must use this one function, so a
+/// day recorded by one feature is always the same day to every other.
+String dateKey(DateTime value) =>
     '${value.year.toString().padLeft(4, '0')}-${value.month.toString().padLeft(2, '0')}-${value.day.toString().padLeft(2, '0')}';
+
+/// Counts back from today over consecutive days present in [activityDates].
+///
+/// A learner who has not studied yet today keeps yesterday's streak, so the
+/// number never drops until a whole day has genuinely been missed.
+int consecutiveDayStreak(Set<String> activityDates) {
+  if (activityDates.isEmpty) return 0;
+  var cursor = DateTime.now();
+  var count = 0;
+  while (activityDates.contains(dateKey(cursor))) {
+    count++;
+    cursor = cursor.subtract(const Duration(days: 1));
+  }
+  if (count == 0) {
+    cursor = DateTime.now().subtract(const Duration(days: 1));
+    while (activityDates.contains(dateKey(cursor))) {
+      count++;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+  }
+  return count;
+}

@@ -4,7 +4,7 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
-## Current version: 1.17.8 (build 38)
+## Current version: 1.17.9 (build 39)
 
 ## Product teaching model
 
@@ -27,7 +27,7 @@ alongside lessons delivered by a learner's own external teacher.
    - ~1,780 words across 10+ CEFR-aligned data files
    - Starter through Expert tiers with frequency-based ordering
    - FSRS spaced repetition with context sentences
-   - Per-category theme lessons via `theme_registry.dart` (31 themed sections)
+   - Per-category theme lessons, one per `WordCategory`, filtered by tier
    - Listen-first quiz mode with audio auto-play
    - Quiz gate: 3/5 to pass; wrong words auto-retry; always pass on retry
 3. **Dashboard and progression**

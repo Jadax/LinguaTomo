@@ -32,19 +32,44 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 - Learner progress and placement boundaries persist through provider restarts.
 - Word growth, lesson history and FSRS ratings persist through provider restarts.
 - Expired weekly challenges roll over without losing the learner's best score.
+- Word progress survives a complete round trip through a cloud snapshot.
+- Merging an unchanged snapshot reports no change, so sync cannot self-trigger.
+- A schema-1 snapshot never erases word progress written by a newer build.
 
 ## Release verification
 
-Version 1.17.8, build 38 passed local analysis, all 23 automated tests, a Web
+Version 1.17.9, build 39 passed local analysis, all 27 automated tests, a Web
 release build, and an Android APK release build. Store publication additionally
 requires the private Android upload key.
 
-This release fixes weekly challenge rollover, hardens malformed Hive and FSRS
-restoration, verifies placement and word-growth persistence, strengthens lesson
-path integrity, and updates Riverpod to 3.4.2.
+This release closes an audit of security, efficiency and duplication:
 
-The next stability work should cover sync conflict and outbox recovery,
-magic-link delivery on both supported targets, and OCR service fallbacks.
+- The cloud snapshot now carries word progress, per-word growth counts, lesson
+  history and word activity dates. Schema 1 omitted all of these, so a learner
+  who reinstalled lost their vocabulary history despite being signed in.
+- Progress state classes gained value equality. Without it every cloud merge
+  looked like fresh local work and re-armed the sync debounce, so a signed-in
+  device downloaded and uploaded its snapshot every few seconds indefinitely.
+- The Supabase snapshot column is capped at 256 KB and a profile trigger keeps
+  leaderboard XP monotonic and rate-limited, since the publishable key is
+  public and the client can otherwise assert any figure.
+- Word bank tier and category lookups are bucketed once at load instead of
+  rescanning ~1,800 words inside build methods.
+- Bundled artwork moved to sized WebP: web assets fell from 25 MB to 4.1 MB.
+- Five unreferenced source files (846 lines) and two orphaned images were
+  removed, and the duplicated Hive accessor, date key and streak calculation
+  were consolidated.
+
+Android release builds now run R8. **This has been verified to build and to
+produce a mapping file, but not yet verified on a device.** Before publishing,
+install the release APK and exercise ML Kit OCR, text-to-speech, the image
+picker and Supabase sign-in, since those paths depend on reflection that
+shrinking can affect. Retain `build/app/outputs/mapping/release/mapping.txt`
+for every published build or crash reports will be unreadable.
+
+The next stability work should cover sync conflict recovery on genuinely
+divergent devices, magic-link delivery on both supported targets, and OCR
+service fallbacks.
 
 ## Known platform limitations
 

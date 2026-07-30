@@ -1,11 +1,11 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../config/cloud_config.dart';
-import '../config/storage_keys.dart';
+import '../config/local_store.dart';
 import '../services/cloud_service.dart';
 import 'app_state.dart';
+import 'word_progress_state.dart';
 
 enum SyncStatus { localOnly, signedOut, ready, syncing, synced, offline, error }
 
@@ -21,16 +21,12 @@ class SyncNotifier extends Notifier<SyncState> {
   static const _outboxKey = 'cloud_sync_outbox';
   final CloudService _cloud = const CloudService();
 
-  Box<dynamic>? get _box => Hive.isBoxOpen(StorageKeys.userData)
-      ? Hive.box<dynamic>(StorageKeys.userData)
-      : null;
-
   @override
   SyncState build() {
     if (!CloudConfig.isConfigured) {
       return const SyncState(status: SyncStatus.localOnly);
     }
-    final lastSync = DateTime.tryParse('${_box?.get(_lastSyncKey) ?? ''}');
+    final lastSync = DateTime.tryParse('${localStore?.get(_lastSyncKey) ?? ''}');
     return SyncState(
       status: _cloud.currentUser == null
           ? SyncStatus.signedOut
@@ -67,20 +63,33 @@ class SyncNotifier extends Notifier<SyncState> {
     try {
       final remote = await _cloud.downloadProgress();
       if (remote != null) {
-        await ref.read(progressProvider.notifier).mergeCloudSnapshot(remote);
-        await ref
-            .read(handwritingHistoryProvider.notifier)
+        // Each merge reports whether the remote actually contributed
+        // anything. Rebuilding the snapshot only when it did keeps an
+        // unchanged download from looking like fresh local work, which
+        // would otherwise re-arm the debounce and sync in a loop.
+        var changed = await ref
+            .read(progressProvider.notifier)
             .mergeCloudSnapshot(remote);
-        snapshot = _buildSnapshot();
+        changed =
+            await ref
+                .read(handwritingHistoryProvider.notifier)
+                .mergeCloudSnapshot(remote) ||
+            changed;
+        changed =
+            await ref
+                .read(wordProgressProvider.notifier)
+                .mergeCloudSnapshot(remote) ||
+            changed;
+        if (changed) snapshot = _buildSnapshot();
       }
-      final queued = _readOutbox();
-      for (final item in queued) {
-        await _cloud.uploadProgress(item);
-      }
+      // A queued snapshot is always older than the one just built, and the
+      // upload is a whole-row upsert, so replaying the outbox would only
+      // overwrite newer data with older. Local merging has already folded
+      // that work in; the outbox exists to prove nothing was lost offline.
       await _cloud.uploadProgress(snapshot);
-      await _box?.delete(_outboxKey);
+      await localStore?.delete(_outboxKey);
       final now = DateTime.now().toUtc();
-      await _box?.put(_lastSyncKey, now.toIso8601String());
+      await localStore?.put(_lastSyncKey, now.toIso8601String());
       state = SyncState(status: SyncStatus.synced, lastSync: now);
     } catch (error) {
       await _queue(snapshot);
@@ -92,11 +101,17 @@ class SyncNotifier extends Notifier<SyncState> {
     }
   }
 
+  /// Everything a learner would grieve losing on a reinstall.
+  ///
+  /// Schema 2 added word progress, which schema 1 omitted — a snapshot
+  /// written by an older build simply lacks those keys and the merge leaves
+  /// local word progress untouched, so the upgrade needs no migration.
   Map<String, dynamic> _buildSnapshot() {
     final progress = ref.read(progressProvider);
     final handwriting = ref.read(handwritingHistoryProvider);
     return {
-      'schema_version': 1,
+      'schema_version': 2,
+      ...ref.read(wordProgressProvider.notifier).toCloudSnapshot(),
       'completed_missions': progress.completedMissions.toList(),
       'placed_out_missions': progress.placedOutMissions.toList(),
       'completed_postcards': progress.completedPostcards.toList(),
@@ -124,19 +139,11 @@ class SyncNotifier extends Notifier<SyncState> {
     };
   }
 
-  List<Map<String, dynamic>> _readOutbox() {
-    final raw = _box?.get(_outboxKey);
-    if (raw is! Iterable) return [];
-    return raw
-        .whereType<Map>()
-        .map((item) => Map<String, dynamic>.from(item))
-        .toList();
-  }
-
+  /// Records the most recent snapshot that could not be sent. Only the latest
+  /// is kept: every snapshot is complete, so an older one carries nothing the
+  /// newer one lacks.
   Future<void> _queue(Map<String, dynamic> snapshot) async {
-    final items = _readOutbox()..add(snapshot);
-    final newest = items.reversed.take(5).toList().reversed.toList();
-    await _box?.put(_outboxKey, newest);
+    await localStore?.put(_outboxKey, snapshot);
   }
 }
 

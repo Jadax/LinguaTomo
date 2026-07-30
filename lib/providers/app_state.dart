@@ -1,21 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../config/storage_keys.dart';
+import '../config/local_store.dart';
 import '../data/curriculum_data.dart';
 import '../models/app_models.dart';
-
-const _boxName = StorageKeys.userData;
-
-Box<dynamic>? get _box =>
-    Hive.isBoxOpen(_boxName) ? Hive.box<dynamic>(_boxName) : null;
 
 class ExperienceNotifier extends Notifier<ExperienceMode> {
   static const _key = 'experience_mode';
 
   @override
   ExperienceMode build() {
-    final stored = _box?.get(_key) as String?;
+    final stored = localStore?.get(_key) as String?;
     return ExperienceMode.values
             .where((mode) => mode.name == stored)
             .firstOrNull ??
@@ -24,7 +19,7 @@ class ExperienceNotifier extends Notifier<ExperienceMode> {
 
   Future<void> setMode(ExperienceMode mode) async {
     state = mode;
-    await _box?.put(_key, mode.name);
+    await localStore?.put(_key, mode.name);
   }
 }
 
@@ -37,7 +32,7 @@ class NestEnvironmentNotifier extends Notifier<NestEnvironment> {
 
   @override
   NestEnvironment build() {
-    final stored = '${_box?.get(_key) ?? ''}';
+    final stored = '${localStore?.get(_key) ?? ''}';
     return NestEnvironment.values
             .where((environment) => environment.name == stored)
             .firstOrNull ??
@@ -46,7 +41,7 @@ class NestEnvironmentNotifier extends Notifier<NestEnvironment> {
 
   Future<void> choose(NestEnvironment environment) async {
     state = environment;
-    await _box?.put(_key, environment.name);
+    await localStore?.put(_key, environment.name);
   }
 }
 
@@ -61,7 +56,7 @@ class NestDisplayNotifier extends Notifier<List<String>> {
 
   @override
   List<String> build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     return raw is Iterable
         ? raw.map((item) => '$item').take(maxItems).toList()
         : const [];
@@ -70,12 +65,12 @@ class NestDisplayNotifier extends Notifier<List<String>> {
   Future<bool> toggle(String id) async {
     if (state.contains(id)) {
       state = state.where((item) => item != id).toList();
-      await _box?.put(_key, state);
+      await localStore?.put(_key, state);
       return true;
     }
     if (state.length >= maxItems) return false;
     state = [...state, id];
-    await _box?.put(_key, state);
+    await localStore?.put(_key, state);
     return true;
   }
 }
@@ -98,7 +93,7 @@ class LeaderboardPrefsNotifier extends Notifier<LeaderboardPrefs> {
 
   @override
   LeaderboardPrefs build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     if (raw is! Map) return const LeaderboardPrefs();
     return LeaderboardPrefs(
       nickname: '${raw['nickname'] ?? ''}',
@@ -108,7 +103,7 @@ class LeaderboardPrefsNotifier extends Notifier<LeaderboardPrefs> {
 
   Future<void> save(String nickname, bool optIn) async {
     state = LeaderboardPrefs(nickname: nickname, optIn: optIn);
-    await _box?.put(_key, {'nickname': nickname, 'optIn': optIn});
+    await localStore?.put(_key, {'nickname': nickname, 'optIn': optIn});
   }
 }
 
@@ -122,7 +117,7 @@ class LearnerProfileNotifier extends Notifier<LearnerProfile> {
 
   @override
   LearnerProfile build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     if (raw is! Map) return const LearnerProfile();
     final storedStart = '${raw['start'] ?? ''}';
     return LearnerProfile(
@@ -135,12 +130,12 @@ class LearnerProfileNotifier extends Notifier<LearnerProfile> {
 
   Future<void> chooseStart(JourneyStart start) async {
     state = LearnerProfile(start: start, onboardingComplete: true);
-    await _box?.put(_key, {'start': start.name, 'onboardingComplete': true});
+    await localStore?.put(_key, {'start': start.name, 'onboardingComplete': true});
   }
 
   Future<void> reset() async {
     state = const LearnerProfile();
-    await _box?.delete(_key);
+    await localStore?.delete(_key);
   }
 }
 
@@ -154,7 +149,7 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
 
   @override
   LearnerProgress build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     if (raw is! Map) return const LearnerProgress();
     final skills = <SkillArea, int>{};
     final rawSkills = raw['skillEvidence'];
@@ -188,51 +183,37 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
     for (final skill in mission.skills) {
       evidence[skill] = (evidence[skill] ?? 0) + 1;
     }
-    state = LearnerProgress(
+    state = state.copyWith(
       completedMissions: {...state.completedMissions, mission.id},
-      placedOutMissions: state.placedOutMissions,
-      completedPostcards: state.completedPostcards,
       unlockedRewards: {...state.unlockedRewards, mission.reward},
       skillEvidence: evidence,
       activityDates: {...state.activityDates, dateKey(DateTime.now())},
       xp: state.xp + mission.xp,
-      streakFreezes: state.streakFreezes,
     );
     await _persist();
   }
 
   Future<void> completePostcard(String id) async {
     if (state.completedPostcards.contains(id)) return;
-    state = LearnerProgress(
-      completedMissions: state.completedMissions,
-      placedOutMissions: state.placedOutMissions,
+    state = state.copyWith(
       completedPostcards: {...state.completedPostcards, id},
-      unlockedRewards: state.unlockedRewards,
-      skillEvidence: state.skillEvidence,
       activityDates: {...state.activityDates, dateKey(DateTime.now())},
       xp: state.xp + 10,
-      streakFreezes: state.streakFreezes,
     );
     await _persist();
   }
 
   Future<void> addXp(int amount) async {
     if (amount <= 0) return;
-    state = LearnerProgress(
-      completedMissions: state.completedMissions,
-      placedOutMissions: state.placedOutMissions,
-      completedPostcards: state.completedPostcards,
-      unlockedRewards: state.unlockedRewards,
-      skillEvidence: state.skillEvidence,
+    state = state.copyWith(
       activityDates: {...state.activityDates, dateKey(DateTime.now())},
       xp: state.xp + amount,
-      streakFreezes: state.streakFreezes,
     );
     await _persist();
   }
 
   Future<void> _persist() async {
-    await _box?.put(_key, {
+    await localStore?.put(_key, {
       'completedMissions': state.completedMissions.toList(),
       'placedOutMissions': state.placedOutMissions.toList(),
       'completedPostcards': state.completedPostcards.toList(),
@@ -252,20 +233,14 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
         .take(missionsToSkip.clamp(0, missions.length))
         .map((mission) => mission.id)
         .toSet();
-    state = LearnerProgress(
-      completedMissions: state.completedMissions,
-      placedOutMissions: skipped,
-      completedPostcards: state.completedPostcards,
-      unlockedRewards: state.unlockedRewards,
-      skillEvidence: state.skillEvidence,
-      activityDates: state.activityDates,
-      xp: state.xp,
-      streakFreezes: state.streakFreezes,
-    );
+    state = state.copyWith(placedOutMissions: skipped);
     await _persist();
   }
 
-  Future<void> mergeCloudSnapshot(Map<String, dynamic> remote) async {
+  /// Folds a downloaded snapshot into local progress, keeping the larger of
+  /// every value. Returns `false` when the remote adds nothing, so the caller
+  /// can avoid persisting and re-uploading an unchanged snapshot.
+  Future<bool> mergeCloudSnapshot(Map<String, dynamic> remote) async {
     final remoteSkills = remote['skill_evidence'];
     final mergedSkills = {...state.skillEvidence};
     if (remoteSkills is Map) {
@@ -278,7 +253,7 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
         }
       }
     }
-    state = LearnerProgress(
+    final merged = state.copyWith(
       completedMissions: {
         ...state.completedMissions,
         ..._stringSet(remote['completed_missions']),
@@ -303,7 +278,10 @@ class ProgressNotifier extends Notifier<LearnerProgress> {
       xp: _maxInt(state.xp, remote['xp']),
       streakFreezes: _maxInt(state.streakFreezes, remote['streak_freezes']),
     );
+    if (merged == state) return false;
+    state = merged;
     await _persist();
+    return true;
   }
 }
 
@@ -323,80 +301,74 @@ final progressProvider = NotifierProvider<ProgressNotifier, LearnerProgress>(
 class HandwritingHistoryNotifier extends Notifier<List<HandwritingRecord>> {
   static const _key = 'handwriting_photo_history_v1';
 
+  static const _maxRecords = 100;
+
   @override
   List<HandwritingRecord> build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     if (raw is! Iterable) return const [];
-    return raw.whereType<Map>().map((item) {
-      return HandwritingRecord(
-        character: '${item['character'] ?? ''}',
-        score: (item['score'] as num?)?.toInt() ?? 0,
-        accuracy: (item['accuracy'] as num?)?.toInt() ?? 0,
-        balance: (item['balance'] as num?)?.toInt() ?? 0,
-        createdAt: DateTime.tryParse('${item['createdAt']}') ?? DateTime.now(),
-        evidenceMode: '${item['evidenceMode'] ?? 'photo'}',
-      );
-    }).toList();
+    return raw.whereType<Map>().map(handwritingFromMap).toList();
   }
 
   Future<void> add(HandwritingRecord record) async {
-    state = [record, ...state].take(100).toList();
-    await _box?.put(
-      _key,
-      state
-          .map(
-            (item) => {
-              'character': item.character,
-              'score': item.score,
-              'accuracy': item.accuracy,
-              'balance': item.balance,
-              'createdAt': item.createdAt.toIso8601String(),
-              'evidenceMode': item.evidenceMode,
-            },
-          )
-          .toList(),
-    );
+    state = [record, ...state].take(_maxRecords).toList();
+    await _persist();
   }
 
-  Future<void> mergeCloudSnapshot(Map<String, dynamic> remote) async {
+  /// Folds cloud handwriting evidence into the local history, keyed by
+  /// character and timestamp so a record synced twice is stored once.
+  /// Returns `false` when nothing new arrived.
+  Future<bool> mergeCloudSnapshot(Map<String, dynamic> remote) async {
     final raw = remote['handwriting'];
-    if (raw is! Iterable) return;
+    if (raw is! Iterable) return false;
+    String keyFor(HandwritingRecord record) =>
+        '${record.character}|${record.createdAt.toUtc().toIso8601String()}';
     final merged = <String, HandwritingRecord>{
-      for (final item in state)
-        '${item.character}|${item.createdAt.toUtc().toIso8601String()}': item,
+      for (final item in state) keyFor(item): item,
     };
     for (final item in raw.whereType<Map>()) {
-      final record = HandwritingRecord(
-        character: '${item['character'] ?? ''}',
-        score: (item['score'] as num?)?.toInt() ?? 0,
-        accuracy: (item['accuracy'] as num?)?.toInt() ?? 0,
-        balance: (item['balance'] as num?)?.toInt() ?? 0,
-        createdAt: DateTime.tryParse('${item['created_at']}') ?? DateTime.now(),
-        evidenceMode: '${item['evidence_mode'] ?? 'photo'}',
-      );
-      merged['${record.character}|${record.createdAt.toUtc().toIso8601String()}'] =
-          record;
+      final record = handwritingFromMap(item, cloudKeys: true);
+      merged[keyFor(record)] = record;
     }
-    state = merged.values.toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    state = state.take(100).toList();
-    await _box?.put(
-      _key,
-      state
-          .map(
-            (item) => {
-              'character': item.character,
-              'score': item.score,
-              'accuracy': item.accuracy,
-              'balance': item.balance,
-              'createdAt': item.createdAt.toIso8601String(),
-              'evidenceMode': item.evidenceMode,
-            },
-          )
-          .toList(),
-    );
+    final next =
+        (merged.values.toList()
+              ..sort((a, b) => b.createdAt.compareTo(a.createdAt)))
+            .take(_maxRecords)
+            .toList();
+    if (listEquals(next, state)) return false;
+    state = next;
+    await _persist();
+    return true;
+  }
+
+  Future<void> _persist() async {
+    await localStore?.put(_key, state.map(handwritingToMap).toList());
   }
 }
+
+/// Local Hive uses camelCase keys; the cloud snapshot uses snake_case. One
+/// reader handles both so the two shapes can never drift apart.
+HandwritingRecord handwritingFromMap(Map<dynamic, dynamic> item, {
+  bool cloudKeys = false,
+}) => HandwritingRecord(
+  character: '${item['character'] ?? ''}',
+  score: (item['score'] as num?)?.toInt() ?? 0,
+  accuracy: (item['accuracy'] as num?)?.toInt() ?? 0,
+  balance: (item['balance'] as num?)?.toInt() ?? 0,
+  createdAt:
+      DateTime.tryParse('${item[cloudKeys ? 'created_at' : 'createdAt']}') ??
+      DateTime.now(),
+  evidenceMode: '${item[cloudKeys ? 'evidence_mode' : 'evidenceMode'] ?? 'photo'}',
+);
+
+Map<String, dynamic> handwritingToMap(HandwritingRecord record) => {
+  'character': record.character,
+  'score': record.score,
+  'accuracy': record.accuracy,
+  'balance': record.balance,
+  'createdAt': record.createdAt.toIso8601String(),
+  'evidenceMode': record.evidenceMode,
+};
 
 final handwritingHistoryProvider =
     NotifierProvider<HandwritingHistoryNotifier, List<HandwritingRecord>>(

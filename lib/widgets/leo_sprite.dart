@@ -47,7 +47,7 @@ class _LeoSpriteState extends State<LeoSprite> {
   static Future<ui.Image>? _sheet;
 
   static Future<ui.Image> _loadSheet() async {
-    final data = await rootBundle.load('assets/branding/leo-sprites.png');
+    final data = await rootBundle.load('assets/branding/leo-sprites.webp');
     final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
     return (await codec.getNextFrame()).image;
   }
@@ -374,7 +374,7 @@ class _LoadingGarden extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            'assets/branding/leo-loading-garden.png',
+            'assets/branding/leo-loading-garden.webp',
             fit: BoxFit.cover,
             filterQuality: FilterQuality.high,
           ),

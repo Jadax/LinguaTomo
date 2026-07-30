@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'config/local_store.dart';
 import 'config/storage_keys.dart';
 import 'models/app_models.dart';
 import 'providers/achievement_state.dart';
 import 'providers/app_state.dart';
 import 'providers/sync_state.dart';
+import 'providers/word_progress_state.dart';
 import 'services/cloud_service.dart';
 import 'theme/app_theme.dart';
 import 'views/dashboard_view.dart';
@@ -80,7 +82,7 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
         for (final environment in NestEnvironment.values)
           precacheImage(AssetImage(environment.asset), context),
         precacheImage(
-          const AssetImage('assets/branding/leo-face-icon.png'),
+          const AssetImage('assets/branding/leo-face-icon.webp'),
           context,
         ),
       ]).timeout(const Duration(milliseconds: 1200), onTimeout: () => <void>[]);
@@ -113,9 +115,7 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
               ready: _ready,
               onTierSelected: (tier) {
                 _loadingTier = tier;
-                final box = Hive.isBoxOpen(StorageKeys.userData)
-                    ? Hive.box<dynamic>(StorageKeys.userData)
-                    : null;
+                final box = localStore;
                 box?.put('level_prefs_v1', tier.name);
                 box?.put('word_progress_v1', {
                   'completedWords': <String>[],
@@ -128,10 +128,7 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
               onFinished: () {
                 if (!mounted) return;
                 if (_loadingTier != null) {
-                  final box = Hive.isBoxOpen(StorageKeys.userData)
-                      ? Hive.box<dynamic>(StorageKeys.userData)
-                      : null;
-                  box?.put('learner_profile_v1', {
+                  localStore?.put('learner_profile_v1', {
                     'start': _loadingTier!.name,
                     'onboardingComplete': true,
                   });
@@ -164,6 +161,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     AppNavigation.goTo = _selectPage;
     ref.listenManual(progressProvider, (_, _) => _scheduleSync());
     ref.listenManual(handwritingHistoryProvider, (_, _) => _scheduleSync());
+    ref.listenManual(wordProgressProvider, (_, _) => _scheduleSync());
     ref.listenManual(unlockedAchievementsProvider, (previous, next) {
       if (previous?.length == next.length) return;
       _scheduleBoardSync(next.length);
@@ -233,7 +231,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             ClipRRect(
               borderRadius: BorderRadius.circular(13),
               child: Image.asset(
-                'assets/branding/leo-face-icon.png',
+                'assets/branding/leo-face-icon.webp',
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,

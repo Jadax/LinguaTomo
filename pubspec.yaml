@@ -1,7 +1,7 @@
 name: linguatomo
 description: LinguaTomo, a warm Japanese learning companion by Tushant Sharma and Astraiva.
 publish_to: none
-version: 1.17.8+38
+version: 1.17.9+39
 
 environment:
   sdk: ^3.12.2
@@ -30,16 +30,18 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/branding/leo-cheer.png
-    - assets/branding/leo-nest-fireplace.png
-    - assets/branding/leo-nest-room.png
-    - assets/branding/nest-home-pixel.png
-    - assets/branding/nest-journey-pixel.png
-    - assets/branding/nest-japan-pixel.png
-    - assets/branding/nest-spring-pixel.png
-    - assets/branding/nest-winter-pixel.png
-    - assets/branding/leo-face-icon.png
-    - assets/branding/leo-sprites.png
-    - assets/branding/leo-loading-garden.png
+    # Artwork ships as WebP sized for its largest on-screen use. Re-export
+    # from the originals rather than upscaling these.
+    - assets/branding/leo-nest-room.webp
+    - assets/branding/nest-home-pixel.webp
+    - assets/branding/nest-journey-pixel.webp
+    - assets/branding/nest-japan-pixel.webp
+    - assets/branding/nest-spring-pixel.webp
+    - assets/branding/nest-winter-pixel.webp
+    - assets/branding/leo-face-icon.webp
+    - assets/branding/leo-sprites.webp
+    - assets/branding/leo-loading-garden.webp
     - assets/content/grammar/
+    # Empty until the achievement chimes are recorded; declared so the .mp3
+    # files bundle as soon as they are dropped in. See docs/ROADMAP.md.
     - assets/sounds/

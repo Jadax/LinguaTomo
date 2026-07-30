@@ -1,17 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-import '../config/storage_keys.dart';
+import '../config/local_store.dart';
 import '../data/word_bank.dart';
 import '../models/app_models.dart';
 import 'word_progress_state.dart';
-
-const _boxName = StorageKeys.userData;
-
-Box<dynamic>? get _box =>
-    Hive.isBoxOpen(_boxName) ? Hive.box<dynamic>(_boxName) : null;
 
 enum ChallengeType { vocabulary, speed, memory, culture }
 
@@ -73,7 +67,7 @@ class WeeklyChallengeNotifier extends Notifier<WeeklyChallenge> {
 
   @override
   WeeklyChallenge build() {
-    final raw = _box?.get(_key);
+    final raw = localStore?.get(_key);
     if (raw is! Map) return _generateNewChallenge();
 
     final storedType = '${raw['challengeType'] ?? ''}';
@@ -162,7 +156,7 @@ class WeeklyChallengeNotifier extends Notifier<WeeklyChallenge> {
   }
 
   Future<void> _persist() async {
-    await _box?.put(_key, {
+    await localStore?.put(_key, {
       'challengeType': state.challengeType.name,
       'weekStart': state.weekStart.toIso8601String(),
       'completed': state.completed,

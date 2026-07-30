@@ -40,8 +40,6 @@ services. Optional cloud state must not block local application startup.
 | `data/words_a1.dart` – `words_n1.dart` | CEFR and JLPT-aligned vocabulary expansions |
 | `data/words_themes_extra.dart` | Extra themed vocabulary |
 | `data/words_extra_2.dart` | Kitchen, home, and specialised vocabulary |
-| `data/theme_registry.dart` | 31 themed sections with `ThemeEntry` model |
-| `data/sections_intro.dart` | Pre-A1 section definitions |
 | `data/conversation_data.dart` | Daily conversation pairs with romaji |
 | `data/achievement_data.dart` | 85 achievements with progress/target functions |
 | `data/festival_calendar_data.dart` | Seasonal and cultural events |
@@ -54,6 +52,10 @@ files into a single list. `wordsForTierInOrder()` respects `_lessonPath` per
 tier and appends unplaced words alphabetically. Tests assert ≥600 words.
 
 ## Theme picker pattern
+
+Themes are the eight `WordCategory` values, not a separate registry. The
+picker derives its chips from `WordCategory.values` filtered to those with
+words at the learner's tier, so adding a category is the only wiring needed.
 
 `_ContinueLearningCard.onTap` calls `_showThemePicker()` which opens a modal
 bottom sheet with themed category chips. The sheet is filtered by the user's
@@ -100,6 +102,17 @@ segments to look up words from the word bank.
 Dashboard cards: `_LeoMoodGreeting`, `_WordGardenSummary`, `_SeasonalCard`,
 `_WeeklyChallengeCard` in `views/dashboard_view.dart`.
 
+## Persistence boundary
+
+Providers never open Hive themselves. They read and write through
+`localStore` in `config/local_store.dart`, which returns `null` when the box
+could not be opened so a storage failure degrades to memory-only learning.
+
+State classes that a provider holds must implement value equality. Riverpod
+compares with `==`, so a class without it notifies on every assignment; for
+the progress models that also re-arms the cloud sync debounce and syncs in a
+loop. Add `copyWith` and `==`/`hashCode` together with any new state class.
+
 ## Supabase
 
 `supabase/linguatomo.sql` is the only canonical SQL file. Modify it in place
@@ -107,6 +120,23 @@ and update its schema-version comment. Do not add migration fragments.
 
 Only `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` belong in Flutter
 build-time configuration. A service-role key is server-only.
+
+### Progress snapshot
+
+`SyncNotifier._buildSnapshot` writes the whole of the learner's earned
+progress into `learner_progress.snapshot` as one JSON object. Anything a
+learner would grieve losing on a reinstall belongs in it. Snapshot schema 2
+covers mission, postcard, reward, skill, XP, streak, handwriting and word
+progress — word progress was absent from schema 1, so a snapshot written by
+an older build simply lacks those keys.
+
+Each `mergeCloudSnapshot` keeps the larger of every value and returns whether
+the remote actually contributed anything. That boolean is what stops the
+sync loop: an unchanged download must not look like fresh local work.
+
+The publishable key is public, so the database, not the client, is the place
+to enforce limits. The snapshot is capped at 256 KB and the `on_profile_update`
+trigger keeps leaderboard figures monotonic and rate-limited.
 
 ## Responsive and accessibility boundaries
 
@@ -127,6 +157,7 @@ isolate it behind a feature module rather than replacing the application shell.
 Version appears in three places kept in sync:
 1. `pubspec.yaml` — `version: X.Y.Z+build`
 2. `supabase/linguatomo.sql` — schema version comment
-3. `lib/views/account_view.dart` — hardcoded display string
+3. `lib/config/app_info.dart` — `AppInfo.version` and `AppInfo.buildNumber`,
+   which every screen reads through `AppInfo.versionLabel`
 
 TTS speed: 0.72 in `speech_service.dart` (warm and clear for learning).

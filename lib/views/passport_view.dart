@@ -75,7 +75,7 @@ class PassportView extends ConsumerWidget {
                     radius: 46,
                     backgroundColor: Colors.white,
                     backgroundImage: AssetImage(
-                      'assets/branding/leo-face-icon.png',
+                      'assets/branding/leo-face-icon.webp',
                     ),
                   ),
                 ),
