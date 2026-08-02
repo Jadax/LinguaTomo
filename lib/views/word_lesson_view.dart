@@ -46,7 +46,8 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
 
   // Two steps per word: introduce + quiz. Total steps = words.length * 2.
   int get _totalSteps => _words.length * 2;
-  int get _currentStep => _currentIndex * 2 + (_phase == _LessonPhase.quiz ? 1 : 0);
+  int get _currentStep =>
+      _currentIndex * 2 + (_phase == _LessonPhase.quiz ? 1 : 0);
 
   @override
   void initState() {
@@ -69,11 +70,10 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     // Reverse quiz (English prompt → pick Japanese) for intermediate+ tiers.
     final highestTier = _words.isEmpty
         ? DifficultyTier.starter
-        : _words.map((w) => w.tier).reduce(
-              (a, b) => a.index > b.index ? a : b,
-            );
+        : _words.map((w) => w.tier).reduce((a, b) => a.index > b.index ? a : b);
     _isReverseQuiz =
-        highestTier.index >= DifficultyTier.intermediate.index && !_isFirstLesson;
+        highestTier.index >= DifficultyTier.intermediate.index &&
+        !_isFirstLesson;
     if (_showIntro) {
       _phase = _LessonPhase.intro;
     } else {
@@ -87,19 +87,20 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     required WordCategory category,
     required DifficultyTier tier,
   }) {
-    final allWords = wordBank
-        .where((w) => w.category == category && w.tier == tier)
-        .toList();
+    final allWords = wordsForTierInOrder(
+      tier,
+    ).where((word) => word.category == category).toList(growable: false);
     final completed = ref.read(wordProgressProvider).completedWords;
-    final incomplete =
-        allWords.where((w) => !completed.contains(w.id)).toList();
+    final incomplete = allWords
+        .where((w) => !completed.contains(w.id))
+        .toList();
     if (incomplete.length >= 5) {
-      incomplete.shuffle(_rng);
       return incomplete.take(5).toList();
     }
-    final alreadyLearned =
-        allWords.where((w) => completed.contains(w.id)).toList();
-    final pool = [...incomplete, ...alreadyLearned]..shuffle(_rng);
+    final alreadyLearned = allWords
+        .where((w) => completed.contains(w.id))
+        .toList();
+    final pool = [...incomplete, ...alreadyLearned];
     return pool.take(5).toList();
   }
 
@@ -117,18 +118,47 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     if (_isReverseQuiz) {
       // Reverse: show English, pick the correct Japanese.
       final correctAnswer = current.japanese;
-      final otherWords =
-          wordBank.where((w) => w.id != current.id).toList()..shuffle(_rng);
-      final distractors = otherWords.take(2).map((w) => w.japanese).toList();
+      final distractors = _distractorWords(
+        current,
+      ).map((word) => word.japanese).toList();
       _options = [correctAnswer, ...distractors]..shuffle(_rng);
     } else {
       // Forward: show Japanese, pick the correct English.
       final correctAnswer = current.english;
-      final otherWords =
-          wordBank.where((w) => w.id != current.id).toList()..shuffle(_rng);
-      final distractors = otherWords.take(2).map((w) => w.english).toList();
+      final distractors = _distractorWords(
+        current,
+      ).map((word) => word.english).toList();
       _options = [correctAnswer, ...distractors]..shuffle(_rng);
     }
+  }
+
+  /// Plausible alternatives make recall meaningful: start in the same lesson
+  /// theme and tier, then widen only as needed. Never use duplicate labels.
+  List<Word> _distractorWords(Word current) {
+    final pools = <Iterable<Word>>[
+      wordBank.where(
+        (word) =>
+            word.id != current.id &&
+            word.category == current.category &&
+            word.tier == current.tier,
+      ),
+      wordBank.where(
+        (word) => word.id != current.id && word.category == current.category,
+      ),
+      wordBank.where(
+        (word) => word.id != current.id && word.tier == current.tier,
+      ),
+    ];
+    final selected = <Word>[];
+    final labels = <String>{current.english.toLowerCase()};
+    for (final pool in pools) {
+      final shuffled = pool.toList()..shuffle(_rng);
+      for (final word in shuffled) {
+        if (labels.add(word.english.toLowerCase())) selected.add(word);
+        if (selected.length == 3) return selected;
+      }
+    }
+    return selected;
   }
 
   void _startQuizPhase() {
@@ -142,8 +172,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
       _selectedOption = index;
     });
     final current = _words[_currentIndex];
-    final correctAnswer =
-        _isReverseQuiz ? current.japanese : current.english;
+    final correctAnswer = _isReverseQuiz ? current.japanese : current.english;
     final isCorrect = _options[index] == correctAnswer;
     if (isCorrect) _correctCount++;
     _answerResults[_currentIndex] = isCorrect;
@@ -183,7 +212,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     for (var i = 0; i < _words.length; i++) {
       if (_answerResults[i]) correctIds.add(_words[i].id);
     }
-    ref.read(wordProgressProvider.notifier).completeLesson(
+    ref
+        .read(wordProgressProvider.notifier)
+        .completeLesson(
           wordIds: wordIds,
           correctCount: _correctCount,
           correctWordIds: correctIds,
@@ -239,9 +270,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
           ),
         ),
       ),
-      body: _phase == _LessonPhase.introduce
-          ? _buildIntroduce()
-          : _buildQuiz(),
+      body: _phase == _LessonPhase.introduce ? _buildIntroduce() : _buildQuiz(),
     );
   }
 
@@ -316,10 +345,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                   ),
                   child: const Text(
                     "Let's go!",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                 ),
               ),
@@ -369,9 +395,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
           Center(
             child: Text(
               word.japanese,
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
           ),
           const SizedBox(height: 8),
@@ -426,10 +452,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               ),
               child: const Text(
                 'Got it!',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
             ),
           ),
@@ -482,8 +505,8 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               child: Text(
                 word.japanese,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ),
@@ -494,10 +517,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
             child: Center(
               child: Text(
                 word.romaji,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.muted,
-                ),
+                style: const TextStyle(fontSize: 16, color: AppColors.muted),
               ),
             ),
           ),
@@ -505,9 +525,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
           if (!_answered)
             Text(
               'Tap the speaker to listen!',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppColors.persimmon,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(color: AppColors.persimmon),
               textAlign: TextAlign.center,
             ),
           if (_isFirstLesson && !_answered) ...[
@@ -527,7 +547,8 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                 text: _options[i],
                 selected: _selectedOption == i,
                 correct: _answered && _options[i] == word.english,
-                wrong: _answered &&
+                wrong:
+                    _answered &&
                     _selectedOption == i &&
                     _options[i] != word.english,
                 enabled: !_answered,
@@ -554,10 +575,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                         ? LeoPose.smile
                         : LeoPose.meow,
                     size: 44,
-                    semanticLabel:
-                        _answerResults[_currentIndex]
-                            ? 'Leo is happy with your answer'
-                            : 'Leo encourages you to try again',
+                    semanticLabel: _answerResults[_currentIndex]
+                        ? 'Leo is happy with your answer'
+                        : 'Leo encourages you to try again',
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -579,7 +599,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               child: FilledButton(
                 onPressed: _nextWord,
                 child: Text(
-                  _currentIndex < _words.length - 1 ? 'Next word' : 'See results',
+                  _currentIndex < _words.length - 1
+                      ? 'Next word'
+                      : 'See results',
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
@@ -619,10 +641,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                 const SizedBox(height: 4),
                 Text(
                   word.category.label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.muted,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: AppColors.muted),
                 ),
               ],
             ),
@@ -641,7 +660,8 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                 text: _options[i],
                 selected: _selectedOption == i,
                 correct: _answered && _options[i] == word.japanese,
-                wrong: _answered &&
+                wrong:
+                    _answered &&
                     _selectedOption == i &&
                     _options[i] != word.japanese,
                 enabled: !_answered,
@@ -668,10 +688,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                         ? LeoPose.smile
                         : LeoPose.meow,
                     size: 44,
-                    semanticLabel:
-                        _answerResults[_currentIndex]
-                            ? 'Leo is happy with your answer'
-                            : 'Leo encourages you to try again',
+                    semanticLabel: _answerResults[_currentIndex]
+                        ? 'Leo is happy with your answer'
+                        : 'Leo encourages you to try again',
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -693,7 +712,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               child: FilledButton(
                 onPressed: _nextWord,
                 child: Text(
-                  _currentIndex < _words.length - 1 ? 'Next word' : 'See results',
+                  _currentIndex < _words.length - 1
+                      ? 'Next word'
+                      : 'See results',
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
@@ -705,8 +726,9 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
 
   // ── RESULTS ────────────────────────────────────────────────────────
   Widget _buildResults() {
-    final percentage =
-        _words.isEmpty ? 0 : ((_correctCount / _words.length) * 100).round();
+    final percentage = _words.isEmpty
+        ? 0
+        : ((_correctCount / _words.length) * 100).round();
     final passed = _isRetry || _correctCount >= 3;
     final failedWords = <Word>[];
     if (!passed) {
@@ -733,10 +755,10 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
               Text(
                 passed
                     ? (percentage >= 80
-                        ? 'Brilliant!'
-                        : percentage >= 50
-                            ? 'Good work!'
-                            : 'Well done!')
+                          ? 'Brilliant!'
+                          : percentage >= 50
+                          ? 'Good work!'
+                          : 'Well done!')
                     : 'Keep going!',
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
@@ -776,8 +798,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                   const SizedBox(height: 12),
                   const Text(
                     'Perfect lesson!',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -791,10 +812,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                   ),
                   child: const Text(
                     'Try again',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                 ),
               ] else ...[
@@ -805,10 +823,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                   ),
                   child: const Text(
                     'Continue',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                   ),
                 ),
               ],
@@ -874,8 +889,9 @@ class _AnswerOption extends StatelessWidget {
                 text,
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight:
-                      correct || wrong ? FontWeight.w800 : FontWeight.w600,
+                  fontWeight: correct || wrong
+                      ? FontWeight.w800
+                      : FontWeight.w600,
                 ),
               ),
             ),
@@ -915,9 +931,7 @@ class _TutorialBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFFFFF7E8),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.persimmon.withValues(alpha: .2),
-          ),
+          border: Border.all(color: AppColors.persimmon.withValues(alpha: .2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -966,9 +980,7 @@ class _ContextSentence extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFF0F4FF),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFD0DBF0),
-            ),
+            border: Border.all(color: const Color(0xFFD0DBF0)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

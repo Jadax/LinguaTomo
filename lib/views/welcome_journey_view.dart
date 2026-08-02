@@ -12,8 +12,7 @@ class WelcomeJourneyView extends ConsumerStatefulWidget {
   const WelcomeJourneyView({super.key});
 
   @override
-  ConsumerState<WelcomeJourneyView> createState() =>
-      _WelcomeJourneyViewState();
+  ConsumerState<WelcomeJourneyView> createState() => _WelcomeJourneyViewState();
 }
 
 class _WelcomeJourneyViewState extends ConsumerState<WelcomeJourneyView> {
@@ -95,8 +94,13 @@ class _WelcomeJourneyViewState extends ConsumerState<WelcomeJourneyView> {
                       // ignore: deprecated_member_use
                       groupValue: _selected,
                       // ignore: deprecated_member_use
-                      onChanged: (value) =>
-                          setState(() => _selected = value),
+                      onChanged: _saving
+                          ? null
+                          : (value) async {
+                              if (value == null) return;
+                              setState(() => _selected = value);
+                              await _continue();
+                            },
                       title: Text(
                         tier.label,
                         style: const TextStyle(fontWeight: FontWeight.w900),
@@ -105,14 +109,12 @@ class _WelcomeJourneyViewState extends ConsumerState<WelcomeJourneyView> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 8),
-              FilledButton.icon(
-                onPressed: _selected == null || _saving ? null : _continue,
-                icon: const Icon(Icons.arrow_forward_rounded),
-                label: Text(
-                  _saving ? 'Preparing your route...' : 'Start learning',
-                ),
-              ),
+              if (_saving) ...[
+                const SizedBox(height: 8),
+                const Center(child: CircularProgressIndicator()),
+                const SizedBox(height: 8),
+                const Center(child: Text('Preparing your route...')),
+              ],
               const SizedBox(height: 12),
               const Text(
                 'Beginner? Pick Starter — you do not need to know any Japanese to start. Leo teaches you words from your very first lesson.',

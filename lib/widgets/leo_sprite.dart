@@ -254,6 +254,7 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
   Timer? _stepTimer;
   bool _walkFrame = false;
   bool _caught = false;
+  bool _finished = false;
   DifficultyTier? _selectedTier;
 
   @override
@@ -285,6 +286,13 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
     _stepTimer?.cancel();
     _controller.stop();
     setState(() => _caught = true);
+    _finishIfReady();
+  }
+
+  void _finishIfReady() {
+    if (!_caught || _selectedTier == null || _finished) return;
+    _finished = true;
+    widget.onFinished();
   }
 
   @override
@@ -333,16 +341,9 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                     onChanged: (tier) {
                       setState(() => _selectedTier = tier);
                       widget.onTierSelected?.call(tier);
+                      _finishIfReady();
                     },
                   ),
-                  const SizedBox(height: 12),
-                  if (_caught)
-                    FilledButton(
-                      onPressed: _selectedTier == null
-                          ? null
-                          : widget.onFinished,
-                      child: const Text('Start learning'),
-                    ),
                 ],
               ),
             ),

@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.17.9, build 39**
+**Version 1.18.0, build 40**
 
 | Area | Available now |
 |---|---|
@@ -33,12 +33,12 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 | Word growth | 4-stage growth system: Seed → Sprout → Bud → Bloom (tracked per word) |
 | Leo mood | Personality system: excited, proud, sleepy, curious, encouraging, playful, cozy |
 | Seasonal | Monthly season progress with active festival chips and badge target |
-| Weekly challenge | Rotating weekly quizzes with streak tracking and best scores |
+| Weekly challenge | Playable rotating weekly quizzes with streak tracking and best scores |
 | Quiz | Listen-first mode with audio auto-play, 3/5 gate, wrong-word retry |
 | Dashboard | Continue Learning card, Daily Conversation with audio, level picker |
 | Learning hub | CEFR/JLPT guide, achievement tracker (85 achievements), grammar explorer |
 | Characters | Hiragana, katakana and introductory kanji studio with KanjiVG diagrams |
-| Writing | Kana and introductory kanji targets, daily and level sets, touch canvas |
+| Writing | Kana and introductory kanji targets, touch canvas, zoom and graduated trace-to-memory practice |
 | Culture | Living Postcards, seasonal story side quests, Japanese festival calendar |
 | Nest | CustomPainter scene with Leo, trophy shelf, nest item placement |
 | Motivation | Achievement banner, streaks, postcard collection |

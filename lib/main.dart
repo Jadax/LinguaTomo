@@ -12,6 +12,7 @@ import 'providers/app_state.dart';
 import 'providers/sync_state.dart';
 import 'providers/word_progress_state.dart';
 import 'services/cloud_service.dart';
+import 'services/speech_service.dart';
 import 'theme/app_theme.dart';
 import 'views/dashboard_view.dart';
 import 'views/learning_hub_view.dart';
@@ -57,6 +58,13 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
   var _showLoading = true;
   var _prepared = false;
   DifficultyTier? _loadingTier;
+
+  @override
+  void initState() {
+    super.initState();
+    // Warm browser/device text-to-speech before the learner taps a speaker.
+    unawaited(SpeechService().warmUp());
+  }
 
   @override
   void didChangeDependencies() {

@@ -44,6 +44,13 @@ void main() {
     }
   });
 
+  test('representative word imagery matches the intended word', () {
+    final car = wordBankById['s_57'];
+    expect(car, isNotNull);
+    expect(car!.english, 'Car');
+    expect(car.emoji, '🚗');
+  });
+
   test('wordsForTier filters correctly', () {
     final starter = wordsForTier(DifficultyTier.starter);
     expect(starter.length, greaterThanOrEqualTo(80));

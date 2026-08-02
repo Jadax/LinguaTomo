@@ -38,11 +38,28 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 
 ## Release verification
 
-Version 1.17.9, build 39 passed local analysis, all 27 automated tests, a Web
-release build, and an Android APK release build. Store publication additionally
-requires the private Android upload key.
+Version 1.18.0, build 40 passed local analysis, all 28 automated tests, and a
+Web release build. Store publication additionally requires the private Android
+upload key. Android and iOS target builds should be re-run before their store
+artefacts are published.
 
-This release closes an audit of security, efficiency and duplication:
+This release makes the learner path more direct and coherent:
+
+- The weekly challenge card opens a playable challenge rather than a static
+  summary, and a completed challenge retains its best score.
+- Vocabulary alternatives now come first from the word's lesson theme and
+  difficulty tier; the review route practises words the learner has actually
+  encountered. The word garden explains its four visible growth stages, while
+  Can-Do phrase and grammar review is labelled separately.
+- Handwriting accepts touch pointer input, offers zoom controls, and repeats
+  each character with a full guide, a faint guide and then no guide to build
+  motor memory. Level selection now continues immediately.
+- Japanese web speech pre-warms the available voice and avoids Web completion
+  handling that can stall Chrome. This requires manual Chrome/Edge audio
+  verification before claiming browser-wide audio support; Internet Explorer
+  is not a supported browser.
+
+The preceding release closed an audit of security, efficiency and duplication:
 
 - The cloud snapshot now carries word progress, per-word growth counts, lesson
   history and word activity dates. Schema 1 omitted all of these, so a learner

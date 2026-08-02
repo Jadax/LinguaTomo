@@ -25,10 +25,12 @@ import '../theme/app_theme.dart';
 import '../widgets/leo_sprite.dart';
 import '../widgets/nest_ambience.dart';
 import 'collection_view.dart';
+import 'can_do_mission_view.dart';
 import 'postcards_view.dart';
 import 'review_view.dart';
 import 'seasonal_stories_view.dart';
 import 'word_lesson_view.dart';
+import 'weekly_challenge_view.dart';
 
 class DashboardView extends ConsumerWidget {
   const DashboardView({super.key});
@@ -182,12 +184,12 @@ class DashboardView extends ConsumerWidget {
                   child: Icon(Icons.eco_rounded, color: AppColors.matcha),
                 ),
                 title: const Text(
-                  'Memory Garden',
+                  'Memory Garden · phrases & grammar',
                   style: TextStyle(fontWeight: FontWeight.w900),
                 ),
                 subtitle: Text(
                   dueReviews == 0
-                      ? 'Nothing due. Your memory garden is tidy.'
+                      ? 'Nothing due yet. FSRS will invite you back at the useful time.'
                       : '$dueReviews gentle review${dueReviews == 1 ? '' : 's'} ready',
                 ),
                 trailing: IconButton(
@@ -298,7 +300,7 @@ class DashboardView extends ConsumerWidget {
     builder: (context) => AlertDialog(
       title: const Text('How the Memory Garden works'),
       content: const Text(
-        'Each learned phrase or grammar pattern becomes a plant. FSRS estimates when that memory is likely to become difficult, then brings it back just before it fades. Again shortens the interval; Hard, Good and Easy lengthen it by different amounts. There is no penalty for returning late, and the garden never dies.',
+        'This garden is for Can-Do phrases and grammar patterns, not for the words you just learned. FSRS estimates when a phrase or pattern is likely to become difficult, then brings it back just before it fades. Again shortens the interval; Hard, Good and Easy lengthen it by different amounts. There is no penalty for returning late, and the garden never dies. Your Word Mastery Garden is the separate card above it.',
       ),
       actions: [
         TextButton(
@@ -320,9 +322,9 @@ class _NextCanDoCard extends ConsumerWidget {
       margin: EdgeInsets.zero,
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => CanDoMissionView(mission: mission)),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -963,91 +965,102 @@ class _WeeklyChallengeCard extends ConsumerWidget {
     final challenge = ref.watch(weeklyChallengeProvider);
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  '${challenge.challengeType.emoji} Weekly Challenge',
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-                const Spacer(),
-                if (challenge.completed)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.matcha.withValues(alpha: .15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Complete',
-                      style: TextStyle(
-                        fontSize: 11,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: challenge.completed
+            ? null
+            : () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const WeeklyChallengeView()),
+              ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '${challenge.challengeType.emoji} Weekly Challenge',
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  const Spacer(),
+                  if (challenge.completed)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.matcha.withValues(alpha: .15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Complete',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.matcha,
+                        ),
+                      ),
+                    )
+                  else
+                    Text(
+                      '${challenge.daysRemaining}d left',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.persimmon,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.matcha,
                       ),
                     ),
-                  )
-                else
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                challenge.challengeType.label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                challenge.challengeType.description,
+                style: const TextStyle(fontSize: 12, color: AppColors.muted),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.local_fire_department_rounded,
+                    size: 16,
+                    color: AppColors.persimmon,
+                  ),
+                  const SizedBox(width: 4),
                   Text(
-                    '${challenge.daysRemaining}d left',
+                    '${challenge.streakWeeks} week streak',
                     style: const TextStyle(
                       fontSize: 12,
-                      color: AppColors.persimmon,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              challenge.challengeType.label,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              challenge.challengeType.description,
-              style: const TextStyle(fontSize: 12, color: AppColors.muted),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(
-                  Icons.local_fire_department_rounded,
-                  size: 16,
-                  color: AppColors.persimmon,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${challenge.streakWeeks} week streak',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                  const SizedBox(width: 16),
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    size: 16,
+                    color: AppColors.persimmon,
                   ),
-                ),
-                const SizedBox(width: 16),
-                const Icon(
-                  Icons.emoji_events_rounded,
-                  size: 16,
-                  color: AppColors.persimmon,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Best: ${challenge.bestScore}%',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                  const SizedBox(width: 4),
+                  Text(
+                    'Best: ${challenge.bestScore}%',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1494,15 +1507,8 @@ class _WordGardenSummary extends StatelessWidget {
     for (final stage in WordGrowthStage.values) {
       counts[stage] = 0;
     }
-    for (final entry in wordProgress.wordCorrectCounts.entries) {
-      final count = entry.value;
-      final stage = count >= 5
-          ? WordGrowthStage.bloom
-          : count >= 3
-          ? WordGrowthStage.bud
-          : count >= 1
-          ? WordGrowthStage.sprout
-          : WordGrowthStage.seed;
+    for (final id in wordProgress.completedWords) {
+      final stage = wordProgress.growthStage(id);
       counts[stage] = (counts[stage] ?? 0) + 1;
     }
     final learned = wordProgress.wordsLearned;
@@ -1516,7 +1522,7 @@ class _WordGardenSummary extends StatelessWidget {
             Row(
               children: [
                 const Text(
-                  'Word Garden',
+                  'Word Mastery Garden',
                   style: TextStyle(fontWeight: FontWeight.w900),
                 ),
                 const Spacer(),
@@ -1525,6 +1531,11 @@ class _WordGardenSummary extends StatelessWidget {
                   style: const TextStyle(fontSize: 12, color: AppColors.muted),
                 ),
               ],
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Each correct recall helps a learned word grow: Seed → Sprout → Bud → Bloom.',
+              style: TextStyle(fontSize: 12, color: AppColors.muted),
             ),
             const SizedBox(height: 12),
             Row(
@@ -1551,21 +1562,35 @@ class _WordReviewSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final seedCount = wordProgress.wordCorrectCounts.values
-        .where((c) => c == 0)
+    final stages = wordProgress.completedWords
+        .map(wordProgress.growthStage)
+        .toList(growable: false);
+    final seedCount = stages
+        .where((stage) => stage == WordGrowthStage.seed)
         .length;
-    final sproutCount = wordProgress.wordCorrectCounts.values
-        .where((c) => c == 1)
+    final sproutCount = stages
+        .where((stage) => stage == WordGrowthStage.sprout)
         .length;
-    final budCount = wordProgress.wordCorrectCounts.values
-        .where((c) => c >= 2 && c < 5)
+    final budCount = stages
+        .where((stage) => stage == WordGrowthStage.bud)
         .length;
-    final bloomCount = wordProgress.wordCorrectCounts.values
-        .where((c) => c >= 5)
+    final bloomCount = stages
+        .where((stage) => stage == WordGrowthStage.bloom)
         .length;
     final total = wordProgress.wordsLearned;
     if (total == 0) return const SizedBox.shrink();
-    final needsReview = seedCount + sproutCount;
+    final needsReview = seedCount + sproutCount + budCount;
+    final reviewWords =
+        wordProgress.completedWords
+            .map((id) => wordBankById[id])
+            .whereType<Word>()
+            .toList()
+          ..sort(
+            (a, b) => wordProgress
+                .growthStage(a.id)
+                .index
+                .compareTo(wordProgress.growthStage(b.id).index),
+          );
     return Card(
       margin: EdgeInsets.zero,
       color: needsReview > 5
@@ -1631,12 +1656,15 @@ class _WordReviewSummary extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: TextButton.icon(
-                  onPressed: () => Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const ReviewView())),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          WordLessonView(words: reviewWords.take(5).toList()),
+                    ),
+                  ),
                   icon: const Icon(Icons.play_arrow_rounded, size: 20),
                   label: Text(
-                    'Review $needsReview word${needsReview == 1 ? '' : 's'}',
+                    'Practise $needsReview growing word${needsReview == 1 ? '' : 's'}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   style: TextButton.styleFrom(
@@ -1782,7 +1810,6 @@ class _DailyXpGoal extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _SeasonalCard extends ConsumerWidget {

@@ -19,14 +19,10 @@ void main() {
     expect(find.text('Starter'), findsOneWidget);
     expect(find.text('Expert'), findsOneWidget);
 
-    // Select a level and tap Start.
+    // Selecting a level enters the route immediately.
     await tester.ensureVisible(find.text('Starter'));
     await tester.pump();
     await tester.tap(find.text('Starter'));
-    await tester.pump();
-    await tester.ensureVisible(find.text('Start learning'));
-    await tester.pump();
-    await tester.tap(find.text('Start learning'));
     await tester.pump(const Duration(milliseconds: 300));
 
     // Loading screen dismissed. Depending on Hive state the app either
@@ -45,9 +41,6 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('Starter'));
       await tester.pump();
-      await tester.ensureVisible(find.text('Start learning'));
-      await tester.pump();
-      await tester.tap(find.text('Start learning'));
       await tester.pump(const Duration(milliseconds: 300));
     }
   });

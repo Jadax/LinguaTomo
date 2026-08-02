@@ -126,6 +126,14 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
   _LibraryScope _scope = _LibraryScope.today;
   final List<List<Offset>> _strokes = [];
   int? _score;
+  var _practiceRound = 0;
+  var _zoom = 1.0;
+
+  String get _practicePrompt => switch (_practiceRound) {
+    0 => '1 of 3 · Trace the coloured guide',
+    1 => '2 of 3 · Copy with the faint guide',
+    _ => '3 of 3 · Write it from memory',
+  };
 
   @override
   void initState() {
@@ -176,6 +184,12 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
     ref.read(writingProgressProvider.notifier).record(_character.symbol, score);
   }
 
+  void _nextAttempt() => setState(() {
+    _practiceRound = (_practiceRound + 1).clamp(0, 2);
+    _strokes.clear();
+    _score = null;
+  });
+
   @override
   Widget build(BuildContext context) {
     final progress = ref.watch(writingProgressProvider);
@@ -215,6 +229,7 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
               _character = _targetsFor(_scope, learner.stage).first;
               _strokes.clear();
               _score = null;
+              _practiceRound = 0;
             }),
           ),
           const SizedBox(height: 14),
@@ -260,6 +275,7 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
                             _character = value;
                             _strokes.clear();
                             _score = null;
+                            _practiceRound = 0;
                           });
                         },
                       ),
@@ -290,6 +306,33 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
             ),
           ),
           const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _practicePrompt,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Zoom out',
+                onPressed: _zoom <= 1
+                    ? null
+                    : () =>
+                          setState(() => _zoom = (_zoom - .2).clamp(1.0, 1.8)),
+                icon: const Icon(Icons.zoom_out_rounded),
+              ),
+              IconButton(
+                tooltip: 'Zoom in',
+                onPressed: _zoom >= 1.8
+                    ? null
+                    : () =>
+                          setState(() => _zoom = (_zoom + .2).clamp(1.0, 1.8)),
+                icon: const Icon(Icons.zoom_in_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
           AspectRatio(
             aspectRatio: 1,
             child: Card(
@@ -303,19 +346,29 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
                   );
                   return MouseRegion(
                     cursor: SystemMouseCursors.precise,
-                    child: GestureDetector(
+                    child: Listener(
                       behavior: HitTestBehavior.opaque,
-                      onPanStart: (details) =>
-                          _startStroke(details.localPosition, size),
-                      onPanUpdate: (details) =>
-                          _continueStroke(details.localPosition, size),
-                      child: CustomPaint(
-                        painter: _WritingPainter(
-                          targetSymbol: _character.symbol,
-                          guideStrokes: _character.strokes,
-                          userStrokes: _strokes,
+                      onPointerDown: (event) =>
+                          _startStroke(event.localPosition, size),
+                      onPointerMove: (event) =>
+                          _continueStroke(event.localPosition, size),
+                      child: Transform.scale(
+                        scale: _zoom,
+                        child: CustomPaint(
+                          painter: _WritingPainter(
+                            targetSymbol: _character.symbol,
+                            guideStrokes: _practiceRound == 2
+                                ? const []
+                                : _character.strokes,
+                            guideOpacity: switch (_practiceRound) {
+                              0 => .28,
+                              1 => .10,
+                              _ => 0,
+                            },
+                            userStrokes: _strokes,
+                          ),
+                          child: const SizedBox.expand(),
                         ),
-                        child: const SizedBox.expand(),
                       ),
                     ),
                   );
@@ -361,6 +414,17 @@ class _WritingCanvasViewState extends ConsumerState<WritingCanvasView> {
           if (_score case final score?) ...[
             const SizedBox(height: 12),
             _LeoFeedback(score: score, guided: _character.strokes.isNotEmpty),
+            if (_practiceRound < 2) ...[
+              const SizedBox(height: 8),
+              FilledButton.tonal(
+                onPressed: _nextAttempt,
+                child: Text(
+                  _practiceRound == 0
+                      ? 'Try it again with less help'
+                      : 'Try it from memory',
+                ),
+              ),
+            ],
           ],
           const SizedBox(height: 16),
           const _WritingTips(),
@@ -374,11 +438,13 @@ class _WritingPainter extends CustomPainter {
   const _WritingPainter({
     required this.targetSymbol,
     required this.guideStrokes,
+    required this.guideOpacity,
     required this.userStrokes,
   });
 
   final String targetSymbol;
   final List<List<Offset>> guideStrokes;
+  final double guideOpacity;
   final List<List<Offset>> userStrokes;
 
   @override
@@ -413,7 +479,7 @@ class _WritingPainter extends CustomPainter {
     );
 
     final guidePaint = Paint()
-      ..color = AppColors.charcoal.withValues(alpha: .16)
+      ..color = AppColors.charcoal.withValues(alpha: guideOpacity)
       ..strokeWidth = math.max(15, size.width * .055)
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -423,7 +489,7 @@ class _WritingPainter extends CustomPainter {
         text: TextSpan(
           text: targetSymbol,
           style: TextStyle(
-            color: AppColors.charcoal.withValues(alpha: .13),
+            color: AppColors.charcoal.withValues(alpha: guideOpacity),
             fontSize: size.width * .68,
             fontWeight: FontWeight.w500,
           ),
