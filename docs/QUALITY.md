@@ -38,7 +38,7 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 
 ## Release verification
 
-Version 1.18.1, build 41 passed local analysis, all 28 automated tests, and a
+Version 1.18.2, build 42 passed local analysis, all 28 automated tests, and a
 Web release build. Store publication additionally requires the private Android
 upload key. Android and iOS target builds should be re-run before their store
 artefacts are published.
@@ -48,6 +48,8 @@ This release makes the learner path more direct and coherent:
 - The loading-screen level picker now uses the same provider-backed onboarding
   path as the welcome journey, so choosing a level enters the dashboard rather
   than returning a learner to a second picker.
+- A level selected while the loading artwork is still preparing is queued and
+  enters the dashboard as soon as preparation completes.
 
 - The weekly challenge card opens a playable challenge rather than a static
   summary, and a completed challenge retains its best score.

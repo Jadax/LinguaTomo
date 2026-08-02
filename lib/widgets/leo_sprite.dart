@@ -278,7 +278,10 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
   @override
   void didUpdateWidget(covariant LeoLoadingScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.ready && !oldWidget.ready) _playFinale();
+    if (widget.ready && !oldWidget.ready) {
+      _playFinale();
+      _finishIfReady();
+    }
   }
 
   void _playFinale() {
@@ -290,7 +293,10 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
   }
 
   void _finishIfReady() {
-    if (!_caught || _selectedTier == null || _finished) return;
+    // A learner may choose while Leo is still walking. Keep that choice and
+    // complete it as soon as preparation finishes; the animation must never
+    // be a condition for entering the course.
+    if (!widget.ready || _selectedTier == null || _finished) return;
     _finished = true;
     widget.onFinished();
   }
@@ -332,6 +338,8 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                   Text(
                     _caught
                         ? 'Pick your level to begin!'
+                        : _selectedTier != null
+                        ? '${_selectedTier!.label} selected — Leo will open your route in a moment.'
                         : 'Leo is taking a gentle garden walk while we get ready...',
                     textAlign: TextAlign.center,
                   ),

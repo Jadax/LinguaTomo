@@ -3,26 +3,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:linguatomo/main.dart';
 
 void main() {
-  testWidgets('LinguaTomo opens loading screen, user picks level, enters app', (
+  testWidgets('LinguaTomo queues an early level choice and enters the app', (
     tester,
   ) async {
     await tester.pumpWidget(const ProviderScope(child: LinguaTomoApp()));
     expect(find.text('LinguaTomo'), findsOneWidget);
 
-    // Loading chase stays active until preparation finishes, then plays
-    // the catch finale. The screen now waits for user input.
-    await tester.pump(const Duration(milliseconds: 2600));
-    await tester.pump(const Duration(milliseconds: 900));
-
-    // After catch: tier picker is still visible, status text updated.
-    expect(find.text('Pick your level to begin!'), findsOneWidget);
+    // The choice is available immediately, even while Leo is still walking.
     expect(find.text('Starter'), findsOneWidget);
-    expect(find.text('Expert'), findsOneWidget);
-
-    // Selecting a level enters the route immediately.
     await tester.ensureVisible(find.text('Starter'));
     await tester.pump();
     await tester.tap(find.text('Starter'));
+    await tester.pump();
+    expect(find.textContaining('Starter selected'), findsOneWidget);
+
+    // Once preparation completes, the queued choice enters the dashboard.
+    await tester.pump(const Duration(milliseconds: 2600));
     await tester.pump(const Duration(milliseconds: 500));
 
     // The loading picker uses the provider-backed onboarding path, so the app

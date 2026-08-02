@@ -4,7 +4,7 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
-## Current version: 1.18.1 (build 41)
+## Current version: 1.18.2 (build 42)
 
 ## Product teaching model
 
