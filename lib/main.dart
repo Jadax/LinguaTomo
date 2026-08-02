@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'config/local_store.dart';
 import 'config/storage_keys.dart';
 import 'models/app_models.dart';
 import 'providers/achievement_state.dart';
 import 'providers/app_state.dart';
+import 'providers/level_prefs_state.dart';
 import 'providers/sync_state.dart';
 import 'providers/word_progress_state.dart';
 import 'services/cloud_service.dart';
@@ -121,25 +121,21 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
           ? LeoLoadingScreen(
               reduceMotion: mode == ExperienceMode.comfort,
               ready: _ready,
-              onTierSelected: (tier) {
-                _loadingTier = tier;
-                final box = localStore;
-                box?.put('level_prefs_v1', tier.name);
-                box?.put('word_progress_v1', {
-                  'completedWords': <String>[],
-                  'currentTier': tier.name,
-                  'wordLessonHistory': <String>[],
-                  'perfectLessonCount': 0,
-                  'wordActivityDates': <String>[],
-                });
-              },
-              onFinished: () {
+              onTierSelected: (tier) => _loadingTier = tier,
+              onFinished: () async {
                 if (!mounted) return;
-                if (_loadingTier != null) {
-                  localStore?.put('learner_profile_v1', {
-                    'start': _loadingTier!.name,
-                    'onboardingComplete': true,
-                  });
+                final tier = _loadingTier;
+                if (tier == null) return;
+                await ref.read(wordProgressProvider.notifier).setTier(tier);
+                await ref.read(levelPrefsProvider.notifier).setLevel(tier);
+                final start = JourneyStart.values[tier.index];
+                await ref
+                    .read(learnerProfileProvider.notifier)
+                    .chooseStart(start);
+                if (start != JourneyStart.starter) {
+                  await ref
+                      .read(progressProvider.notifier)
+                      .applyPlacement(start.suggestedPlacementSkip);
                 }
                 setState(() => _showLoading = false);
               },

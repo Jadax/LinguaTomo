@@ -472,38 +472,38 @@ class _TierPicker extends StatelessWidget {
   final ValueChanged<DifficultyTier> onChanged;
 
   @override
-  Widget build(BuildContext context) => RadioGroup<DifficultyTier>(
-    groupValue: selectedTier,
-    onChanged: (value) {
-      if (value != null) onChanged(value);
-    },
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Choose your level',
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        for (final tier in DifficultyTier.values)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Card(
-              color: selectedTier == tier
-                  ? const Color(0xFFD4EDDA)
-                  : Colors.white,
-              child: RadioListTile<DifficultyTier>(
-                value: tier,
-                title: Text(
-                  tier.label,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                subtitle: Text(tier.description),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        'Choose your level',
+        style: Theme.of(context).textTheme.titleMedium,
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 8),
+      for (final tier in DifficultyTier.values)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Card(
+            color: selectedTier == tier
+                ? const Color(0xFFD4EDDA)
+                : Colors.white,
+            child: RadioListTile<DifficultyTier>(
+              value: tier,
+              // ignore: deprecated_member_use
+              groupValue: selectedTier,
+              // ignore: deprecated_member_use
+              onChanged: (value) {
+                if (value != null) onChanged(value);
+              },
+              title: Text(
+                tier.label,
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
+              subtitle: Text(tier.description),
             ),
           ),
-      ],
-    ),
+        ),
+    ],
   );
 }

@@ -23,25 +23,12 @@ void main() {
     await tester.ensureVisible(find.text('Starter'));
     await tester.pump();
     await tester.tap(find.text('Starter'));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // Loading screen dismissed. Depending on Hive state the app either
-    // shows AppShell or WelcomeJourneyView. Both contain Leo.
+    // The loading picker uses the provider-backed onboarding path, so the app
+    // enters its dashboard directly instead of asking for the same level again.
     final inAppShell = find.textContaining('words learned');
-    final inWelcome = find.text('Welcome to LinguaTomo');
-    expect(
-      inAppShell.evaluate().isNotEmpty || inWelcome.evaluate().isNotEmpty,
-      isTrue,
-      reason: 'Expected AppShell or WelcomeJourneyView after loading',
-    );
-
-    // If WelcomeJourneyView, pick a tier and continue into the app.
-    if (inWelcome.evaluate().isNotEmpty) {
-      await tester.ensureVisible(find.text('Starter'));
-      await tester.pump();
-      await tester.tap(find.text('Starter'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-    }
+    expect(inAppShell, findsAtLeastNWidgets(1));
+    expect(find.text('Welcome to LinguaTomo'), findsNothing);
   });
 }

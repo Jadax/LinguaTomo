@@ -24,7 +24,7 @@ Leo, a Norwegian Forest Cat, is the companion throughout the experience.
 
 ## Current release
 
-**Version 1.18.0, build 40**
+**Version 1.18.1, build 41**
 
 | Area | Available now |
 |---|---|
