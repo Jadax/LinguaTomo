@@ -7,6 +7,7 @@ import '../data/word_bank.dart';
 import '../models/app_models.dart';
 import '../providers/app_state.dart';
 import '../providers/word_progress_state.dart';
+import '../services/sound_service.dart';
 import '../services/speech_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/achievement_banner.dart';
@@ -81,6 +82,10 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     }
     _answerResults = List.filled(_words.length, false);
     _prepareQuiz();
+    // Listen-first intro for lessons that begin directly on a word.
+    if (!_showIntro && _words.isNotEmpty) {
+      _autoPlay(_words[0].japanese);
+    }
   }
 
   List<Word> _generateFilteredLesson({
@@ -108,6 +113,15 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   void dispose() {
     _speech.dispose();
     super.dispose();
+  }
+
+  // Listen-first: a young or pre-reading learner should hear each new word
+  // as soon as it appears, without hunting for the speaker icon. Safe to call
+  // repeatedly; speech simply restarts the latest word.
+  void _autoPlay(String japanese) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _speech.speakJapanese(japanese);
+    });
   }
 
   void _prepareQuiz() {
@@ -174,7 +188,12 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final current = _words[_currentIndex];
     final correctAnswer = _isReverseQuiz ? current.japanese : current.english;
     final isCorrect = _options[index] == correctAnswer;
-    if (isCorrect) _correctCount++;
+    if (isCorrect) {
+      _correctCount++;
+      SoundService().playCorrect();
+    } else {
+      SoundService().playWrong();
+    }
     _answerResults[_currentIndex] = isCorrect;
   }
 
@@ -184,6 +203,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
       _phase = _LessonPhase.introduce;
       if (_currentIndex < _words.length) {
         _prepareQuiz();
+        _autoPlay(_words[_currentIndex].japanese);
       }
     });
   }
@@ -225,6 +245,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final streak = ref.read(wordProgressProvider).wordStreak;
     if (streak >= 3) xpEarned += streak * 2;
     ref.read(progressProvider.notifier).addXp(xpEarned);
+    if (_correctCount == _words.length) SoundService().playLessonComplete();
     if (mounted) {
       AchievementBanner.show(
         context,
@@ -339,6 +360,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
                 child: FilledButton(
                   onPressed: () => setState(() {
                     _phase = _LessonPhase.introduce;
+                    if (_words.isNotEmpty) _autoPlay(_words[0].japanese);
                   }),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(56),

@@ -10,6 +10,7 @@ import '../providers/achievement_state.dart';
 import '../providers/app_state.dart';
 import '../providers/sync_state.dart';
 import '../services/cloud_service.dart';
+import '../services/sound_service.dart';
 import '../theme/app_theme.dart';
 
 class AccountView extends ConsumerStatefulWidget {
@@ -328,6 +329,8 @@ class _AccountViewState extends ConsumerState<AccountView> {
             const SizedBox(height: 16),
             const _PrivacyCard(),
             const SizedBox(height: 12),
+            const _SoundSettingsCard(),
+            const SizedBox(height: 12),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -345,6 +348,50 @@ class _AccountViewState extends ConsumerState<AccountView> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SoundSettingsCard extends StatefulWidget {
+  const _SoundSettingsCard();
+
+  @override
+  State<_SoundSettingsCard> createState() => _SoundSettingsCardState();
+}
+
+class _SoundSettingsCardState extends State<_SoundSettingsCard> {
+  late bool _muted;
+
+  @override
+  void initState() {
+    super.initState();
+    _muted = SoundService().isMuted;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: SwitchListTile(
+          value: !_muted,
+          onChanged: (value) async {
+            setState(() => _muted = !value);
+            await SoundService().setMuted(!value);
+            if (value) SoundService().playTap();
+          },
+          title: const Text('Play sounds'),
+          subtitle: const Text(
+            'Gentle chimes for correct answers and rewards.',
+          ),
+          secondary: Icon(
+            _muted
+                ? Icons.volume_off_rounded
+                : Icons.volume_up_rounded,
+            color: AppColors.persimmon,
+          ),
         ),
       ),
     );

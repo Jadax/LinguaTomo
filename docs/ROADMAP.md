@@ -4,7 +4,27 @@ Stability and pedagogical correctness outrank feature count. A feature is not
 complete until its content rights, accessibility, persistence and tests are
 defined.
 
-## Current version: 1.18.2 (build 42)
+## Current version: 1.19.0 (build 43)
+
+## 1.19: delight and guided onboarding
+
+1. **Original feedback sounds** (v1.19)
+   - Synthesised, licensing-safe WAV chimes for correct, wrong, tap, open,
+     achievement and lesson-complete (see `tool/generate_sfx.py`)
+   - Wired into the lesson loop, achievement banner and completion
+   - Persistent, privacy-friendly mute toggle on the Account page
+   - This fixes the previously silent feedback gap (`assets/sounds/` was empty)
+2. **Duolingo-style guided Continue** (v1.19)
+   - Dashboard primary card now shows a progress ring and one obvious next
+     action: due reviews (SRS-first) or the next lesson — no forced choice
+   - Secondary "pick a theme" remains for power users
+3. **Listen-first introduce** (v1.19)
+   - Each new word auto-plays its pronunciation when introduced, so young and
+     pre-reading learners hear it without hunting for the speaker
+4. **Android release verification** (v1.19)
+   - Confirmed debug + release APK and release AAB build cleanly with R8,
+     tree-shaken icons, ML Kit OCR and TTS — Play-Store ready
+
 
 ## Product teaching model
 

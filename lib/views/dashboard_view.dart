@@ -1136,76 +1136,152 @@ class _SeasonalEventCardState extends ConsumerState<_SeasonalEventCard> {
   }
 }
 
-class _ContinueLearningCard extends StatelessWidget {
+class _ContinueLearningCard extends ConsumerWidget {
   const _ContinueLearningCard({required this.wordProgress});
   final WordProgress wordProgress;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tierProgress = wordProgress.tierProgress(wordProgress.currentTier);
     final tierTotal = wordsForTier(wordProgress.currentTier).length;
+    final ratio = tierTotal > 0 ? tierProgress / tierTotal : 0.0;
+    final dueReviews =
+        ref.watch(reviewDeckProvider).dueMissions.length +
+        ref.watch(grammarGardenProvider).dueCount;
+    final hasNewWords = wordProgress.tierProgress(wordProgress.currentTier) <
+        tierTotal;
+    final hasDue = dueReviews > 0;
+
+    // Duolingo-style Continue: one obvious next action. Reviews (SRS) come
+    // first because timely recall is proven to strengthen memory; otherwise
+    // start the next lesson directly so a new learner never faces a choice.
+    final primaryTitle = hasDue
+        ? 'Review $dueReviews'
+        : hasNewWords
+        ? 'Continue learning'
+        : 'Practise words';
+
     return Card(
       color: const Color(0xFFFFF0E8),
       margin: EdgeInsets.zero,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => _showThemePicker(context, wordProgress),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.persimmon,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  wordProgress.currentTier == DifficultyTier.starter
-                      ? '📖'
-                      : wordProgress.currentTier == DifficultyTier.elementary
-                      ? '📚'
-                      : wordProgress.currentTier == DifficultyTier.intermediate
-                      ? '🎓'
-                      : wordProgress.currentTier == DifficultyTier.advanced
-                      ? '🌟'
-                      : '🏆',
-                  style: const TextStyle(fontSize: 28),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'PICK A THEME',
-                      style: TextStyle(
-                        color: AppColors.persimmon,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1,
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                // Progress ring — a quick, rewarding sense of momentum.
+                SizedBox(
+                  width: 62,
+                  height: 62,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: ratio,
+                        strokeWidth: 6,
+                        backgroundColor: Colors.white,
+                        valueColor: const AlwaysStoppedAnimation(
+                          AppColors.persimmon,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '$tierProgress of $tierTotal words learned',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 6),
-                    LinearProgressIndicator(
-                      value: tierTotal > 0 ? tierProgress / tierTotal : 0,
-                      minHeight: 6,
-                    ),
-                  ],
+                      Center(
+                        child: Text(
+                          wordProgress.currentTier == DifficultyTier.starter
+                              ? '📖'
+                              : wordProgress.currentTier ==
+                                    DifficultyTier.elementary
+                              ? '📚'
+                              : wordProgress.currentTier ==
+                                    DifficultyTier.intermediate
+                              ? '🎓'
+                              : wordProgress.currentTier ==
+                                    DifficultyTier.advanced
+                              ? '🌟'
+                              : '🏆',
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hasDue ? 'MEMORY GARDEN' : wordProgress.currentTier.label.toUpperCase(),
+                        style: const TextStyle(
+                          color: AppColors.persimmon,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        hasDue
+                            ? '$dueReviews gentle review${dueReviews == 1 ? '' : 's'} ready'
+                            : '$tierProgress of $tierTotal words learned',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 6),
+                      LinearProgressIndicator(
+                        value: ratio,
+                        minHeight: 6,
+                        backgroundColor: Colors.white,
+                        valueColor: const AlwaysStoppedAnimation(
+                          AppColors.matcha,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            FilledButton.icon(
+              onPressed: () => _continue(context, ref),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.persimmon,
+                minimumSize: const Size.fromHeight(52),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              const Icon(Icons.arrow_forward_rounded),
-            ],
-          ),
+              icon: Icon(hasDue ? Icons.eco_rounded : Icons.play_arrow_rounded),
+              label: Text(
+                primaryTitle,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextButton(
+              onPressed: () => _showThemePicker(context, wordProgress),
+              child: const Text('Or pick a theme to study'),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  void _continue(BuildContext context, WidgetRef ref) {
+    final due = ref.read(reviewDeckProvider).dueMissions.length +
+        ref.read(grammarGardenProvider).dueCount;
+    if (due > 0) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const ReviewView()),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const WordLessonView()),
     );
   }
 
