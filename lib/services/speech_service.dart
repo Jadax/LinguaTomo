@@ -7,68 +7,113 @@ class SpeechService {
   SpeechService._();
 
   final FlutterTts _tts = FlutterTts();
-  bool _prepared = false;
 
-  /// Prepare early so a browser's first speaker tap remains a user gesture.
-  /// Chrome can reject speech that begins only after asynchronous voice lookup.
-  Future<void> warmUp() => _prepareWarmJapaneseVoice();
-
-  Future<void> _prepareWarmJapaneseVoice() async {
-    if (_prepared) return;
+  /// Chrome loads its speech voices asynchronously — `getVoices()` returns an
+  /// empty list until a `voiceschanged` event fires shortly after load. We
+  /// cannot subscribe to that event through flutter_tts, so we poll briefly
+  /// for the Japanese voice list to become available before selecting one.
+  /// This avoids the silent-speech bug where Chrome speaks with no audible
+  /// Japanese because no voice was ever picked.
+  /// Returns true once a Japanese voice has been configured (or none exists
+  /// but speech should still be attempted), false never — speech always
+  /// falls back to the platform default rather than silently disabling.
+  Future<bool> _configureJapaneseVoice({bool awaitVoices = true}) async {
     try {
       await _tts.setLanguage('ja-JP');
       await _tts.setSpeechRate(.72);
       await _tts.setPitch(.96);
       await _tts.setVolume(.9);
+    } catch (_) {
+      // Non-fatal; the platform default voice remains usable.
+    }
 
-      final voices = await _tts.getVoices;
-      if (voices is List) {
-        const preferredNames = [
-          'nanami',
-          'kyoko',
-          'haruka',
-          'sayaka',
-          'female',
-          'natural',
-          'enhanced',
-        ];
-        final japanese = voices.whereType<Map>().where((voice) {
-          final locale = '${voice['locale'] ?? voice['language'] ?? ''}'
-              .toLowerCase();
-          return locale.startsWith('ja');
-        }).toList();
-        japanese.sort((a, b) {
-          int warmthScore(Map voice) {
-            final name = '${voice['name'] ?? ''}'.toLowerCase();
-            for (var index = 0; index < preferredNames.length; index++) {
-              if (name.contains(preferredNames[index])) {
-                return preferredNames.length - index;
-              }
-            }
-            return 0;
+    List<Map>? voices;
+    if (awaitVoices) {
+      // Wait (bounded) for Chrome's async voice list to populate.
+      for (var attempt = 0; attempt < 6; attempt++) {
+        try {
+          final result = await _tts.getVoices;
+          if (result is List && result.isNotEmpty) {
+            voices = result.whereType<Map>().toList();
+            break;
           }
-
-          return warmthScore(b).compareTo(warmthScore(a));
-        });
-        if (japanese.isNotEmpty) {
-          final selected = japanese.first;
-          await _tts.setVoice({
-            'name': '${selected['name']}',
-            'locale':
-                '${selected['locale'] ?? selected['language'] ?? 'ja-JP'}',
-          });
+        } catch (_) {
+          // Keep polling below.
+        }
+        if (attempt < 5) {
+          await Future<void>.delayed(const Duration(milliseconds: 250));
         }
       }
-    } catch (_) {
-      // Browser voice lists vary widely. Keep the platform default voice as a
-      // usable fallback rather than letting a missing Japanese voice disable audio.
+    } else {
+      // Fast single read for a fresh voice pick on each speak.
+      try {
+        final result = await _tts.getVoices;
+        if (result is List && result.isNotEmpty) {
+          voices = result.whereType<Map>().toList();
+        }
+      } catch (_) {
+        // Fall through to default voice.
+      }
     }
-    _prepared = true;
+
+    if (voices == null || voices.isEmpty) return true;
+
+    const preferredNames = [
+      'nanami',
+      'kyoko',
+      'haruka',
+      'sayaka',
+      'female',
+      'natural',
+      'enhanced',
+    ];
+    final japanese = voices.where((voice) {
+      final locale = '${voice['locale'] ?? voice['language'] ?? ''}'
+          .toLowerCase();
+      return locale.startsWith('ja');
+    }).toList();
+    japanese.sort((a, b) {
+      int warmthScore(Map voice) {
+        final name = '${voice['name'] ?? ''}'.toLowerCase();
+        for (var index = 0; index < preferredNames.length; index++) {
+          if (name.contains(preferredNames[index])) {
+            return preferredNames.length - index;
+          }
+        }
+        return 0;
+      }
+
+      return warmthScore(b).compareTo(warmthScore(a));
+    });
+    if (japanese.isNotEmpty) {
+      try {
+        final selected = japanese.first;
+        await _tts.setVoice({
+          'name': '${selected['name']}',
+          'locale':
+              '${selected['locale'] ?? selected['language'] ?? 'ja-JP'}',
+        });
+      } catch (_) {
+        // Keep the configured language; still attempt speech below.
+      }
+    }
+    return true;
+  }
+
+  /// Prepare early so a browser's first speaker tap remains a user gesture.
+  /// Chrome can reject speech that begins only after asynchronous voice lookup.
+  Future<void> warmUp() {
+    // Kick off a fire-and-forget warm-up so the Japanese voice is selected by
+    // the time the learner taps a speaker. Safe to ignore the future here.
+    return _configureJapaneseVoice();
   }
 
   Future<void> speakJapanese(String text) async {
     await _tts.stop();
-    await _prepareWarmJapaneseVoice();
+    // Re-select the voice right before speaking too: on very slow machines the
+    // Chrome voice list may only finish loading after the early warm-up, and a
+    // freshly re-picked voice is always the safest path to audible Japanese.
+    await _configureJapaneseVoice(awaitVoices: false);
     if (!kIsWeb) await _tts.awaitSpeakCompletion(true);
     await _tts.speak(text);
   }
