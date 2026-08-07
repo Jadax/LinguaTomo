@@ -108,15 +108,30 @@ class SpeechService {
     return _configureJapaneseVoice();
   }
 
+  /// Speech is always best-effort. A device with no TTS engine, a browser
+  /// mid-load, or parental restrictions on a child's device must never turn
+  /// a silent word into an unhandled exception — the lesson has already
+  /// shown the word visually, so failing quietly here loses nothing critical.
   Future<void> speakJapanese(String text) async {
-    await _tts.stop();
-    // Re-select the voice right before speaking too: on very slow machines the
-    // Chrome voice list may only finish loading after the early warm-up, and a
-    // freshly re-picked voice is always the safest path to audible Japanese.
-    await _configureJapaneseVoice(awaitVoices: false);
-    if (!kIsWeb) await _tts.awaitSpeakCompletion(true);
-    await _tts.speak(text);
+    try {
+      await _tts.stop();
+      // Re-select the voice right before speaking too: on very slow machines
+      // the Chrome voice list may only finish loading after the early
+      // warm-up, and a freshly re-picked voice is the safest path to audible
+      // Japanese.
+      await _configureJapaneseVoice(awaitVoices: false);
+      if (!kIsWeb) await _tts.awaitSpeakCompletion(true);
+      await _tts.speak(text);
+    } catch (_) {
+      // No TTS engine available; the word remains fully readable on screen.
+    }
   }
 
-  Future<void> dispose() => _tts.stop();
+  Future<void> dispose() async {
+    try {
+      await _tts.stop();
+    } catch (_) {
+      // Already stopped or unavailable.
+    }
+  }
 }

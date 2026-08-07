@@ -109,6 +109,7 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
       ExperienceMode.standard => 1.0,
       ExperienceMode.comfort => 1.18,
     };
+    final onboardingComplete = ref.watch(learnerProfileProvider).onboardingComplete;
     return MaterialApp(
       title: 'LinguaTomo',
       debugShowCheckedModeBanner: false,
@@ -123,26 +124,30 @@ class _LinguaTomoAppState extends ConsumerState<LinguaTomoApp> {
           ? LeoLoadingScreen(
               reduceMotion: mode == ExperienceMode.comfort,
               ready: _ready,
+              needsLevelChoice: !onboardingComplete,
               onTierSelected: (tier) => _loadingTier = tier,
               onFinished: () async {
                 if (!mounted) return;
                 final tier = _loadingTier;
-                if (tier == null) return;
-                await ref.read(wordProgressProvider.notifier).setTier(tier);
-                await ref.read(levelPrefsProvider.notifier).setLevel(tier);
-                final start = JourneyStart.values[tier.index];
-                await ref
-                    .read(learnerProfileProvider.notifier)
-                    .chooseStart(start);
-                if (start != JourneyStart.starter) {
+                // A returning learner has nothing new to apply — the loading
+                // screen is just a splash for them, never a repeat of setup.
+                if (tier != null) {
+                  await ref.read(wordProgressProvider.notifier).setTier(tier);
+                  await ref.read(levelPrefsProvider.notifier).setLevel(tier);
+                  final start = JourneyStart.values[tier.index];
                   await ref
-                      .read(progressProvider.notifier)
-                      .applyPlacement(start.suggestedPlacementSkip);
+                      .read(learnerProfileProvider.notifier)
+                      .chooseStart(start);
+                  if (start != JourneyStart.starter) {
+                    await ref
+                        .read(progressProvider.notifier)
+                        .applyPlacement(start.suggestedPlacementSkip);
+                  }
                 }
-                setState(() => _showLoading = false);
+                if (mounted) setState(() => _showLoading = false);
               },
             )
-          : ref.watch(learnerProfileProvider).onboardingComplete
+          : onboardingComplete
           ? const AppShell()
           : const WelcomeJourneyView(),
     );

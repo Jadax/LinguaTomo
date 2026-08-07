@@ -1,5 +1,5 @@
 -- LinguaTomo canonical cloud schema.
--- Schema version: 1.19.0 (build 43), August 2026.
+-- Schema version: 1.19.1 (build 44), August 2026.
 -- Reapply this single file after every release. It is safe for both a fresh
 -- project and an existing LinguaTomo project. Local Hive data remains the
 -- offline source of truth. Never place service-role secrets in this file.
@@ -223,6 +223,16 @@ create policy "adults update own profile"
 on public.profiles for update to authenticated
 using (id = auth.uid() and account_mode = 'adult')
 with check (id = auth.uid() and account_mode = 'adult');
+
+-- Play Store account-deletion policy: a learner must be able to remove
+-- their own cloud data without waiting on a human. This does not remove
+-- the auth.users identity (that needs the service-role key, which the
+-- client must never hold) — see CloudService.deleteCloudData and the
+-- support-email path in AccountView for the complete flow.
+drop policy if exists "learners delete own profile" on public.profiles;
+create policy "learners delete own profile"
+on public.profiles for delete to authenticated
+using (id = auth.uid());
 
 drop policy if exists "own progress only" on public.learner_progress;
 create policy "own progress only"

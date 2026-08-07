@@ -157,6 +157,7 @@ class _ImmersiveReaderViewState extends ConsumerState<ImmersiveReaderView> {
         ),
       ),
       body: ResponsiveContent(
+        fillHeight: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

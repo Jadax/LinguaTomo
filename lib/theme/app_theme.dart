@@ -170,22 +170,46 @@ class _NoMotionPageTransitionsBuilder extends PageTransitionsBuilder {
 }
 
 class ResponsiveContent extends StatelessWidget {
-  const ResponsiveContent({required this.child, super.key, this.padding});
+  const ResponsiveContent({
+    required this.child,
+    super.key,
+    this.padding,
+    this.fillHeight = false,
+  });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
 
+  /// Set this when [child] uses `Spacer`/`Expanded` to lay itself out, as a
+  /// full-screen intro or results card does. `SingleChildScrollView` gives
+  /// its child an unbounded height, and flex children throw against an
+  /// unbounded main axis — this reintroduces a bounded height (at least the
+  /// viewport's) without losing the ability to scroll past it when the
+  /// content genuinely needs more room than the screen has.
+  final bool fillHeight;
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Align(
-        alignment: Alignment.topCenter,
+    final content = Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: Padding(
+          padding: padding ?? const EdgeInsets.fromLTRB(16, 12, 16, 24),
+          child: child,
+        ),
+      ),
+    );
+    if (!fillHeight) {
+      return SingleChildScrollView(child: content);
+    }
+    return LayoutBuilder(
+      builder: (context, viewport) => SingleChildScrollView(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Padding(
-            padding: padding ?? const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            child: child,
+          constraints: BoxConstraints(
+            minHeight: viewport.maxHeight.isFinite ? viewport.maxHeight : 0,
           ),
+          child: IntrinsicHeight(child: content),
         ),
       ),
     );

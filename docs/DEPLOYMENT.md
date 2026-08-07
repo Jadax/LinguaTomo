@@ -1,4 +1,4 @@
-# Web deployment and domain
+# Web and Android deployment
 
 ## Public testing address
 
@@ -66,3 +66,58 @@ the configured SMTP provider and should be monitored in its dashboard.
 - confirm local progress survives reload and browser restart;
 - confirm account sync fails safely when Supabase is unavailable;
 - test reduced motion, keyboard navigation and screen-reader labels.
+
+## Google Play submission
+
+LinguaTomo's own footprint is deliberately small for review purposes: no ads,
+no analytics or tracking SDKs, no user-generated content surface today, and
+only two permissions (`INTERNET`, `ACCESS_NETWORK_STATE`). What still needs
+doing at submission time:
+
+1. **Build an App Bundle, not an APK.** Play requires `.aab` for new apps and
+   updates:
+
+   ```sh
+   flutter build appbundle --release
+   ```
+
+   `flutter build apk --release` remains useful for local installs and the
+   CI quality gate, but is not what gets uploaded to Play Console.
+
+2. **Sign with the real upload key**, not the debug fallback. Create
+   `android/key.properties` per [Development](docs/DEVELOPMENT.md) before
+   building the bundle you intend to upload — an unsigned build silently
+   falls back to the debug key, which Play will reject.
+
+3. **Reapply `supabase/linguatomo.sql`** before release if it has changed
+   since the last submission; the app ships against whatever schema is
+   live, and schema and client version must move together.
+
+4. **Data safety form.** Declare: email address (collected only if the
+   learner opts into an account, used for authentication, not shared),
+   app-generated learning progress (stored if signed in, used to provide
+   the sync feature, not shared), and no other data types. Answer "no" to
+   data sold, and "yes, user can request deletion" — see the in-app
+   **Account & Sync → Delete my cloud data** and the privacy policy at
+   `https://jadax.github.io/LinguaTomo-Web/privacy.html`, which must also be
+   linked directly in the Play Console listing.
+
+5. **Target audience.** Do not enrol in the Designed for Families / Ads
+   program or mark the app "primarily child-directed" — email sign-in is not
+   COPPA-compliant on its own, and none of the account-mode/guardian
+   scaffolding in the SQL schema has a client-side parental-consent flow
+   built yet. Content is naturally suitable for a general/all-ages content
+   rating; declare the target age range to reflect that without claiming the
+   stricter families-program status.
+
+6. **16 KB page size / target API level.** Already satisfied by this
+   project's toolchain (AGP 9.0.1, `compileSdk`/`targetSdk` 36 from the
+   Flutter Gradle plugin defaults) — no action needed unless the Android
+   Gradle Plugin or Flutter version is downgraded.
+
+7. **Before the first real users**: install the actual uploaded bundle (not
+   a debug build) and exercise ML Kit OCR, TTS, the photo picker, magic-link
+   sign-in and the new cloud-deletion flow once each — R8 shrinking can
+   affect reflection-based plugin code in ways `flutter analyze` cannot
+   catch. See [Quality](docs/QUALITY.md) for what's already been verified
+   versus what still needs a physical device.

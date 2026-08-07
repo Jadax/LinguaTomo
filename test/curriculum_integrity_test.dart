@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:linguatomo/data/curriculum_data.dart';
+import 'package:linguatomo/providers/word_progress_state.dart';
 
 void main() {
   final japanese = RegExp(r'[\u3040-\u30ff\u3400-\u9fff]');
@@ -50,4 +51,27 @@ void main() {
       expect(postcard.cultureNote.trim(), isNotEmpty, reason: postcard.id);
     }
   });
+
+  test(
+    'availablePostcardCount never indexes past the postcard bank',
+    () {
+      // PostcardsView does `postcards[i]` for i in 0..availablePostcardCount.
+      // The unlock schedule was written for a larger planned collection than
+      // exists today, so a well-progressed learner must never receive a
+      // count higher than postcards.length, or that indexing crashes.
+      for (final wordsLearned in [0, 9, 10, 19, 20, 49, 50, 74, 75, 99, 100, 500]) {
+        final progress = WordProgress(
+          completedWords: {for (var i = 0; i < wordsLearned; i++) 'w$i'},
+        );
+        expect(
+          progress.availablePostcardCount,
+          lessThanOrEqualTo(postcards.length),
+          reason: 'wordsLearned=$wordsLearned',
+        );
+        for (var i = 0; i < progress.availablePostcardCount; i++) {
+          expect(() => postcards[i], returnsNormally);
+        }
+      }
+    },
+  );
 }

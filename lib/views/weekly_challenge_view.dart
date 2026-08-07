@@ -150,6 +150,7 @@ class _WeeklyChallengeViewState extends ConsumerState<WeeklyChallengeView> {
       ),
       body: SafeArea(
         child: ResponsiveContent(
+          fillHeight: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

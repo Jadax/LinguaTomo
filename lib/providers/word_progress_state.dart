@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/local_store.dart';
+import '../data/curriculum_data.dart';
 import '../data/word_bank.dart';
 import '../models/app_models.dart';
 
@@ -102,14 +103,21 @@ class WordProgress {
 
   bool get postcardsUnlocked => wordsLearned >= 10;
 
+  // Clamped to the postcard bank's actual size: the progression below was
+  // written for a larger planned collection than currently exists, and
+  // indexing `postcards[i]` past its length crashes PostcardsView outright
+  // for any learner who reaches 50+ words.
   int get availablePostcardCount {
-    if (wordsLearned < 10) return 0;
-    if (wordsLearned < 20) return 2;
-    if (wordsLearned < 30) return 5;
-    if (wordsLearned < 50) return 9;
-    if (wordsLearned < 75) return 15;
-    if (wordsLearned < 100) return 23;
-    return 30;
+    final target = switch (wordsLearned) {
+      < 10 => 0,
+      < 20 => 2,
+      < 30 => 5,
+      < 50 => 9,
+      < 75 => 15,
+      < 100 => 23,
+      _ => 30,
+    };
+    return target > postcards.length ? postcards.length : target;
   }
 
   bool get memoryGardenUnlocked =>

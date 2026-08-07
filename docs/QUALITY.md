@@ -35,13 +35,88 @@ parity even though Apple signing and device distribution require Xcode on macOS.
 - Word progress survives a complete round trip through a cloud snapshot.
 - Merging an unchanged snapshot reports no change, so sync cannot self-trigger.
 - A schema-1 snapshot never erases word progress written by a newer build.
+- A returning learner is never shown the level picker again after onboarding.
+- Failing a lesson below the pass gate retries without crashing (see below).
+- Deleting cloud data before sign-in fails safely rather than crashing.
+- Every postcard-unlock threshold stays within the actual postcard bank size.
 
 ## Release verification
 
-Version 1.18.2, build 42 passed local analysis, all 28 automated tests, and a
-Web release build. Store publication additionally requires the private Android
-upload key. Android and iOS target builds should be re-run before their store
-artefacts are published.
+Version 1.19.1, build 44 passed local analysis, all 33 automated tests, a Web
+release build, an Android APK release build and an Android App Bundle release
+build (the format Play actually requires — see [Deployment](docs/DEPLOYMENT.md)
+for the full submission checklist). Store publication additionally requires
+the private Android upload key.
+
+This release closes a pre-launch Play Store readiness pass and alpha
+playtest, and fixes two defects that would have shown up on a learner's very
+first real session:
+
+- **Every lesson retry was crashing.** `_words` in `WordLessonView` was
+  declared `late final`, and `_retryFailed` reassigned it when a learner
+  scored below the pass gate — a `late final` field throws
+  `LateInitializationError` on a second assignment. This fires on any lesson
+  a learner doesn't pass outright on the first try, which is routine, not an
+  edge case. Fixed by dropping `final`; `test/word_lesson_retry_test.dart`
+  drives a full fail-then-retry cycle end to end so a regression trips
+  immediately. The pass gate was also hardcoded to "3 correct", which is
+  impossible to reach on the review deck's occasional 1- or 2-word lessons;
+  it now scales to `min(3, wordCount)`, and `_retryFailed` no longer clears
+  `_words` to empty when every wrong answer has already been corrected.
+- **A returning learner was asked to pick a level on every single launch.**
+  The loading screen always showed its tier picker and would not proceed
+  without a tap, regardless of whether onboarding had already finished.
+  `LeoLoadingScreen` now takes a `needsLevelChoice` flag driven by
+  `learnerProfileProvider.onboardingComplete`; a returning learner sees the
+  splash and lands on their dashboard with no picker at all.
+  `test/returning_learner_test.dart` covers both paths.
+- **`Spacer`/`Expanded` inside `ResponsiveContent` throws in Flutter**, since
+  `ResponsiveContent` wraps content in `SingleChildScrollView`, which gives
+  an unbounded main axis — invalid input to a flex layout. This affected the
+  entire lesson flow (`_buildIntro`, `_buildIntroduce`, `_buildQuiz`,
+  `_buildReverseQuiz`, `_buildResults`) plus the Can-Do practice, weekly
+  challenge and immersive reader screens: 8 call sites across 4 files.
+  `ResponsiveContent` gained an opt-in `fillHeight` parameter
+  (`LayoutBuilder` + `ConstrainedBox(minHeight)` + `IntrinsicHeight`) that
+  reintroduces a bounded axis without losing the ability to scroll past it
+  on short viewports; the 8 affected call sites now pass it. Every other
+  `ResponsiveContent` usage is untouched, so this carries no regression risk
+  for the ~25 screens that don't use flex spacers.
+- **Living Postcards crashed for any learner who reached 50 words.**
+  `WordProgress.availablePostcardCount` scales up to 30 as `wordsLearned`
+  grows, but the postcard bank in `curriculum_data.dart` only has 12 entries
+  — the schedule was written for a larger planned collection than exists
+  today. `PostcardsView` indexes `postcards[i]` for `i` up to that count with
+  no bound check, so `RangeError` on open, not on some obscure edge case but
+  on the natural path of a moderately engaged learner. `availablePostcardCount`
+  now clamps to `postcards.length`; `curriculum_integrity_test.dart` checks
+  every unlock threshold against the actual bank size.
+- **Text-to-speech could throw unhandled.** `SpeechService.speakJapanese`
+  called `stop()`/`awaitSpeakCompletion()`/`speak()` with no guard; a device
+  with no TTS engine, a mid-load browser, or parental TTS restrictions on a
+  child's device would raise an uncaught exception on every word instead of
+  failing quietly the way the file's own voice-configuration helper already
+  did. Now wrapped consistently — a silent word never blocks a lesson that
+  already shows it on screen.
+
+Play Store readiness, beyond the fixes above:
+
+- Added an in-app account-deletion path (**Account & Sync → Delete my cloud
+  data**) and a hosted privacy policy (`web/privacy.html`, published at
+  `https://jadax.github.io/LinguaTomo-Web/privacy.html`), both required for
+  a listing that offers account creation. A new `profiles` delete RLS policy
+  in `supabase/linguatomo.sql` lets a learner remove their own row; full
+  identity (email) deletion still requires emailing support, disclosed in
+  both places, since that needs the service-role key the client must never
+  hold.
+- Confirmed the app's Play-relevant footprint is already minimal: no ads, no
+  analytics/tracking SDKs, no live user-generated-content surface (the
+  community/friendship tables in the SQL schema have no client UI), and only
+  two declared permissions. `compileSdk`/`targetSdk` 36 and AGP 9.0.1 already
+  satisfy the current target-API and 16 KB native-page-size requirements.
+- See [Deployment](docs/DEPLOYMENT.md) for the full submission checklist,
+  including why this app should declare a general/all-ages content rating
+  without enrolling in the Designed for Families program.
 
 This release makes the learner path more direct and coherent:
 

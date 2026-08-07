@@ -122,6 +122,21 @@ class CloudService {
         .eq('id', user.id);
   }
 
+  /// Removes everything this account stored in the cloud — progress
+  /// snapshot and profile row — then signs out. This does not delete the
+  /// sign-in identity itself: the client only ever holds the publishable
+  /// key, and deleting an `auth.users` row requires the service-role key,
+  /// which must never be embedded in the app. A learner who wants that
+  /// removed too is directed to email support from [AccountView].
+  Future<void> deleteCloudData() async {
+    final client = _client;
+    final user = currentUser;
+    if (client == null || user == null) throw StateError('Sign in first.');
+    await client.from('learner_progress').delete().eq('user_id', user.id);
+    await client.from('profiles').delete().eq('id', user.id);
+    await client.auth.signOut();
+  }
+
   Future<List<LeaderboardEntry>> loadLeaderboard() async {
     final client = _client;
     if (client == null || currentUser == null) return const [];

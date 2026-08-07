@@ -237,12 +237,19 @@ class LeoLoadingScreen extends StatefulWidget {
     required this.ready,
     required this.onFinished,
     this.onTierSelected,
+    this.needsLevelChoice = true,
   });
 
   final bool reduceMotion;
   final bool ready;
   final VoidCallback onFinished;
   final ValueChanged<DifficultyTier>? onTierSelected;
+
+  /// False for a learner who has already chosen a level. The garden walk
+  /// still plays, but there is nothing to ask — the screen dismisses itself
+  /// as soon as preparation finishes instead of waiting on a tier tap. A
+  /// returning learner must never be asked to start over on every launch.
+  final bool needsLevelChoice;
 
   @override
   State<LeoLoadingScreen> createState() => _LeoLoadingScreenState();
@@ -295,8 +302,12 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
   void _finishIfReady() {
     // A learner may choose while Leo is still walking. Keep that choice and
     // complete it as soon as preparation finishes; the animation must never
-    // be a condition for entering the course.
-    if (!widget.ready || _selectedTier == null || _finished) return;
+    // be a condition for entering the course. A returning learner has
+    // nothing to choose, so preparation alone is enough to finish.
+    final hasWhatItNeeds = widget.needsLevelChoice
+        ? _selectedTier != null
+        : true;
+    if (!widget.ready || !hasWhatItNeeds || _finished) return;
     _finished = true;
     widget.onFinished();
   }
@@ -336,22 +347,26 @@ class _LeoLoadingScreenState extends State<LeoLoadingScreen>
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    _caught
+                    !widget.needsLevelChoice
+                        ? 'Welcome back! Leo is fetching your lessons...'
+                        : _caught
                         ? 'Pick your level to begin!'
                         : _selectedTier != null
                         ? '${_selectedTier!.label} selected — Leo will open your route in a moment.'
                         : 'Leo is taking a gentle garden walk while we get ready...',
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  _TierPicker(
-                    selectedTier: _selectedTier,
-                    onChanged: (tier) {
-                      setState(() => _selectedTier = tier);
-                      widget.onTierSelected?.call(tier);
-                      _finishIfReady();
-                    },
-                  ),
+                  if (widget.needsLevelChoice) ...[
+                    const SizedBox(height: 16),
+                    _TierPicker(
+                      selectedTier: _selectedTier,
+                      onChanged: (tier) {
+                        setState(() => _selectedTier = tier);
+                        widget.onTierSelected?.call(tier);
+                        _finishIfReady();
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),

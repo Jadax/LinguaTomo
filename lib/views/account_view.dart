@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../config/app_info.dart';
 import '../config/cloud_config.dart';
@@ -153,6 +154,52 @@ class _AccountViewState extends ConsumerState<AccountView> {
       }
     } finally {
       if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _confirmDeleteCloudData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete cloud data?'),
+        content: const Text(
+          'This permanently removes your synced progress and profile from '
+          'our servers and signs you out. Your local learning on this '
+          'device is not affected and keeps working offline. This cannot '
+          'be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.persimmon),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete cloud data'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _message = 'Deleting your cloud data…');
+    try {
+      await _cloud.deleteCloudData();
+      ref.read(syncProvider.notifier).refreshAuth();
+      if (mounted) {
+        setState(
+          () => _message =
+              'Your cloud data has been deleted. Local learning is unaffected.',
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _message =
+              'Could not delete cloud data right now. Please try again, or '
+              'email astraiva.apps@gmail.com for help.',
+        );
+      }
     }
   }
 
@@ -315,6 +362,11 @@ class _AccountViewState extends ConsumerState<AccountView> {
                 },
                 child: const Text('Sign out'),
               ),
+              TextButton(
+                onPressed: _confirmDeleteCloudData,
+                style: TextButton.styleFrom(foregroundColor: AppColors.persimmon),
+                child: const Text('Delete my cloud data'),
+              ),
             ],
             if (_message != null)
               Padding(
@@ -445,18 +497,42 @@ class _CloudSetupCard extends StatelessWidget {
 
 class _PrivacyCard extends StatelessWidget {
   const _PrivacyCard();
+
+  static final _privacyUrl = Uri.parse(
+    'https://jadax.github.io/LinguaTomo-Web/privacy.html',
+  );
+
   @override
-  Widget build(BuildContext context) => const Card(
+  Widget build(BuildContext context) => Card(
     child: Padding(
-      padding: EdgeInsets.all(16),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.shield_outlined, color: AppColors.matcha),
-          SizedBox(width: 10),
-          Expanded(
+          const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.shield_outlined, color: AppColors.matcha),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Handwriting photos stay on this device by default. Public profiles, direct messages, and community posting are disabled for child-mode accounts in the cloud security policy.',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          TextButton.icon(
+            onPressed: () =>
+                launchUrl(_privacyUrl, mode: LaunchMode.externalApplication),
+            icon: const Icon(Icons.open_in_new_rounded, size: 16),
+            label: const Text('Read the Privacy Policy'),
+          ),
+          const Padding(
+            padding: EdgeInsets.only(left: 4),
             child: Text(
-              'Handwriting photos stay on this device by default. Public profiles, direct messages, and community posting are disabled for child-mode accounts in the cloud security policy.',
+              'Questions or a data-deletion request: astraiva.apps@gmail.com',
+              style: TextStyle(fontSize: 12, color: AppColors.muted),
             ),
           ),
         ],

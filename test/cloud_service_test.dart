@@ -15,4 +15,11 @@ void main() {
     expect(CloudService.isValidEmail('learner'), isFalse);
     expect(CloudService.isValidEmail('learner@'), isFalse);
   });
+
+  test('deleting cloud data before sign-in fails safely, never crashes', () {
+    const service = CloudService();
+    // Bootstrap never ran in this test, so there is no session to delete —
+    // this must raise a clear StateError, not attempt a network call.
+    expect(() => service.deleteCloudData(), throwsStateError);
+  });
 }

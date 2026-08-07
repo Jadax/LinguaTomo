@@ -69,6 +69,16 @@ filters. No category grid is shown inline on the dashboard.
 For screens needing `Expanded` + `ListView.builder`, use a plain `Column`
 with `ConstrainedBox` directly.
 
+`SingleChildScrollView` gives its child an unbounded height, and `Spacer`/
+`Expanded` require a bounded one — using either directly inside
+`ResponsiveContent`'s default mode throws a `RenderFlex` assertion. A screen
+that needs flex-based spacing (an intro or results card centred with
+`Spacer`) must pass `ResponsiveContent(fillHeight: true, ...)`, which
+reintroduces a bounded axis via `LayoutBuilder` + `ConstrainedBox(minHeight)`
++ `IntrinsicHeight` while still scrolling past it on a short viewport. Leave
+`fillHeight` off for every screen that doesn't use `Spacer`/`Expanded` in its
+top-level `Column` — it costs an extra layout pass and buys nothing there.
+
 ## Persistence
 
 Hive box: `linguatomo_user_data`.

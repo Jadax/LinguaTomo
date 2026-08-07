@@ -30,7 +30,10 @@ class WordLessonView extends ConsumerStatefulWidget {
 }
 
 class _WordLessonViewState extends ConsumerState<WordLessonView> {
-  late final List<Word> _words;
+  // Not `final`: a lesson that falls below the pass gate replaces this with
+  // just the missed words for a focused retry (see `_retryFailed`). A `final`
+  // field would throw `LateInitializationError` on that reassignment.
+  late List<Word> _words;
   var _currentIndex = 0;
   var _phase = _LessonPhase.intro;
   var _correctCount = 0;
@@ -213,6 +216,14 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     for (var i = 0; i < _words.length; i++) {
       if (!_answerResults[i]) retryWords.add(_words[i]);
     }
+    // Every wrong word is already known, so there is nothing left to retry.
+    // This only happens on a short lesson (see `_passThreshold`) that the
+    // learner answered perfectly; treat it as a pass rather than clearing
+    // `_words` down to empty and landing on a dead "no words available" view.
+    if (retryWords.isEmpty) {
+      _finish();
+      return;
+    }
     setState(() {
       _words = retryWords;
       _currentIndex = 0;
@@ -308,6 +319,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
       ),
       body: SafeArea(
         child: ResponsiveContent(
+          fillHeight: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -384,6 +396,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   Widget _buildIntroduce() {
     final word = _words[_currentIndex];
     return ResponsiveContent(
+      fillHeight: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -490,6 +503,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final word = _words[_currentIndex];
     if (_isReverseQuiz) return _buildReverseQuiz(word);
     return ResponsiveContent(
+      fillHeight: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -637,6 +651,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
   // For intermediate+: show English meaning, pick the Japanese word.
   Widget _buildReverseQuiz(Word word) {
     return ResponsiveContent(
+      fillHeight: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -751,7 +766,10 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     final percentage = _words.isEmpty
         ? 0
         : ((_correctCount / _words.length) * 100).round();
-    final passed = _isRetry || _correctCount >= 3;
+    // Standard lessons need 3 of 5. A shorter lesson — the review deck can
+    // hand this view as few as one due word — must still be passable on a
+    // perfect score rather than requiring more correct answers than exist.
+    final passed = _isRetry || _correctCount >= math.min(3, _words.length);
     final failedWords = <Word>[];
     if (!passed) {
       for (var i = 0; i < _words.length; i++) {
@@ -761,6 +779,7 @@ class _WordLessonViewState extends ConsumerState<WordLessonView> {
     return Scaffold(
       body: SafeArea(
         child: ResponsiveContent(
+          fillHeight: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

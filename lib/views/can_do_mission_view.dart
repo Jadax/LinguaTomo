@@ -43,6 +43,7 @@ class _CanDoMissionViewState extends ConsumerState<CanDoMissionView> {
       appBar: AppBar(title: const Text('Can-Do practice')),
       body: SafeArea(
         child: ResponsiveContent(
+          fillHeight: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
