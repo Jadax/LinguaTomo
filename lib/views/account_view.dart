@@ -499,7 +499,7 @@ class _PrivacyCard extends StatelessWidget {
   const _PrivacyCard();
 
   static final _privacyUrl = Uri.parse(
-    'https://jadax.github.io/LinguaTomo-Web/privacy.html',
+    'https://astraiva.app/privacy/linguatomo.html',
   );
 
   @override

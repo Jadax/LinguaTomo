@@ -102,9 +102,9 @@ first real session:
 Play Store readiness, beyond the fixes above:
 
 - Added an in-app account-deletion path (**Account & Sync → Delete my cloud
-  data**) and a hosted privacy policy (`web/privacy.html`, published at
-  `https://jadax.github.io/LinguaTomo-Web/privacy.html`), both required for
-  a listing that offers account creation. A new `profiles` delete RLS policy
+  data**) and a hosted privacy policy, maintained in the Astraiva website
+  repo and published at `https://astraiva.app/privacy/linguatomo.html`, both
+  required for a listing that offers account creation. A new `profiles` delete RLS policy
   in `supabase/linguatomo.sql` lets a learner remove their own row; full
   identity (email) deletion still requires emailing support, disclosed in
   both places, since that needs the service-role key the client must never

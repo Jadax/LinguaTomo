@@ -99,7 +99,7 @@ doing at submission time:
    the sync feature, not shared), and no other data types. Answer "no" to
    data sold, and "yes, user can request deletion" — see the in-app
    **Account & Sync → Delete my cloud data** and the privacy policy at
-   `https://jadax.github.io/LinguaTomo-Web/privacy.html`, which must also be
+   `https://astraiva.app/privacy/linguatomo.html`, which must also be
    linked directly in the Play Console listing.
 
 5. **Target audience.** Do not enrol in the Designed for Families / Ads
